@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     # Third-party
     "rest_framework",
     "rest_framework_simplejwt",
+    "corsheaders",
     # Local apps
     "audit",
     "users",
@@ -61,7 +63,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -93,16 +97,22 @@ WSGI_APPLICATION = "cstom.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "cstom"),
-        "USER": os.getenv("POSTGRES_USER", "cstom"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "changeme"),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "cstom"),
+            "USER": os.getenv("POSTGRES_USER", "cstom"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "changeme"),
+            "HOST": os.getenv("POSTGRES_HOST", "localhost"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        }
+    }
 
 
 # Password validation
@@ -140,6 +150,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -177,4 +189,16 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     o.strip()
     for o in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    if o.strip()
 ]
+CORS_ALLOW_CREDENTIALS = True
+
+# Security settings for production
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").lower() in (
+        "true",
+        "1",
+    )
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
