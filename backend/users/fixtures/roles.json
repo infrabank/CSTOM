@@ -1,0 +1,34 @@
+[
+  {
+    "model": "users.role",
+    "pk": 1,
+    "fields": {
+      "name": "pm",
+      "description": "Project Manager - full access to contracts, tasks, decisions, reports"
+    }
+  },
+  {
+    "model": "users.role",
+    "pk": 2,
+    "fields": {
+      "name": "engineer",
+      "description": "Engineer - can create tasks and decision logs, view contracts"
+    }
+  },
+  {
+    "model": "users.role",
+    "pk": 3,
+    "fields": {
+      "name": "admin",
+      "description": "Administrator - system-wide access including user management"
+    }
+  },
+  {
+    "model": "users.role",
+    "pk": 4,
+    "fields": {
+      "name": "customer",
+      "description": "Customer - read-only access to contracts and reports"
+    }
+  }
+]
