@@ -2,6 +2,7 @@
 
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -25,6 +26,8 @@ class ContractViewSet(ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
+        if self.action in ["list", "retrieve", "status_history"]:
+            return [AllowAny()]  # Public read access for demo
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
         if self.action in ["update_status"]:
