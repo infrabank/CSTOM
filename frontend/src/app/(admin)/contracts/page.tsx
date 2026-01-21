@@ -1,8 +1,5 @@
-/**
- * Contracts list page.
- */
-
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { contractsApi, ContractListItem } from "@/lib/api";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -49,11 +46,14 @@ function RiskIndicators({
 }
 
 export default async function ContractsPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+
   let contracts: ContractListItem[] = [];
   let error: string | null = null;
 
   try {
-    const response = await contractsApi.list();
+    const response = await contractsApi.list(token);
     contracts = response.results || [];
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to load contracts";

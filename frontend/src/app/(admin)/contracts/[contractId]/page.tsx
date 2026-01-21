@@ -1,8 +1,5 @@
-/**
- * Contract detail page.
- */
-
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { contractsApi, Contract } from "@/lib/api";
 
@@ -54,6 +51,9 @@ interface PageProps {
 }
 
 export default async function ContractDetailPage({ params }: PageProps) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+
   const { contractId } = await params;
   const id = parseInt(contractId, 10);
 
@@ -65,7 +65,7 @@ export default async function ContractDetailPage({ params }: PageProps) {
   let error: string | null = null;
 
   try {
-    contract = await contractsApi.get(id);
+    contract = await contractsApi.get(id, token);
   } catch (e) {
     error = e instanceof Error ? e.message : "Failed to load contract";
   }
