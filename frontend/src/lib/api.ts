@@ -7,7 +7,7 @@ import { getAccessToken, getRefreshToken, setTokens, clearTokens, TokenPair } fr
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
