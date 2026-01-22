@@ -22,6 +22,9 @@ export default function Home() {
             >
               사업 관리
             </Link>
+            <Link href="/tasks" className="text-gray-600 hover:text-gray-900">
+              작업 관리
+            </Link>
             <Link href="/events" className="text-gray-600 hover:text-gray-900">
               변경/장애
             </Link>

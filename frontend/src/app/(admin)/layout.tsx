@@ -30,7 +30,7 @@ export default function AdminLayout({
               href="/tasks"
               className="text-gray-600 hover:text-gray-900 font-medium"
             >
-              작업
+              작업 관리
             </Link>
             <Link
               href="/events"
