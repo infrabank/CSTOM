@@ -1,12 +1,14 @@
 "use server";
 
-/**
- * Server actions for event operations.
- */
-
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("cstom_access_token")?.value;
+}
 
 interface EventCreateInput {
   contract: number;
@@ -21,6 +23,7 @@ interface EventCreateInput {
 }
 
 export async function createEvent(formData: FormData) {
+  const token = await getToken();
   const data: EventCreateInput = {
     contract: parseInt(formData.get("contract") as string, 10),
     record_type: formData.get("record_type") as string,
@@ -37,7 +40,10 @@ export async function createEvent(formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/events/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -45,7 +51,7 @@ export async function createEvent(formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "Failed to create event",
+        error: err?.error?.message || err?.detail || "이벤트 등록에 실패했습니다",
       };
     }
 
@@ -55,12 +61,13 @@ export async function createEvent(formData: FormData) {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create event",
+      error: error instanceof Error ? error.message : "이벤트 등록에 실패했습니다",
     };
   }
 }
 
 export async function updateEvent(id: number, formData: FormData) {
+  const token = await getToken();
   const data: Partial<EventCreateInput> = {
     contract: parseInt(formData.get("contract") as string, 10),
     record_type: formData.get("record_type") as string,
@@ -77,7 +84,10 @@ export async function updateEvent(id: number, formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/events/${id}/`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -85,7 +95,7 @@ export async function updateEvent(id: number, formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "이벤트 수정에 실패했습니다",
+        error: err?.error?.message || err?.detail || "이벤트 수정에 실패했습니다",
       };
     }
 
@@ -101,10 +111,14 @@ export async function updateEvent(id: number, formData: FormData) {
 }
 
 export async function linkEvent(eventId: number, relatedEventId: number) {
+  const token = await getToken();
   try {
     const res = await fetch(`${API_URL}/events/${eventId}/link/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify({ related_event: relatedEventId }),
     });
 
@@ -112,7 +126,7 @@ export async function linkEvent(eventId: number, relatedEventId: number) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "Failed to link event",
+        error: err?.error?.message || err?.detail || "이벤트 연결에 실패했습니다",
       };
     }
 
@@ -122,7 +136,7 @@ export async function linkEvent(eventId: number, relatedEventId: number) {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to link event",
+      error: error instanceof Error ? error.message : "이벤트 연결에 실패했습니다",
     };
   }
 }

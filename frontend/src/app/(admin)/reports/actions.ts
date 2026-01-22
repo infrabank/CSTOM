@@ -1,12 +1,14 @@
 "use server";
 
-/**
- * Server actions for report operations.
- */
-
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("cstom_access_token")?.value;
+}
 
 interface ReportGenerateInput {
   contract: number;
@@ -16,6 +18,7 @@ interface ReportGenerateInput {
 }
 
 export async function generateReport(formData: FormData) {
+  const token = await getToken();
   const data: ReportGenerateInput = {
     contract: parseInt(formData.get("contract") as string, 10),
     report_type: formData.get("report_type") as string,
@@ -26,7 +29,10 @@ export async function generateReport(formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/reports/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -34,7 +40,7 @@ export async function generateReport(formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "Failed to generate report",
+        error: err?.error?.message || err?.detail || "보고서 생성에 실패했습니다",
       };
     }
 
@@ -44,7 +50,7 @@ export async function generateReport(formData: FormData) {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to generate report",
+      error: error instanceof Error ? error.message : "보고서 생성에 실패했습니다",
     };
   }
 }

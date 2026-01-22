@@ -1,13 +1,16 @@
 "use server";
 
-/**
- * Server actions for contract operations.
- */
-
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { contractsApi, ContractCreateInput } from "@/lib/api";
 
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("cstom_access_token")?.value;
+}
+
 export async function createContract(formData: FormData) {
+  const token = await getToken();
   const data: ContractCreateInput = {
     name: formData.get("name") as string,
     client_org: formData.get("client_org") as string,
@@ -21,18 +24,19 @@ export async function createContract(formData: FormData) {
   };
 
   try {
-    const contract = await contractsApi.create(data);
+    const contract = await contractsApi.create(data, token);
     revalidatePath("/contracts");
     return { success: true, id: contract.id };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create contract",
+      error: error instanceof Error ? error.message : "사업 등록에 실패했습니다",
     };
   }
 }
 
 export async function updateContract(id: number, formData: FormData) {
+  const token = await getToken();
   const data: Partial<ContractCreateInput> = {
     name: formData.get("name") as string,
     client_org: formData.get("client_org") as string,
@@ -46,14 +50,14 @@ export async function updateContract(id: number, formData: FormData) {
   };
 
   try {
-    await contractsApi.update(id, data);
+    await contractsApi.update(id, data, token);
     revalidatePath("/contracts");
     revalidatePath(`/contracts/${id}`);
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update contract",
+      error: error instanceof Error ? error.message : "사업 수정에 실패했습니다",
     };
   }
 }
@@ -63,15 +67,16 @@ export async function updateContractStatus(
   status: string,
   notes?: string
 ) {
+  const token = await getToken();
   try {
-    await contractsApi.updateStatus(id, status, notes);
+    await contractsApi.updateStatus(id, status, notes, token);
     revalidatePath("/contracts");
     revalidatePath(`/contracts/${id}`);
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update status",
+      error: error instanceof Error ? error.message : "상태 변경에 실패했습니다",
     };
   }
 }

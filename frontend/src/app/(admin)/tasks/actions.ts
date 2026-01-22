@@ -1,8 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("cstom_access_token")?.value;
+}
 
 interface TaskCreateInput {
   contract: number;
@@ -13,6 +19,7 @@ interface TaskCreateInput {
 }
 
 export async function createTask(formData: FormData) {
+  const token = await getToken();
   const data: TaskCreateInput = {
     contract: parseInt(formData.get("contract") as string, 10),
     task_type: formData.get("task_type") as string,
@@ -24,7 +31,10 @@ export async function createTask(formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/tasks/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -32,7 +42,7 @@ export async function createTask(formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "작업 등록에 실패했습니다",
+        error: err?.error?.message || err?.detail || "작업 등록에 실패했습니다",
       };
     }
 
@@ -48,6 +58,7 @@ export async function createTask(formData: FormData) {
 }
 
 export async function updateTask(id: number, formData: FormData) {
+  const token = await getToken();
   const data: Partial<TaskCreateInput> = {
     contract: parseInt(formData.get("contract") as string, 10),
     task_type: formData.get("task_type") as string,
@@ -59,7 +70,10 @@ export async function updateTask(id: number, formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/tasks/${id}/`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -67,7 +81,7 @@ export async function updateTask(id: number, formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "작업 수정에 실패했습니다",
+        error: err?.error?.message || err?.detail || "작업 수정에 실패했습니다",
       };
     }
 

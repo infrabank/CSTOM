@@ -1,12 +1,14 @@
 "use server";
 
-/**
- * Server actions for user operations.
- */
-
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+async function getToken() {
+  const cookieStore = await cookies();
+  return cookieStore.get("cstom_access_token")?.value;
+}
 
 interface UserCreateInput {
   username: string;
@@ -18,6 +20,7 @@ interface UserCreateInput {
 }
 
 export async function createUser(formData: FormData) {
+  const token = await getToken();
   const data: UserCreateInput = {
     username: formData.get("username") as string,
     email: formData.get("email") as string,
@@ -30,7 +33,10 @@ export async function createUser(formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/users/`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -38,7 +44,7 @@ export async function createUser(formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "사용자 등록에 실패했습니다",
+        error: err?.error?.message || err?.detail || "사용자 등록에 실패했습니다",
       };
     }
 
@@ -54,6 +60,7 @@ export async function createUser(formData: FormData) {
 }
 
 export async function updateUser(id: number, formData: FormData) {
+  const token = await getToken();
   const data: Partial<UserCreateInput> = {
     username: formData.get("username") as string,
     email: formData.get("email") as string,
@@ -62,7 +69,6 @@ export async function updateUser(id: number, formData: FormData) {
     is_active: formData.get("is_active") === "on",
   };
 
-  // Only include password if provided
   const password = formData.get("password") as string;
   if (password) {
     data.password = password;
@@ -71,7 +77,10 @@ export async function updateUser(id: number, formData: FormData) {
   try {
     const res = await fetch(`${API_URL}/users/${id}/`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
       body: JSON.stringify(data),
     });
 
@@ -79,7 +88,7 @@ export async function updateUser(id: number, formData: FormData) {
       const err = await res.json().catch(() => ({}));
       return {
         success: false,
-        error: err?.error?.message || "사용자 수정에 실패했습니다",
+        error: err?.error?.message || err?.detail || "사용자 수정에 실패했습니다",
       };
     }
 
