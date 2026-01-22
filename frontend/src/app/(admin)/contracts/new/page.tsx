@@ -6,8 +6,8 @@ import Link from "next/link";
 import { createContract } from "../actions";
 
 const SCOPES = [
-  { value: "operation", label: "운영" },
-  { value: "construction", label: "구축" },
+  { value: "ops", label: "운영" },
+  { value: "build", label: "구축" },
   { value: "transition", label: "전환" },
   { value: "pm", label: "PM" },
 ];

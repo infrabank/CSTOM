@@ -9,8 +9,8 @@ import { updateContract } from "../../actions";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const SCOPES = [
-  { value: "operation", label: "운영" },
-  { value: "construction", label: "구축" },
+  { value: "ops", label: "운영" },
+  { value: "build", label: "구축" },
   { value: "transition", label: "전환" },
   { value: "pm", label: "PM" },
 ];

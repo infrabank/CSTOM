@@ -9,6 +9,11 @@ async function getToken() {
   return cookieStore.get("cstom_access_token")?.value;
 }
 
+function parseAmount(value: string | null): string | undefined {
+  if (!value || value.trim() === "") return undefined;
+  return value.replace(/,/g, "");
+}
+
 export async function createContract(formData: FormData) {
   const token = await getToken();
   const data: ContractCreateInput = {
@@ -16,7 +21,7 @@ export async function createContract(formData: FormData) {
     client_org: formData.get("client_org") as string,
     start_date: formData.get("start_date") as string,
     end_date: formData.get("end_date") as string,
-    contract_amount: (formData.get("contract_amount") as string) || undefined,
+    contract_amount: parseAmount(formData.get("contract_amount") as string),
     scope_list: formData.getAll("scopes") as string[],
     risk_pre_env: formData.get("risk_pre_env") === "on",
     risk_prior_vendor: formData.get("risk_prior_vendor") === "on",
@@ -42,7 +47,7 @@ export async function updateContract(id: number, formData: FormData) {
     client_org: formData.get("client_org") as string,
     start_date: formData.get("start_date") as string,
     end_date: formData.get("end_date") as string,
-    contract_amount: (formData.get("contract_amount") as string) || undefined,
+    contract_amount: parseAmount(formData.get("contract_amount") as string),
     scope_list: formData.getAll("scopes") as string[],
     risk_pre_env: formData.get("risk_pre_env") === "on",
     risk_prior_vendor: formData.get("risk_prior_vendor") === "on",
