@@ -1,7 +1,3 @@
-/**
- * Task detail page with decision logs.
- */
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -54,6 +50,19 @@ async function getDecisions(taskId: number): Promise<DecisionLog[]> {
   }
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  regular: "정기",
+  incident: "장애",
+  change: "변경",
+  request: "요청",
+};
+
+const IMPACT_LABELS: Record<string, string> = {
+  none: "없음",
+  partial: "부분 영향",
+  full: "전체 영향",
+};
+
 const IMPACT_COLORS: Record<string, string> = {
   none: "bg-gray-100 text-gray-700",
   partial: "bg-yellow-100 text-yellow-700",
@@ -61,9 +70,9 @@ const IMPACT_COLORS: Record<string, string> = {
 };
 
 const ACTOR_LABELS: Record<string, string> = {
-  pm: "Project Manager",
-  engineer: "Engineer",
-  joint: "Joint Decision",
+  pm: "PM",
+  engineer: "엔지니어",
+  joint: "공동 결정",
 };
 
 interface PageProps {
@@ -91,7 +100,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
           href={`/contracts/${task.contract}`}
           className="text-blue-600 hover:underline text-sm"
         >
-          Back to {task.contract_name}
+          {task.contract_name}으로 돌아가기
         </Link>
       </div>
 
@@ -107,11 +116,11 @@ export default async function TaskDetailPage({ params }: PageProps) {
                 IMPACT_COLORS[task.impact_level]
               }`}
             >
-              {task.impact_level} impact
+              {IMPACT_LABELS[task.impact_level] || task.impact_level}
             </span>
             {task.approval_required && (
               <span className="px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-700">
-                Approval Required
+                승인 필요
               </span>
             )}
           </div>
@@ -119,20 +128,18 @@ export default async function TaskDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Type</h3>
-            <p className="capitalize">{task.task_type}</p>
+            <h3 className="text-sm font-medium text-gray-500">작업 유형</h3>
+            <p>{TYPE_LABELS[task.task_type] || task.task_type}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Created</h3>
-            <p>{new Date(task.created_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500">등록일</h3>
+            <p>{new Date(task.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
 
         {task.description && (
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Description
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">상세 내용</h3>
             <p className="text-gray-700 whitespace-pre-wrap">
               {task.description}
             </p>
@@ -142,15 +149,15 @@ export default async function TaskDetailPage({ params }: PageProps) {
 
       <div className="bg-white shadow-sm rounded-lg p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Decision Logs</h2>
+          <h2 className="text-lg font-semibold">판단 기록</h2>
           <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-            Add Decision
+            판단 추가
           </button>
         </div>
 
         {decisions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">
-            No decision logs recorded yet
+            기록된 판단이 없습니다
           </p>
         ) : (
           <div className="space-y-4">
@@ -164,7 +171,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                     {ACTOR_LABELS[decision.actor_role] || decision.actor_role}
                   </span>
                   <span className="text-sm text-gray-500">
-                    {new Date(decision.created_at).toLocaleString()}
+                    {new Date(decision.created_at).toLocaleString("ko-KR")}
                   </span>
                 </div>
 
@@ -180,8 +187,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                         : "text-gray-400"
                     }
                   >
-                    {decision.alternatives_considered ? "Y" : "N"} Alternatives
-                    Considered
+                    {decision.alternatives_considered ? "O" : "X"} 대안 검토
                   </span>
                   <span
                     className={
@@ -190,7 +196,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                         : "text-gray-400"
                     }
                   >
-                    {decision.risk_acknowledged ? "Y" : "N"} Risk Acknowledged
+                    {decision.risk_acknowledged ? "O" : "X"} 리스크 인지
                   </span>
                 </div>
               </div>

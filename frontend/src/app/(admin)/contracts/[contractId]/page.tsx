@@ -3,6 +3,14 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { contractsApi, Contract } from "@/lib/api";
 
+const STATUS_LABELS: Record<string, string> = {
+  "pre-handover": "인수 전",
+  handover: "인수",
+  stabilization: "안정화",
+  steady: "정상 운영",
+  closed: "종료",
+};
+
 const STATUS_COLORS: Record<string, string> = {
   "pre-handover": "bg-yellow-100 text-yellow-800",
   handover: "bg-blue-100 text-blue-800",
@@ -11,11 +19,19 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-gray-100 text-gray-800",
 };
 
+const SCOPE_LABELS: Record<string, string> = {
+  operation: "운영",
+  construction: "구축",
+  transition: "전환",
+  pm: "PM",
+};
+
 function StatusBadge({ status }: { status: string }) {
   const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
+  const label = STATUS_LABELS[status] || status;
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
-      {status.replace("-", " ")}
+      {label}
     </span>
   );
 }
@@ -67,7 +83,7 @@ export default async function ContractDetailPage({ params }: PageProps) {
   try {
     contract = await contractsApi.get(id, token);
   } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to load contract";
+    error = e instanceof Error ? e.message : "사업 정보를 불러오지 못했습니다";
   }
 
   if (!contract && !error) {
@@ -79,7 +95,7 @@ export default async function ContractDetailPage({ params }: PageProps) {
       <div className="p-6">
         <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
         <Link href="/contracts" className="text-blue-600 hover:underline">
-          Back to contracts
+          사업 목록으로
         </Link>
       </div>
     );
@@ -89,7 +105,7 @@ export default async function ContractDetailPage({ params }: PageProps) {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/contracts" className="text-blue-600 hover:underline text-sm">
-          Back to contracts
+          사업 목록으로
         </Link>
       </div>
 
@@ -104,19 +120,17 @@ export default async function ContractDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Period</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">사업 기간</h3>
             <p>
-              {contract!.start_date} - {contract!.end_date}
+              {contract!.start_date} ~ {contract!.end_date}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Contract Amount
-            </h3>
-            <p>{contract!.contract_amount || "Not specified"}</p>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">계약 금액</h3>
+            <p>{contract!.contract_amount || "미지정"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Scopes</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">사업 범위</h3>
             <div className="flex gap-2">
               {contract!.scopes.length > 0 ? (
                 contract!.scopes.map((scope) => (
@@ -124,37 +138,37 @@ export default async function ContractDetailPage({ params }: PageProps) {
                     key={scope}
                     className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
                   >
-                    {scope.toUpperCase()}
+                    {SCOPE_LABELS[scope] || scope.toUpperCase()}
                   </span>
                 ))
               ) : (
-                <span className="text-gray-400">None</span>
+                <span className="text-gray-400">없음</span>
               )}
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Created</h3>
-            <p>{new Date(contract!.created_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">등록일</h3>
+            <p>{new Date(contract!.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
 
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">Risk Flags</h2>
+          <h2 className="text-lg font-semibold mb-4">리스크 플래그</h2>
           <div className="grid grid-cols-3 gap-4">
             <RiskCard
-              title="Pre-existing Environment"
+              title="인수 전 환경"
               isRisk={contract!.risk_flags.pre_env}
-              description="Inherited environment from previous setup"
+              description="이전 사업자로부터 환경을 인수받아야 함"
             />
             <RiskCard
-              title="Prior Vendor Coordination"
+              title="전 사업자 협업"
               isRisk={contract!.risk_flags.prior_vendor_coordination}
-              description="Requires coordination with previous vendor"
+              description="전 사업자와의 협업이 필요함"
             />
             <RiskCard
-              title="Documentation Incomplete"
+              title="문서 불완전"
               isRisk={contract!.risk_flags.docs_incomplete}
-              description="Documentation is incomplete or missing"
+              description="인수 문서가 불완전하거나 누락됨"
             />
           </div>
         </div>
@@ -164,10 +178,10 @@ export default async function ContractDetailPage({ params }: PageProps) {
             href={`/contracts/${contract!.id}/edit`}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
-            Edit Contract
+            수정
           </Link>
           <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            Update Status
+            상태 변경
           </button>
         </div>
       </div>

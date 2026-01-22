@@ -2,6 +2,14 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { contractsApi, ContractListItem } from "@/lib/api";
 
+const STATUS_LABELS: Record<string, string> = {
+  "pre-handover": "인수 전",
+  handover: "인수",
+  stabilization: "안정화",
+  steady: "정상 운영",
+  closed: "종료",
+};
+
 const STATUS_COLORS: Record<string, string> = {
   "pre-handover": "bg-yellow-100 text-yellow-800",
   handover: "bg-blue-100 text-blue-800",
@@ -12,9 +20,10 @@ const STATUS_COLORS: Record<string, string> = {
 
 function StatusBadge({ status }: { status: string }) {
   const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
+  const label = STATUS_LABELS[status] || status;
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
-      {status.replace("-", " ")}
+      {label}
     </span>
   );
 }
@@ -25,9 +34,9 @@ function RiskIndicators({
   flags: ContractListItem["risk_flags"];
 }) {
   const risks = [];
-  if (flags.pre_env) risks.push("ENV");
-  if (flags.prior_vendor_coordination) risks.push("VENDOR");
-  if (flags.docs_incomplete) risks.push("DOCS");
+  if (flags.pre_env) risks.push("환경");
+  if (flags.prior_vendor_coordination) risks.push("협업");
+  if (flags.docs_incomplete) risks.push("문서");
 
   if (risks.length === 0) return null;
 
@@ -56,18 +65,18 @@ export default async function ContractsPage() {
     const response = await contractsApi.list(token);
     contracts = response.results || [];
   } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to load contracts";
+    error = e instanceof Error ? e.message : "사업 목록을 불러오지 못했습니다";
   }
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Contracts</h1>
+        <h1 className="text-2xl font-bold">사업 관리</h1>
         <Link
           href="/contracts/new"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          New Contract
+          사업 등록
         </Link>
       </div>
 
@@ -82,19 +91,19 @@ export default async function ContractsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Name
+                사업명
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Client
+                발주처
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Period
+                기간
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+                상태
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Risks
+                리스크
               </th>
             </tr>
           </thead>
@@ -102,7 +111,7 @@ export default async function ContractsPage() {
             {contracts.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                  No contracts found
+                  등록된 사업이 없습니다
                 </td>
               </tr>
             ) : (
@@ -120,7 +129,7 @@ export default async function ContractsPage() {
                     {contract.client_org}
                   </td>
                   <td className="px-6 py-4 text-gray-600 text-sm">
-                    {contract.start_date} - {contract.end_date}
+                    {contract.start_date} ~ {contract.end_date}
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={contract.status} />

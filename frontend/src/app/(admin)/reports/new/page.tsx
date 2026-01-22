@@ -13,9 +13,9 @@ interface Contract {
 }
 
 const REPORT_TYPES = [
-  { value: "monthly", label: "Monthly Report" },
-  { value: "incident", label: "Incident Report" },
-  { value: "audit", label: "Audit Report" },
+  { value: "monthly", label: "월간 보고서" },
+  { value: "incident", label: "장애 보고서" },
+  { value: "audit", label: "감사 보고서" },
 ];
 
 export default function NewReportPage() {
@@ -47,7 +47,7 @@ export default function NewReportPage() {
     if (result.success) {
       router.push(`/reports/${result.id}`);
     } else {
-      setError(result.error || "Failed to generate report");
+      setError(result.error || "보고서 생성에 실패했습니다");
       setIsSubmitting(false);
     }
   }
@@ -56,12 +56,12 @@ export default function NewReportPage() {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/reports" className="text-blue-600 hover:underline text-sm">
-          Back to reports
+          보고서 목록으로
         </Link>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-6">Generate Report</h1>
+        <h1 className="text-2xl font-bold mb-6">보고서 생성</h1>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -72,14 +72,14 @@ export default function NewReportPage() {
         <form action={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contract *
+              사업 *
             </label>
             <select
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select a contract</option>
+              <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
                   {contract.name}
@@ -90,7 +90,7 @@ export default function NewReportPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Report Type *
+              보고서 유형 *
             </label>
             <select
               name="report_type"
@@ -108,7 +108,7 @@ export default function NewReportPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Period Start *
+                시작일 *
               </label>
               <input
                 type="date"
@@ -119,7 +119,7 @@ export default function NewReportPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Period End *
+                종료일 *
               </label>
               <input
                 type="date"
@@ -136,13 +136,13 @@ export default function NewReportPage() {
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Generating..." : "Generate Report"}
+              {isSubmitting ? "생성 중..." : "생성"}
             </button>
             <Link
               href="/reports"
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </Link>
           </div>
         </form>

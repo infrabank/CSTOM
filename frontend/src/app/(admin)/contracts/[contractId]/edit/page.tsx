@@ -9,9 +9,9 @@ import { updateContract } from "../../actions";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const SCOPES = [
-  { value: "operation", label: "Operation" },
-  { value: "construction", label: "Construction" },
-  { value: "transition", label: "Transition" },
+  { value: "operation", label: "운영" },
+  { value: "construction", label: "구축" },
+  { value: "transition", label: "전환" },
   { value: "pm", label: "PM" },
 ];
 
@@ -49,11 +49,11 @@ export default function EditContractPage({ params }: PageProps) {
         const res = await fetch(`${API_URL}/contracts/${contractId}/`, {
           cache: "no-store",
         });
-        if (!res.ok) throw new Error("Failed to fetch contract");
+        if (!res.ok) throw new Error("사업 정보를 불러오지 못했습니다");
         const data = await res.json();
         setContract(data);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load contract");
+        setError(e instanceof Error ? e.message : "사업 정보를 불러오지 못했습니다");
       } finally {
         setIsLoading(false);
       }
@@ -70,7 +70,7 @@ export default function EditContractPage({ params }: PageProps) {
     if (result.success) {
       router.push(`/contracts/${contractId}`);
     } else {
-      setError(result.error || "Failed to update contract");
+      setError(result.error || "사업 수정에 실패했습니다");
       setIsSubmitting(false);
     }
   }
@@ -78,7 +78,7 @@ export default function EditContractPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">Loading...</div>
+        <div className="text-center text-gray-500">불러오는 중...</div>
       </div>
     );
   }
@@ -87,10 +87,10 @@ export default function EditContractPage({ params }: PageProps) {
     return (
       <div className="p-6">
         <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error || "Contract not found"}
+          {error || "사업을 찾을 수 없습니다"}
         </div>
         <Link href="/contracts" className="text-blue-600 hover:underline">
-          Back to contracts
+          사업 목록으로
         </Link>
       </div>
     );
@@ -103,12 +103,12 @@ export default function EditContractPage({ params }: PageProps) {
           href={`/contracts/${contractId}`}
           className="text-blue-600 hover:underline text-sm"
         >
-          Back to contract
+          사업 상세로
         </Link>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-6">Edit Contract</h1>
+        <h1 className="text-2xl font-bold mb-6">사업 수정</h1>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -119,7 +119,7 @@ export default function EditContractPage({ params }: PageProps) {
         <form action={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contract Name *
+              사업명 *
             </label>
             <input
               type="text"
@@ -132,7 +132,7 @@ export default function EditContractPage({ params }: PageProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Client Organization *
+              발주처 *
             </label>
             <input
               type="text"
@@ -146,7 +146,7 @@ export default function EditContractPage({ params }: PageProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Start Date *
+                시작일 *
               </label>
               <input
                 type="date"
@@ -158,7 +158,7 @@ export default function EditContractPage({ params }: PageProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                End Date *
+                종료일 *
               </label>
               <input
                 type="date"
@@ -172,20 +172,20 @@ export default function EditContractPage({ params }: PageProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contract Amount
+              계약 금액
             </label>
             <input
               type="text"
               name="contract_amount"
               defaultValue={contract.contract_amount || ""}
-              placeholder="e.g., 100,000,000"
+              placeholder="예: 100,000,000"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Scopes
+              사업 범위
             </label>
             <div className="flex flex-wrap gap-4">
               {SCOPES.map((scope) => (
@@ -205,7 +205,7 @@ export default function EditContractPage({ params }: PageProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Risk Flags
+              리스크 플래그
             </label>
             <div className="space-y-2">
               <label className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export default function EditContractPage({ params }: PageProps) {
                   defaultChecked={contract.risk_flags.pre_env}
                   className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                 />
-                <span className="text-sm">Pre-existing Environment</span>
+                <span className="text-sm">인수 전 환경</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -224,7 +224,7 @@ export default function EditContractPage({ params }: PageProps) {
                   defaultChecked={contract.risk_flags.prior_vendor_coordination}
                   className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                 />
-                <span className="text-sm">Prior Vendor Coordination Required</span>
+                <span className="text-sm">전 사업자 협업 필요</span>
               </label>
               <label className="flex items-center gap-2">
                 <input
@@ -233,7 +233,7 @@ export default function EditContractPage({ params }: PageProps) {
                   defaultChecked={contract.risk_flags.docs_incomplete}
                   className="rounded border-gray-300 text-red-600 focus:ring-red-500"
                 />
-                <span className="text-sm">Documentation Incomplete</span>
+                <span className="text-sm">문서 불완전</span>
               </label>
             </div>
           </div>
@@ -244,13 +244,13 @@ export default function EditContractPage({ params }: PageProps) {
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Saving..." : "Save Changes"}
+              {isSubmitting ? "저장 중..." : "저장"}
             </button>
             <Link
               href={`/contracts/${contractId}`}
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </Link>
           </div>
         </form>

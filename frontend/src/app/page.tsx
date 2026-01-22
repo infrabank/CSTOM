@@ -11,16 +11,16 @@ export default function Home() {
               href="/contracts"
               className="text-gray-600 hover:text-gray-900"
             >
-              Contracts
+              사업 관리
             </Link>
             <Link href="/events" className="text-gray-600 hover:text-gray-900">
-              Events
+              변경/장애
             </Link>
             <Link href="/reports" className="text-gray-600 hover:text-gray-900">
-              Reports
+              보고서
             </Link>
             <Link href="/users" className="text-gray-600 hover:text-gray-900">
-              Users
+              사용자
             </Link>
           </nav>
         </div>
@@ -29,11 +29,11 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 py-16">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            IT Maintenance Tracking System
+            IT 유지보수 관리 시스템
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Track contracts, tasks, incidents, and generate reports for public
-            IT maintenance operations.
+            공공 IT 유지보수를 위한 사업, 작업, 변경/장애, 보고서를 체계적으로
+            관리합니다.
           </p>
         </div>
 
@@ -58,10 +58,10 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Contracts
+              사업 관리
             </h3>
             <p className="text-gray-600 text-sm">
-              Manage maintenance contracts with status tracking and risk flags.
+              유지보수 사업의 상태, 범위, 리스크 플래그를 관리합니다.
             </p>
           </Link>
 
@@ -84,9 +84,11 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Events</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              변경/장애
+            </h3>
             <p className="text-gray-600 text-sm">
-              Track changes and incidents with linked event history.
+              변경 및 장애 이력을 통합 관리하고 연관 관계를 추적합니다.
             </p>
           </Link>
 
@@ -109,11 +111,9 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Reports
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">보고서</h3>
             <p className="text-gray-600 text-sm">
-              Generate monthly, incident, and audit reports automatically.
+              월간, 장애, 감사 보고서를 자동으로 생성합니다.
             </p>
           </Link>
 
@@ -136,9 +136,9 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Users</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">사용자</h3>
             <p className="text-gray-600 text-sm">
-              Manage users with role-based access control.
+              역할 기반 접근 제어로 사용자를 관리합니다.
             </p>
           </Link>
         </div>
@@ -146,7 +146,7 @@ export default function Home() {
 
       <footer className="border-t bg-white mt-16">
         <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-          CSTOM - IT Maintenance Tracking System
+          CSTOM - IT 유지보수 관리 시스템
         </div>
       </footer>
     </div>

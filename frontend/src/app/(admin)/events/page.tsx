@@ -1,7 +1,3 @@
-/**
- * Events list page for changes and incidents.
- */
-
 import Link from "next/link";
 
 interface Event {
@@ -30,6 +26,11 @@ async function getEvents(): Promise<Event[]> {
   }
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  change: "변경",
+  incident: "장애",
+};
+
 const TYPE_COLORS: Record<string, string> = {
   change: "bg-blue-100 text-blue-700",
   incident: "bg-red-100 text-red-700",
@@ -41,12 +42,12 @@ export default async function EventsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Change / Incidents</h1>
+        <h1 className="text-2xl font-bold">변경/장애 관리</h1>
         <Link
           href="/events/new"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          New Event
+          이벤트 등록
         </Link>
       </div>
 
@@ -55,22 +56,22 @@ export default async function EventsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Type
+                유형
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Title
+                제목
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Contract
+                사업
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Occurred
+                발생 시각
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Status
+                상태
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Notified
+                통보
               </th>
             </tr>
           </thead>
@@ -78,7 +79,7 @@ export default async function EventsPage() {
             {events.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                  No events found
+                  등록된 이벤트가 없습니다
                 </td>
               </tr>
             ) : (
@@ -90,7 +91,7 @@ export default async function EventsPage() {
                         TYPE_COLORS[event.record_type]
                       }`}
                     >
-                      {event.record_type}
+                      {TYPE_LABELS[event.record_type] || event.record_type}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -101,27 +102,27 @@ export default async function EventsPage() {
                       {event.title}
                     </Link>
                     {event.has_related && (
-                      <span className="ml-2 text-xs text-gray-400">linked</span>
+                      <span className="ml-2 text-xs text-gray-400">연결됨</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {event.contract_name}
                   </td>
                   <td className="px-6 py-4 text-gray-600 text-sm">
-                    {new Date(event.occurred_at).toLocaleString()}
+                    {new Date(event.occurred_at).toLocaleString("ko-KR")}
                   </td>
                   <td className="px-6 py-4">
                     {event.resolved_at ? (
-                      <span className="text-green-600 text-sm">Resolved</span>
+                      <span className="text-green-600 text-sm">해결됨</span>
                     ) : (
-                      <span className="text-orange-600 text-sm">Open</span>
+                      <span className="text-orange-600 text-sm">진행 중</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     {event.customer_notified ? (
-                      <span className="text-green-600">Yes</span>
+                      <span className="text-green-600">완료</span>
                     ) : (
-                      <span className="text-gray-400">No</span>
+                      <span className="text-gray-400">미통보</span>
                     )}
                   </td>
                 </tr>

@@ -13,8 +13,8 @@ interface Contract {
 }
 
 const RECORD_TYPES = [
-  { value: "change", label: "Change" },
-  { value: "incident", label: "Incident" },
+  { value: "change", label: "변경" },
+  { value: "incident", label: "장애" },
 ];
 
 export default function NewEventPage() {
@@ -46,7 +46,7 @@ export default function NewEventPage() {
     if (result.success) {
       router.push(`/events/${result.id}`);
     } else {
-      setError(result.error || "Failed to create event");
+      setError(result.error || "이벤트 등록에 실패했습니다");
       setIsSubmitting(false);
     }
   }
@@ -55,12 +55,12 @@ export default function NewEventPage() {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/events" className="text-blue-600 hover:underline text-sm">
-          Back to events
+          이벤트 목록으로
         </Link>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
-        <h1 className="text-2xl font-bold mb-6">New Event</h1>
+        <h1 className="text-2xl font-bold mb-6">이벤트 등록</h1>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -71,14 +71,14 @@ export default function NewEventPage() {
         <form action={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contract *
+              사업 *
             </label>
             <select
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select a contract</option>
+              <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
                   {contract.name}
@@ -89,7 +89,7 @@ export default function NewEventPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Type *
+              유형 *
             </label>
             <select
               name="record_type"
@@ -106,7 +106,7 @@ export default function NewEventPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title *
+              제목 *
             </label>
             <input
               type="text"
@@ -118,7 +118,7 @@ export default function NewEventPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
+              상세 내용
             </label>
             <textarea
               name="description"
@@ -130,7 +130,7 @@ export default function NewEventPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Occurred At *
+                발생 시각 *
               </label>
               <input
                 type="datetime-local"
@@ -141,7 +141,7 @@ export default function NewEventPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Detected At
+                인지 시각
               </label>
               <input
                 type="datetime-local"
@@ -153,7 +153,7 @@ export default function NewEventPage() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resolved At
+              해결 시각
             </label>
             <input
               type="datetime-local"
@@ -169,13 +169,13 @@ export default function NewEventPage() {
                 name="customer_notified"
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
-              <span className="text-sm">Customer Notified</span>
+              <span className="text-sm">고객 통보 완료</span>
             </label>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Customer Notified At
+              고객 통보 시각
             </label>
             <input
               type="datetime-local"
@@ -190,13 +190,13 @@ export default function NewEventPage() {
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Creating..." : "Create Event"}
+              {isSubmitting ? "등록 중..." : "등록"}
             </button>
             <Link
               href="/events"
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </Link>
           </div>
         </form>

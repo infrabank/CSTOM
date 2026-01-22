@@ -1,7 +1,3 @@
-/**
- * Reports list page.
- */
-
 import Link from "next/link";
 
 interface Report {
@@ -28,9 +24,9 @@ async function getReports(): Promise<Report[]> {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  monthly: "Monthly",
-  incident: "Incident",
-  audit: "Audit",
+  monthly: "월간 보고서",
+  incident: "장애 보고서",
+  audit: "감사 보고서",
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -45,12 +41,12 @@ export default async function ReportsPage() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-bold">보고서</h1>
         <Link
           href="/reports/new"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Generate Report
+          보고서 생성
         </Link>
       </div>
 
@@ -59,16 +55,16 @@ export default async function ReportsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Type
+                유형
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Contract
+                사업
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Period
+                기간
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                Generated
+                생성일
               </th>
             </tr>
           </thead>
@@ -76,7 +72,7 @@ export default async function ReportsPage() {
             {reports.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                  No reports found
+                  생성된 보고서가 없습니다
                 </td>
               </tr>
             ) : (
@@ -88,7 +84,7 @@ export default async function ReportsPage() {
                         TYPE_COLORS[report.report_type]
                       }`}
                     >
-                      {TYPE_LABELS[report.report_type]}
+                      {TYPE_LABELS[report.report_type] || report.report_type}
                     </span>
                   </td>
                   <td className="px-6 py-4">
@@ -100,10 +96,10 @@ export default async function ReportsPage() {
                     </Link>
                   </td>
                   <td className="px-6 py-4 text-gray-600 text-sm">
-                    {report.period_start} - {report.period_end}
+                    {report.period_start} ~ {report.period_end}
                   </td>
                   <td className="px-6 py-4 text-gray-600 text-sm">
-                    {new Date(report.generated_at).toLocaleString()}
+                    {new Date(report.generated_at).toLocaleString("ko-KR")}
                   </td>
                 </tr>
               ))

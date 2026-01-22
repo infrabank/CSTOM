@@ -31,9 +31,21 @@ async function getUser(id: number): Promise<User | null> {
   }
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  active: "활성",
+  inactive: "비활성",
+};
+
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
   inactive: "bg-gray-100 text-gray-800",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "관리자",
+  pm: "PM",
+  engineer: "엔지니어",
+  customer: "고객",
 };
 
 const ROLE_COLORS: Record<string, string> = {
@@ -65,7 +77,7 @@ export default async function UserDetailPage({ params }: PageProps) {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/users" className="text-blue-600 hover:underline text-sm">
-          Back to users
+          사용자 목록으로
         </Link>
       </div>
 
@@ -80,33 +92,33 @@ export default async function UserDetailPage({ params }: PageProps) {
               STATUS_COLORS[user.status] || "bg-gray-100 text-gray-800"
             }`}
           >
-            {user.status}
+            {STATUS_LABELS[user.status] || user.status}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Email</h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">이메일</h3>
             <p>{user.email}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Created</h3>
-            <p>{new Date(user.created_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">등록일</h3>
+            <p>{new Date(user.created_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Last Updated</h3>
-            <p>{new Date(user.updated_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">최종 수정일</h3>
+            <p>{new Date(user.updated_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">Active</h3>
-            <p>{user.is_active ? "Yes" : "No"}</p>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">활성 여부</h3>
+            <p>{user.is_active ? "예" : "아니오"}</p>
           </div>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-500 mb-2">Roles</h3>
+          <h3 className="text-sm font-medium text-gray-500 mb-2">역할</h3>
           {user.roles.length === 0 ? (
-            <p className="text-gray-400">No roles assigned</p>
+            <p className="text-gray-400">역할이 할당되지 않았습니다</p>
           ) : (
             <div className="flex gap-2 flex-wrap">
               {user.roles.map((role) => (
@@ -116,7 +128,7 @@ export default async function UserDetailPage({ params }: PageProps) {
                     ROLE_COLORS[role.name] || "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  {role.name.toUpperCase()}
+                  {ROLE_LABELS[role.name] || role.name.toUpperCase()}
                 </span>
               ))}
             </div>
@@ -125,10 +137,10 @@ export default async function UserDetailPage({ params }: PageProps) {
 
         <div className="flex gap-3">
           <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-            Edit User
+            수정
           </button>
           <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            Manage Roles
+            역할 관리
           </button>
         </div>
       </div>

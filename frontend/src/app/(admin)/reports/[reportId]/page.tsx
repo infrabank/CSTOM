@@ -1,7 +1,3 @@
-/**
- * Report detail page.
- */
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -30,9 +26,9 @@ async function getReport(id: number): Promise<Report | null> {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  monthly: "Monthly Report",
-  incident: "Incident Report",
-  audit: "Audit Report",
+  monthly: "월간 보고서",
+  incident: "장애 보고서",
+  audit: "감사 보고서",
 };
 
 interface PageProps {
@@ -57,7 +53,7 @@ export default async function ReportDetailPage({ params }: PageProps) {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/reports" className="text-blue-600 hover:underline text-sm">
-          Back to reports
+          보고서 목록으로
         </Link>
       </div>
 
@@ -65,28 +61,28 @@ export default async function ReportDetailPage({ params }: PageProps) {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold">
-              {TYPE_LABELS[report.report_type]}
+              {TYPE_LABELS[report.report_type] || report.report_type}
             </h1>
             <p className="text-gray-600">{report.contract_name}</p>
           </div>
           <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            Download PDF
+            PDF 다운로드
           </button>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Period</h3>
+            <h3 className="text-sm font-medium text-gray-500">기간</h3>
             <p>
-              {report.period_start} - {report.period_end}
+              {report.period_start} ~ {report.period_end}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Generated</h3>
-            <p>{new Date(report.generated_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500">생성일</h3>
+            <p>{new Date(report.generated_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Integrity</h3>
+            <h3 className="text-sm font-medium text-gray-500">무결성 해시</h3>
             <p className="font-mono text-xs text-gray-500 truncate" title={report.integrity_hash}>
               {report.integrity_hash.substring(0, 16)}...
             </p>
@@ -94,9 +90,9 @@ export default async function ReportDetailPage({ params }: PageProps) {
         </div>
 
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold mb-4">Report Content</h2>
+          <h2 className="text-lg font-semibold mb-4">보고서 내용</h2>
           <pre className="bg-gray-50 p-4 rounded-lg text-sm whitespace-pre-wrap font-mono overflow-x-auto">
-            {report.summary || "No content generated"}
+            {report.summary || "내용이 생성되지 않았습니다"}
           </pre>
         </div>
       </div>

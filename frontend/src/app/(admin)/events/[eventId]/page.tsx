@@ -1,7 +1,3 @@
-/**
- * Event detail page.
- */
-
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -36,6 +32,11 @@ async function getEvent(id: number): Promise<Event | null> {
   }
 }
 
+const TYPE_LABELS: Record<string, string> = {
+  change: "변경",
+  incident: "장애",
+};
+
 interface PageProps {
   params: Promise<{ eventId: string }>;
 }
@@ -63,7 +64,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/events" className="text-blue-600 hover:underline text-sm">
-          Back to events
+          이벤트 목록으로
         </Link>
       </div>
 
@@ -72,7 +73,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-3 py-1 rounded text-sm font-medium ${typeColor}`}>
-                {event.record_type}
+                {TYPE_LABELS[event.record_type] || event.record_type}
               </span>
               <h1 className="text-2xl font-bold">{event.title}</h1>
             </div>
@@ -81,11 +82,11 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div>
             {event.resolved_at ? (
               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
-                Resolved
+                해결됨
               </span>
             ) : (
               <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm">
-                Open
+                진행 중
               </span>
             )}
           </div>
@@ -93,44 +94,40 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Occurred</h3>
-            <p>{new Date(event.occurred_at).toLocaleString()}</p>
+            <h3 className="text-sm font-medium text-gray-500">발생 시각</h3>
+            <p>{new Date(event.occurred_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Detected</h3>
+            <h3 className="text-sm font-medium text-gray-500">인지 시각</h3>
             <p>
               {event.detected_at
-                ? new Date(event.detected_at).toLocaleString()
+                ? new Date(event.detected_at).toLocaleString("ko-KR")
                 : "-"}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">Resolved</h3>
+            <h3 className="text-sm font-medium text-gray-500">해결 시각</h3>
             <p>
               {event.resolved_at
-                ? new Date(event.resolved_at).toLocaleString()
+                ? new Date(event.resolved_at).toLocaleString("ko-KR")
                 : "-"}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">
-              Customer Notified
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500">고객 통보</h3>
             <p>
               {event.customer_notified
                 ? event.customer_notified_at
-                  ? new Date(event.customer_notified_at).toLocaleString()
-                  : "Yes"
-                : "No"}
+                  ? new Date(event.customer_notified_at).toLocaleString("ko-KR")
+                  : "완료"
+                : "미통보"}
             </p>
           </div>
         </div>
 
         {event.description && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Description
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">상세 내용</h3>
             <p className="text-gray-700 whitespace-pre-wrap">
               {event.description}
             </p>
@@ -139,9 +136,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         {event.related_event && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">
-              Related Event
-            </h3>
+            <h3 className="text-sm font-medium text-gray-500 mb-1">연관 이벤트</h3>
             <Link
               href={`/events/${event.related_event}`}
               className="text-blue-600 hover:underline"
@@ -154,26 +149,26 @@ export default async function EventDetailPage({ params }: PageProps) {
 
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-white shadow-sm rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-3">Notice Summary</h2>
+          <h2 className="text-lg font-semibold mb-3">1차 공지 요약</h2>
           <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
-            {event.summary_notice || "No summary generated"}
+            {event.summary_notice || "요약이 생성되지 않았습니다"}
           </pre>
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-3">Audit Summary</h2>
+          <h2 className="text-lg font-semibold mb-3">감사 보고 요약</h2>
           <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
-            {event.audit_summary || "No summary generated"}
+            {event.audit_summary || "요약이 생성되지 않았습니다"}
           </pre>
         </div>
       </div>
 
       <div className="mt-6 flex gap-3">
         <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-          Edit Event
+          수정
         </button>
         <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-          Link to Event
+          연관 이벤트 연결
         </button>
       </div>
     </div>
