@@ -105,6 +105,8 @@ AUDITED_MODELS = [
 
 def model_to_dict(instance):
     """Convert model instance to dict for snapshot."""
+    from decimal import Decimal
+
     if instance is None:
         return None
     data = {}
@@ -114,6 +116,8 @@ def model_to_dict(instance):
             value = value.isoformat()
         elif hasattr(value, "pk"):
             value = value.pk
+        elif isinstance(value, Decimal):
+            value = str(value)
         data[field.name] = value
     return data
 

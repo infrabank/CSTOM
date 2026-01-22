@@ -88,7 +88,12 @@ async function fetchAPI<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error?.error?.message || error?.detail || `API error: ${res.status}`);
+    const message = error?.error?.message 
+      || error?.detail 
+      || error?.message
+      || (typeof error === 'string' ? error : JSON.stringify(error))
+      || `API error: ${res.status}`;
+    throw new Error(message);
   }
 
   return res.json();

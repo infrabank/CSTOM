@@ -33,6 +33,9 @@ export async function createContract(formData: FormData) {
     revalidatePath("/contracts");
     return { success: true, id: contract.id };
   } catch (error) {
+    console.error("Contract create error:", error);
+    console.error("Data sent:", JSON.stringify(data, null, 2));
+    console.error("Token present:", !!token);
     return {
       success: false,
       error: error instanceof Error ? error.message : "사업 등록에 실패했습니다",
