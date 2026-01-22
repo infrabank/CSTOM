@@ -89,8 +89,8 @@ export async function updateContractStatus(
   }
 }
 
-export async function deleteContract(id: number) {
-  const token = await getToken();
+export async function deleteContract(id: number, tokenOverride?: string) {
+  const token = tokenOverride ?? (await getToken());
   try {
     await contractsApi.delete(id, token);
     revalidatePath("/contracts");

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/modal";
+import { getAccessToken } from "@/lib/auth";
 import { deleteContract } from "./actions";
 
 interface DeleteContractButtonProps {
@@ -24,7 +25,8 @@ export default function DeleteContractButton({
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    const result = await deleteContract(contractId);
+    const token = getAccessToken();
+    const result = await deleteContract(contractId, token ?? undefined);
     
     if (result.success) {
       setIsOpen(false);
