@@ -88,3 +88,17 @@ export async function updateContractStatus(
     };
   }
 }
+
+export async function deleteContract(id: number) {
+  const token = await getToken();
+  try {
+    await contractsApi.delete(id, token);
+    revalidatePath("/contracts");
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "사업 삭제에 실패했습니다",
+    };
+  }
+}

@@ -124,6 +124,12 @@ export const contractsApi = {
       body: JSON.stringify({ status, notes }),
       token,
     }),
+
+  delete: (id: number, token?: string) =>
+    fetchAPI<void>(`/contracts/${id}/`, {
+      method: "DELETE",
+      token,
+    }),
 };
 
 export const authApi = {
