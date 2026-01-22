@@ -42,9 +42,12 @@ export default async function EventsPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Change / Incidents</h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <Link
+          href="/events/new"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
           New Event
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">

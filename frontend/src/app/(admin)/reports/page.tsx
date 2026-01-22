@@ -46,9 +46,12 @@ export default async function ReportsPage() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Reports</h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <Link
+          href="/reports/new"
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
           Generate Report
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
