@@ -51,7 +51,7 @@ async function getDecisions(taskId: number): Promise<DecisionLog[]> {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  regular: "정기",
+  routine: "정기",
   incident: "장애",
   change: "변경",
   request: "요청",
