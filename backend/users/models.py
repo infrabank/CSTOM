@@ -30,11 +30,15 @@ class User(AbstractUser):
         ("inactive", "Inactive"),
     ]
 
+    email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=150, blank=True)
     roles = models.ManyToManyField(Role, related_name="users", blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
     def __str__(self):
         return self.display_name or self.username
