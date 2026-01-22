@@ -33,10 +33,10 @@ export default function LoginPage() {
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
         <div className="flex justify-center mb-6">
           <Image
-            src="/images/2-4.png"
-            alt="CSTOM"
-            width={160}
-            height={42}
+            src="/images/ci_21.jpg"
+            alt="KRIHS 국토연구원"
+            width={180}
+            height={40}
             priority
           />
         </div>

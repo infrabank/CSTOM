@@ -7,12 +7,12 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
           <Link href="/">
             <Image
-              src="/images/ci_23.jpg"
+              src="/images/ci_21.jpg"
               alt="KRIHS 국토연구원"
               width={150}
               height={33}
@@ -53,7 +53,17 @@ export default function AdminLayout({
           </nav>
         </div>
       </header>
-      <main>{children}</main>
+      <main className="flex-1">{children}</main>
+      <footer className="border-t bg-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-center items-center">
+          <Image
+            src="/images/ci_21.jpg"
+            alt="KRIHS 국토연구원"
+            width={120}
+            height={27}
+          />
+        </div>
+      </footer>
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/">
             <Image
-              src="/images/ci_23.jpg"
+              src="/images/ci_21.jpg"
               alt="KRIHS 국토연구원"
               width={180}
               height={40}
