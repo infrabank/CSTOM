@@ -60,6 +60,46 @@ export async function createEvent(formData: FormData) {
   }
 }
 
+export async function updateEvent(id: number, formData: FormData) {
+  const data: Partial<EventCreateInput> = {
+    contract: parseInt(formData.get("contract") as string, 10),
+    record_type: formData.get("record_type") as string,
+    title: formData.get("title") as string,
+    description: (formData.get("description") as string) || undefined,
+    occurred_at: formData.get("occurred_at") as string,
+    detected_at: (formData.get("detected_at") as string) || undefined,
+    resolved_at: (formData.get("resolved_at") as string) || undefined,
+    customer_notified: formData.get("customer_notified") === "on",
+    customer_notified_at:
+      (formData.get("customer_notified_at") as string) || undefined,
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/events/${id}/`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        error: err?.error?.message || "이벤트 수정에 실패했습니다",
+      };
+    }
+
+    revalidatePath("/events");
+    revalidatePath(`/events/${id}`);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "이벤트 수정에 실패했습니다",
+    };
+  }
+}
+
 export async function linkEvent(eventId: number, relatedEventId: number) {
   try {
     const res = await fetch(`${API_URL}/events/${eventId}/link/`, {

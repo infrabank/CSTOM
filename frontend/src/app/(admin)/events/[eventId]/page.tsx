@@ -164,9 +164,12 @@ export default async function EventDetailPage({ params }: PageProps) {
       </div>
 
       <div className="mt-6 flex gap-3">
-        <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+        <Link
+          href={`/events/${event.id}/edit`}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
           수정
-        </button>
+        </Link>
         <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
           연관 이벤트 연결
         </button>

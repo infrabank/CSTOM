@@ -136,9 +136,12 @@ export default async function UserDetailPage({ params }: PageProps) {
         </div>
 
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          <Link
+            href={`/users/${user.id}/edit`}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
             수정
-          </button>
+          </Link>
           <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
             역할 관리
           </button>
