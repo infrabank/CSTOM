@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
@@ -30,7 +31,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold text-center mb-6">CSTOM 로그인</h1>
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/images/2-4.png"
+            alt="CSTOM"
+            width={160}
+            height={42}
+            priority
+          />
+        </div>
         
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded">

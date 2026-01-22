@@ -1,11 +1,20 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-xl font-bold text-gray-900">CSTOM</h1>
+          <Link href="/">
+            <Image
+              src="/images/ci_23.jpg"
+              alt="KRIHS 국토연구원"
+              width={180}
+              height={40}
+              priority
+            />
+          </Link>
           <nav className="flex gap-4">
             <Link
               href="/contracts"
@@ -145,8 +154,13 @@ export default function Home() {
       </main>
 
       <footer className="border-t bg-white mt-16">
-        <div className="max-w-7xl mx-auto px-4 py-6 text-center text-gray-500 text-sm">
-          CSTOM - IT 유지보수 관리 시스템
+        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-center items-center">
+          <Image
+            src="/images/2-4.png"
+            alt="CSTOM"
+            width={120}
+            height={32}
+          />
         </div>
       </footer>
     </div>
