@@ -1,8 +1,9 @@
 # Task 005: Equipment Check-In Recording
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001, Task 003, Task 004, Task 007 (approval authority), Phase 2 (Decision Log pattern)
+**Status**: Completed  
+**Depends On**: Task 001, Task 003, Task 004, Task 007 (approval authority), Phase 2 (Decision Log pattern)  
+**Implementation**: `backend/equipments/services.py`, `backend/equipments/views.py` (implemented alongside Task 004)
 
 ## Purpose
 
@@ -39,12 +40,12 @@ Check-in without proper recording leaves custody history incomplete and compromi
 
 ## Completion Criteria
 
-- [ ] Check-in follows Task 007 authorization rules (standard approval, no PM elevation required)
-- [ ] Check-in can only occur when Equipment status is "checked_out"
-- [ ] Check-in fails if Equipment status is "available" (nothing to return)
-- [ ] Check-in fails if handler identification is incomplete
-- [ ] Recorder identity is captured in Movement Decision Log
-- [ ] Equipment status changes to "available" upon successful recording
-- [ ] Check-in movement record is immutable after creation (Phase 2 pattern)
-- [ ] Check-in creates a complete check-out/check-in pair in custody history
-- [ ] Check-in timestamp is automatically captured
+- [x] Check-in follows Task 007 authorization rules (standard approval, no PM elevation required) - `MovementAuthorizationService` with `MovementType.CHECK_IN`
+- [x] Check-in can only occur when Equipment status is "checked_out" - validation in `EquipmentService.check_in()`
+- [x] Check-in fails if Equipment status is "available" (nothing to return) - `ValidationError` raised
+- [x] Check-in fails if handler identification is incomplete - `validate_handler_identification()`
+- [x] Recorder identity is captured in Movement Decision Log - `approver`, `approver_role` fields
+- [x] Equipment status changes to "available" upon successful recording - model `save()` hook
+- [x] Check-in movement record is immutable after creation (Phase 2 pattern) - `EquipmentTransaction.save()` prevents updates
+- [x] Check-in creates a complete check-out/check-in pair in custody history - same model for both transaction types
+- [x] Check-in timestamp is automatically captured - `transaction_date` with `auto_now_add=True`
