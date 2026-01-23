@@ -67,7 +67,7 @@ export default async function TasksPage() {
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -129,7 +129,8 @@ export default async function TasksPage() {
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        IMPACT_COLORS[task.impact_level] || "bg-gray-100 text-black"
+                        IMPACT_COLORS[task.impact_level] ||
+                        "bg-gray-100 text-black"
                       }`}
                     >
                       {IMPACT_LABELS[task.impact_level] || task.impact_level}
@@ -152,6 +153,73 @@ export default async function TasksPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {tasks.length === 0 ? (
+          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+            등록된 작업이 없습니다
+          </div>
+        ) : (
+          tasks.map((task) => (
+            <div key={task.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <Link
+                  href={`/tasks/${task.id}`}
+                  className="font-medium text-blue-600 block"
+                >
+                  {task.title}
+                </Link>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    TYPE_COLORS[task.task_type] || "bg-gray-100 text-black"
+                  }`}
+                >
+                  {TYPE_LABELS[task.task_type] || task.task_type}
+                </span>
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">사업</span>
+                  <Link
+                    href={`/contracts/${task.contract}`}
+                    className="text-black underline"
+                  >
+                    {task.contract_name}
+                  </Link>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-black">영향도</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      IMPACT_COLORS[task.impact_level] ||
+                      "bg-gray-100 text-black"
+                    }`}
+                  >
+                    {IMPACT_LABELS[task.impact_level] || task.impact_level}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">승인</span>
+                  {task.approval_required ? (
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
+                      필요
+                    </span>
+                  ) : (
+                    <span className="text-black">-</span>
+                  )}
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">등록일</span>
+                  <span className="text-black">
+                    {new Date(task.created_at).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

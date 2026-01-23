@@ -67,7 +67,7 @@ export default async function EquipmentsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -145,6 +145,74 @@ export default async function EquipmentsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {equipments.length === 0 ? (
+          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+            등록된 장비가 없습니다
+          </div>
+        ) : (
+          equipments.map((equipment) => (
+            <div key={equipment.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <Link
+                    href={`/equipments/${equipment.id}`}
+                    className="font-medium text-blue-600 block"
+                  >
+                    {equipment.name}
+                  </Link>
+                  <div className="text-sm text-black font-mono">
+                    {equipment.serial_number}
+                  </div>
+                </div>
+                <StatusBadge status={equipment.status} />
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">분류</span>
+                  <span className="text-black">
+                    {CATEGORY_LABELS[equipment.category] || equipment.category}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">사업</span>
+                  <Link
+                    href={`/contracts/${equipment.contract}`}
+                    className="text-black underline"
+                  >
+                    {equipment.contract_name}
+                  </Link>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">최근 이력</span>
+                  <div className="text-right">
+                    {equipment.last_transaction ? (
+                      <>
+                        <span
+                          className={
+                            equipment.last_transaction.type === "check_out"
+                              ? "text-red-600"
+                              : "text-green-600"
+                          }
+                        >
+                          {equipment.last_transaction.type_display}
+                        </span>
+                        <span className="text-black ml-1">
+                          by {equipment.last_transaction.handler_name}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-black">-</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

@@ -115,7 +115,7 @@ export default async function UsersPage() {
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -175,6 +175,49 @@ export default async function UsersPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {users.length === 0 ? (
+          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+            등록된 사용자가 없습니다
+          </div>
+        ) : (
+          users.map((user) => (
+            <div key={user.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <Link
+                    href={`/users/${user.id}`}
+                    className="font-medium text-blue-600 block"
+                  >
+                    {user.username}
+                  </Link>
+                  <div className="text-sm text-black mt-1">{user.email}</div>
+                </div>
+                <StatusBadge status={user.status} />
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">이름</span>
+                  <span className="text-black">{user.display_name || "-"}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="font-medium text-black">역할</span>
+                  <RoleBadges roles={user.roles} />
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">등록일</span>
+                  <span className="text-black">
+                    {new Date(user.created_at).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

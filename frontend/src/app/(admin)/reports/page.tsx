@@ -46,7 +46,7 @@ export default async function ReportsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -102,6 +102,53 @@ export default async function ReportsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {reports.length === 0 ? (
+          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+            생성된 보고서가 없습니다
+          </div>
+        ) : (
+          reports.map((report) => (
+            <div key={report.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <span
+                    className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      TYPE_COLORS[report.report_type]
+                    }`}
+                  >
+                    {TYPE_LABELS[report.report_type] || report.report_type}
+                  </span>
+                  <div className="mt-1">
+                    <Link
+                      href={`/reports/${report.id}`}
+                      className="font-medium text-blue-600 block"
+                    >
+                      {report.contract_name}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">기간</span>
+                  <span className="text-black">
+                    {report.period_start} ~ {report.period_end}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">생성일</span>
+                  <span className="text-black">
+                    {new Date(report.generated_at).toLocaleString("ko-KR")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

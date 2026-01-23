@@ -88,7 +88,7 @@ export default async function ContractsPage() {
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
@@ -144,6 +144,49 @@ export default async function ContractsPage() {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="md:hidden space-y-4">
+        {contracts.length === 0 ? (
+          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+            등록된 사업이 없습니다
+          </div>
+        ) : (
+          contracts.map((contract) => (
+            <div key={contract.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <Link
+                    href={`/contracts/${contract.id}`}
+                    className="font-medium text-blue-600 block"
+                  >
+                    {contract.name}
+                  </Link>
+                  <div className="text-sm text-black">{contract.client_org}</div>
+                </div>
+                <StatusBadge status={contract.status} />
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-black">기간</span>
+                  <span className="text-black">
+                    {contract.start_date} ~ {contract.end_date}
+                  </span>
+                </div>
+                {contract.risk_flags &&
+                  (contract.risk_flags.pre_env ||
+                    contract.risk_flags.prior_vendor_coordination ||
+                    contract.risk_flags.docs_incomplete) && (
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-black">리스크</span>
+                      <RiskIndicators flags={contract.risk_flags} />
+                    </div>
+                  )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
