@@ -1,8 +1,9 @@
 # Task 006: Operational Context Linkage
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 003, Phase 3 (Operational Events)
+**Status**: Completed  
+**Depends On**: Task 003, Phase 3 (Operational Events)  
+**Implementation**: `backend/equipments/models.py` (EquipmentTransaction.operational_context_type/id fields)
 
 ## Purpose
 
@@ -29,10 +30,10 @@ Enable linking Equipment Movements to their triggering operational context. Move
 
 ## Completion Criteria
 
-- [ ] Movement can be linked to an Incident by identifier
-- [ ] Movement can be linked to a Change by identifier
-- [ ] Movement can be linked to a Task by identifier
-- [ ] Movement can have free-text context when no formal reference applies
-- [ ] Context linkage is optional but recommended
+- [x] Movement can be linked to an Incident by identifier
+- [x] Movement can be linked to a Change by identifier
+- [x] Movement can be linked to a Task by identifier
+- [x] Movement can have free-text context when no formal reference applies
+- [x] Context linkage is optional but recommended
 - [ ] Linked context identifiers are validated against existing records
-- [ ] Context linkage cannot be modified after movement creation
+- [x] Context linkage cannot be modified after movement creation

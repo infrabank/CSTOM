@@ -185,3 +185,91 @@ class EquipmentCreateSerializer(serializers.ModelSerializer):
             "location",
             "notes",
         ]
+
+
+class CustodyHistoryTransactionSerializer(serializers.ModelSerializer):
+    """Task 009: Detailed transaction serializer for custody history."""
+
+    transaction_type_display = serializers.CharField(
+        source="get_transaction_type_display", read_only=True
+    )
+    approver_username = serializers.CharField(
+        source="approver.username", read_only=True, default=None
+    )
+    approver_email = serializers.EmailField(
+        source="approver.email", read_only=True, default=None
+    )
+    operational_context_type_display = serializers.CharField(
+        source="get_operational_context_type_display", read_only=True
+    )
+    pm_approval_status = serializers.SerializerMethodField()
+
+    class Meta:
+        model = EquipmentTransaction
+        fields = [
+            "id",
+            "transaction_type",
+            "transaction_type_display",
+            "handler_name",
+            "handler_affiliation",
+            "handler_contact",
+            "purpose",
+            "expected_return_date",
+            "transaction_date",
+            "notes",
+            "approver",
+            "approver_username",
+            "approver_email",
+            "approver_role",
+            "contract_status_at_approval",
+            "requires_pm_approval",
+            "pm_approval_obtained",
+            "pm_approval_status",
+            "operational_context_type",
+            "operational_context_type_display",
+            "operational_context_id",
+        ]
+
+    def get_pm_approval_status(self, obj):
+        if not obj.requires_pm_approval:
+            return "not_required"
+        return "obtained" if obj.pm_approval_obtained else "missing"
+
+
+class CustodyHistoryResultSerializer(serializers.Serializer):
+    """Task 009: Custody history result serializer."""
+
+    equipment_id = serializers.IntegerField(source="equipment.id")
+    equipment_name = serializers.CharField(source="equipment.name")
+    serial_number = serializers.CharField(source="equipment.serial_number")
+    current_status = serializers.CharField()
+    total_count = serializers.IntegerField()
+    transactions = CustodyHistoryTransactionSerializer(many=True)
+
+
+class EquipmentMovementSummarySerializer(serializers.Serializer):
+    """Task 010: Equipment movement summary serializer."""
+
+    equipment_id = serializers.IntegerField()
+    equipment_name = serializers.CharField()
+    serial_number = serializers.CharField()
+    category = serializers.CharField()
+    current_status = serializers.CharField()
+    total_movements = serializers.IntegerField()
+    last_movement = serializers.DictField(allow_null=True)
+
+
+class ContractEquipmentMovementsResultSerializer(serializers.Serializer):
+    """Task 010: Contract equipment movements result serializer."""
+
+    contract_id = serializers.IntegerField()
+    contract_name = serializers.CharField()
+    equipment_summaries = EquipmentMovementSummarySerializer(many=True)
+    total_equipment_count = serializers.IntegerField()
+    checked_out_count = serializers.IntegerField()
+    total_movements_in_period = serializers.IntegerField()
+    pm_approved_count = serializers.IntegerField()
+    standard_approved_count = serializers.IntegerField()
+    movements_requiring_pm = serializers.IntegerField()
+    movements_with_pm_approval = serializers.IntegerField()
+    compliance_rate = serializers.FloatField()

@@ -1,8 +1,9 @@
 # Task 002: Equipment Registration
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001
+**Status**: Completed  
+**Depends On**: Task 001  
+**Implementation**: `backend/equipments/views.py` (EquipmentViewSet.create), `backend/equipments/services.py` (EquipmentService.create)
 
 ## Purpose
 
@@ -27,8 +28,8 @@ Enable creation of Equipment records linked to a specific Contract. Registration
 
 ## Completion Criteria
 
-- [ ] Equipment can be registered with all required fields
-- [ ] Registration fails if Contract reference is invalid or missing
-- [ ] Registration fails if serial number already exists
-- [ ] Newly registered Equipment has status "available"
-- [ ] Registration timestamp is automatically captured
+- [x] Equipment can be registered with all required fields
+- [x] Registration fails if Contract reference is invalid or missing
+- [x] Registration fails if serial number already exists
+- [x] Newly registered Equipment has status "available"
+- [x] Registration timestamp is automatically captured

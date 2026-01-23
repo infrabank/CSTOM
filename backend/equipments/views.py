@@ -1,5 +1,7 @@
 """Equipment API views."""
 
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,8 +19,13 @@ from .serializers import (
     EquipmentTransactionSerializer,
     CheckOutSerializer,
     CheckInSerializer,
+    CustodyHistoryResultSerializer,
 )
-from .services import EquipmentService
+from .services import (
+    EquipmentService,
+    CustodyHistoryService,
+    CustodyHistoryFilters,
+)
 
 
 class EquipmentViewSet(ModelViewSet):
@@ -150,4 +157,31 @@ class EquipmentViewSet(ModelViewSet):
         equipment = self.get_object()
         transactions = EquipmentService.get_transactions(equipment)
         serializer = EquipmentTransactionSerializer(transactions, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="custody-history")
+    def custody_history(self, request, pk=None):
+        """Task 009: Get custody history with filters."""
+        equipment = self.get_object()
+
+        date_from = request.query_params.get("date_from")
+        date_to = request.query_params.get("date_to")
+        transaction_type = request.query_params.get("transaction_type")
+        approver_role = request.query_params.get("approver_role")
+        order = request.query_params.get("order", "asc")
+
+        filters = CustodyHistoryFilters(
+            date_from=(
+                datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
+            ),
+            date_to=(
+                datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
+            ),
+            transaction_type=transaction_type,
+            approver_role=approver_role,
+            order=order if order in ["asc", "desc"] else "asc",
+        )
+
+        result = CustodyHistoryService.get_custody_history(equipment, filters)
+        serializer = CustodyHistoryResultSerializer(result)
         return Response(serializer.data)

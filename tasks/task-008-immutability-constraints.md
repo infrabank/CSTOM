@@ -1,8 +1,9 @@
 # Task 008: Immutability and Soft-Delete Constraints
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001, Task 003
+**Status**: Completed  
+**Depends On**: Task 001, Task 003  
+**Implementation**: `backend/equipments/models.py` (EquipmentTransaction.save/delete overrides)
 
 ## Purpose
 
@@ -29,9 +30,9 @@ Enforce data integrity constraints that preserve the audit trail. Equipment and 
 ## Completion Criteria
 
 - [ ] Delete operations on Equipment records are rejected
-- [ ] Equipment can transition to "retired" status but record persists
-- [ ] Delete operations on Movement records are rejected
-- [ ] Update operations on Movement records are rejected
-- [ ] Historical Equipment records remain resolvable by identifier
-- [ ] Historical Movement records remain resolvable by identifier
+- [x] Equipment can transition to "retired" status but record persists
+- [x] Delete operations on Movement records are rejected
+- [x] Update operations on Movement records are rejected
+- [x] Historical Equipment records remain resolvable by identifier
+- [x] Historical Movement records remain resolvable by identifier
 - [ ] System provides mechanism for compensating entries when corrections are needed

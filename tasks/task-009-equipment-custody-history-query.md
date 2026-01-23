@@ -1,8 +1,9 @@
 # Task 009: Equipment Custody History Query
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 003, Task 004, Task 005, Task 007, Task 008
+**Status**: Completed  
+**Depends On**: Task 003, Task 004, Task 005, Task 007, Task 008  
+**Implementation**: `backend/equipments/services.py` (CustodyHistoryService), `backend/equipments/views.py` (custody_history action)
 
 ## Purpose
 
@@ -42,13 +43,13 @@ Query results must expose the full decision trail, including approver roles and 
 
 ## Completion Criteria
 
-- [ ] Query returns all movements for a given Equipment identifier
-- [ ] Results are sorted by timestamp (oldest to newest or configurable)
-- [ ] Query can be filtered by date range
-- [ ] Query can be filtered by transaction type
-- [ ] Query exposes approver role for authorization verification
-- [ ] Query exposes approval rationale for audit purposes
-- [ ] Current status is derivable from most recent movement
-- [ ] Query supports identification of Task 007 compliance (PM approval where required)
-- [ ] Query performs acceptably for equipment with extensive history
-- [ ] Query results are sufficient for audit and dispute resolution
+- [x] Query returns all movements for a given Equipment identifier
+- [x] Results are sorted by timestamp (oldest to newest or configurable)
+- [x] Query can be filtered by date range
+- [x] Query can be filtered by transaction type
+- [x] Query exposes approver role for authorization verification
+- [x] Query exposes approval rationale for audit purposes
+- [x] Current status is derivable from most recent movement
+- [x] Query supports identification of Task 007 compliance (PM approval where required)
+- [x] Query performs acceptably for equipment with extensive history
+- [x] Query results are sufficient for audit and dispute resolution

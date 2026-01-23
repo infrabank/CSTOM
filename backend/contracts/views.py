@@ -1,5 +1,7 @@
 """Contract API views."""
 
+from datetime import datetime
+
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
@@ -7,6 +9,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.permissions import IsPMOrAdmin, IsPMOrEngineer, ReadOnlyForCustomer
+from equipments.serializers import ContractEquipmentMovementsResultSerializer
+from equipments.services import (
+    ContractEquipmentMovementsService,
+    ContractEquipmentFilters,
+)
 
 from .models import Contract
 from .serializers import (
@@ -26,7 +33,7 @@ class ContractViewSet(ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ["list", "retrieve", "status_history"]:
+        if self.action in ["list", "retrieve", "status_history", "equipment_movements"]:
             return [AllowAny()]  # Public read access for demo
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
@@ -82,4 +89,35 @@ class ContractViewSet(ModelViewSet):
         contract = self.get_object()
         history = ContractService.get_status_history(contract)
         serializer = ContractStatusHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="equipment-movements")
+    def equipment_movements(self, request, pk=None):
+        """Task 010: Get equipment movements for contract with aggregation."""
+        contract = self.get_object()
+
+        date_from = request.query_params.get("date_from")
+        date_to = request.query_params.get("date_to")
+        equipment_status = request.query_params.get("equipment_status")
+        include_retired = (
+            request.query_params.get("include_retired", "false").lower() == "true"
+        )
+        authorization_filter = request.query_params.get("authorization_filter")
+
+        filters = ContractEquipmentFilters(
+            date_from=(
+                datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
+            ),
+            date_to=(
+                datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
+            ),
+            equipment_status=equipment_status,
+            include_retired=include_retired,
+            authorization_filter=authorization_filter,
+        )
+
+        result = ContractEquipmentMovementsService.get_contract_equipment_movements(
+            contract, filters
+        )
+        serializer = ContractEquipmentMovementsResultSerializer(result)
         return Response(serializer.data)

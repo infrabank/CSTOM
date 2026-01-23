@@ -1,8 +1,9 @@
 # Task 010: Contract Equipment Movements Query
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001, Task 003, Task 004, Task 005, Task 007, Phase 1 (Contract)
+**Status**: Completed  
+**Depends On**: Task 001, Task 003, Task 004, Task 005, Task 007, Phase 1 (Contract)  
+**Implementation**: `backend/equipments/services.py` (ContractEquipmentMovementsService), `backend/contracts/views.py` (equipment_movements action)
 
 ## Purpose
 
@@ -46,13 +47,13 @@ Query results must support verification of Task 007 compliance across all equipm
 
 ## Completion Criteria
 
-- [ ] Query returns all Equipment linked to a given Contract
-- [ ] Equipment list includes current status for each item
-- [ ] Movement counts are accurate per equipment item
-- [ ] Query can filter by date range
-- [ ] Query can filter by current equipment status
-- [ ] Retired equipment can be included or excluded by flag
-- [ ] Contract-level aggregates are calculable from results
-- [ ] Authorization compliance metrics are included (Task 007 verification)
-- [ ] Query results are sufficient for Phase 5 reporting requirements
-- [ ] Query supports audit preparation and compliance review use cases
+- [x] Query returns all Equipment linked to a given Contract
+- [x] Equipment list includes current status for each item
+- [x] Movement counts are accurate per equipment item
+- [x] Query can filter by date range
+- [x] Query can filter by current equipment status
+- [x] Retired equipment can be included or excluded by flag
+- [x] Contract-level aggregates are calculable from results
+- [x] Authorization compliance metrics are included (Task 007 verification)
+- [x] Query results are sufficient for Phase 5 reporting requirements
+- [x] Query supports audit preparation and compliance review use cases

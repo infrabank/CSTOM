@@ -1,8 +1,9 @@
 # Task 003: Equipment Movement Entity Definition
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001
+**Status**: Completed  
+**Depends On**: Task 001  
+**Implementation**: `backend/equipments/models.py` (EquipmentTransaction model)
 
 ## Purpose
 
@@ -30,9 +31,9 @@ Define the Equipment Movement entity as an immutable audit record of custody tra
 
 ## Completion Criteria
 
-- [ ] Movement entity captures both check-out and check-in transaction types
-- [ ] Movement requires reference to a valid Equipment record
-- [ ] Handler identification fields are mandatory (name, affiliation, contact)
-- [ ] Purpose field is mandatory and cannot be empty
-- [ ] Movement records cannot be modified after creation
-- [ ] Movement records cannot be deleted (immutable audit trail)
+- [x] Movement entity captures both check-out and check-in transaction types
+- [x] Movement requires reference to a valid Equipment record
+- [x] Handler identification fields are mandatory (name, affiliation, contact)
+- [x] Purpose field is mandatory and cannot be empty
+- [x] Movement records cannot be modified after creation
+- [x] Movement records cannot be deleted (immutable audit trail)

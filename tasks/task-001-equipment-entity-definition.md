@@ -1,7 +1,8 @@
 # Task 001: Equipment Entity Definition
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending
+**Status**: Completed  
+**Implementation**: `backend/equipments/models.py` (Equipment model)
 
 ## Purpose
 
@@ -28,8 +29,8 @@ Define the Equipment entity as a contract-subordinate record representing a disc
 
 ## Completion Criteria
 
-- [ ] Equipment cannot exist without a valid Contract reference
-- [ ] Equipment serial number is unique within the system
-- [ ] Equipment status is one of: available, checked_out, maintenance, retired
-- [ ] Equipment records cannot be hard-deleted; only retired status is permitted
-- [ ] Equipment entity definition is documented and reviewable
+- [x] Equipment cannot exist without a valid Contract reference
+- [x] Equipment serial number is unique within the system
+- [x] Equipment status is one of: available, checked_out, maintenance, retired
+- [x] Equipment records cannot be hard-deleted; only retired status is permitted
+- [x] Equipment entity definition is documented and reviewable
