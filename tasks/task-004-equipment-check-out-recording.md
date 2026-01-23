@@ -1,8 +1,9 @@
 # Task 004: Equipment Check-Out Recording
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001, Task 003, Task 007 (approval authority), Phase 2 (Decision Log pattern)
+**Status**: Completed  
+**Depends On**: Task 001, Task 003, Task 007 (approval authority), Phase 2 (Decision Log pattern)  
+**Implementation**: `backend/equipments/services.py`, `backend/equipments/models.py`, `backend/equipments/views.py`
 
 ## Purpose
 
@@ -41,14 +42,14 @@ A check-out without proper authorization or documented rationale violates CSTOM'
 
 ## Completion Criteria
 
-- [ ] Check-out enforces Task 007 approval rules (PM required for operational equipment)
-- [ ] Check-out fails if approver lacks required authorization level
-- [ ] Check-out can only occur when Equipment status is "available"
-- [ ] Check-out fails if Equipment status is "checked_out" (no concurrent check-outs)
-- [ ] Check-out fails if handler identification is incomplete
-- [ ] Check-out fails if purpose statement is missing or empty
-- [ ] Check-out fails if approval rationale is missing
-- [ ] Approver identity and role are recorded in Movement Decision Log
-- [ ] Approval rationale is immutable after creation (Phase 2 pattern)
-- [ ] Equipment status changes to "checked_out" upon successful recording
-- [ ] Check-out movement record is immutable after creation
+- [x] Check-out enforces Task 007 approval rules (PM required for operational equipment) - `MovementAuthorizationService.authorize()`
+- [x] Check-out fails if approver lacks required authorization level - `AuthorizationDeniedError`
+- [x] Check-out can only occur when Equipment status is "available" - `EquipmentService.check_out()` validation
+- [x] Check-out fails if Equipment status is "checked_out" (no concurrent check-outs) - status check in service
+- [x] Check-out fails if handler identification is incomplete - `validate_handler_identification()`
+- [x] Check-out fails if purpose statement is missing or empty - `validate_rationale()`
+- [x] Check-out fails if approval rationale is missing - `validate_rationale()`
+- [x] Approver identity and role are recorded in Movement Decision Log - `approver`, `approver_role` fields in EquipmentTransaction
+- [x] Approval rationale is immutable after creation (Phase 2 pattern) - `EquipmentTransaction.save()` prevents updates
+- [x] Equipment status changes to "checked_out" upon successful recording - model save() hook
+- [x] Check-out movement record is immutable after creation - `EquipmentTransaction.save()` and `delete()` raise ValidationError

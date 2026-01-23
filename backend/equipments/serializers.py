@@ -5,10 +5,12 @@ from .models import Equipment, EquipmentTransaction
 
 
 class EquipmentTransactionSerializer(serializers.ModelSerializer):
-    """Serializer for EquipmentTransaction."""
-
     transaction_type_display = serializers.CharField(
         source="get_transaction_type_display", read_only=True
+    )
+    approver_name = serializers.CharField(source="approver.__str__", read_only=True)
+    operational_context_type_display = serializers.CharField(
+        source="get_operational_context_type_display", read_only=True
     )
 
     class Meta:
@@ -25,13 +27,57 @@ class EquipmentTransactionSerializer(serializers.ModelSerializer):
             "expected_return_date",
             "transaction_date",
             "notes",
+            "approver",
+            "approver_name",
+            "approver_role",
+            "contract_status_at_approval",
+            "requires_pm_approval",
+            "pm_approval_obtained",
+            "operational_context_type",
+            "operational_context_type_display",
+            "operational_context_id",
         ]
-        read_only_fields = ["id", "transaction_date"]
+        read_only_fields = [
+            "id",
+            "transaction_date",
+            "approver",
+            "approver_role",
+            "contract_status_at_approval",
+            "requires_pm_approval",
+            "pm_approval_obtained",
+        ]
+
+
+class CheckOutSerializer(serializers.Serializer):
+    handler_name = serializers.CharField(max_length=100)
+    handler_affiliation = serializers.CharField(max_length=255)
+    handler_contact = serializers.CharField(max_length=100)
+    rationale = serializers.CharField()
+    expected_return_date = serializers.DateField(required=False, allow_null=True)
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+    operational_context_type = serializers.ChoiceField(
+        choices=["incident", "change", "task"],
+        required=False,
+        allow_null=True,
+    )
+    operational_context_id = serializers.IntegerField(required=False, allow_null=True)
+
+
+class CheckInSerializer(serializers.Serializer):
+    handler_name = serializers.CharField(max_length=100)
+    handler_affiliation = serializers.CharField(max_length=255)
+    handler_contact = serializers.CharField(max_length=100)
+    rationale = serializers.CharField()
+    notes = serializers.CharField(required=False, allow_blank=True, default="")
+    operational_context_type = serializers.ChoiceField(
+        choices=["incident", "change", "task"],
+        required=False,
+        allow_null=True,
+    )
+    operational_context_id = serializers.IntegerField(required=False, allow_null=True)
 
 
 class EquipmentTransactionCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating EquipmentTransaction."""
-
     class Meta:
         model = EquipmentTransaction
         fields = [

@@ -1,6 +1,12 @@
 """Business logic for Equipment management."""
 
-from typing import Any
+from typing import Any, Optional
+
+from common.errors import ValidationError
+from .authorization import (
+    MovementAuthorizationService,
+    MovementType,
+)
 from .models import Equipment, EquipmentTransaction
 
 
@@ -24,16 +30,29 @@ class EquipmentService:
     @staticmethod
     def check_out(
         equipment: Equipment,
+        approver,
         handler_name: str,
-        handler_affiliation: str = "",
-        handler_contact: str = "",
-        purpose: str = "",
+        handler_affiliation: str,
+        handler_contact: str,
+        rationale: str,
         expected_return_date=None,
         notes: str = "",
+        operational_context_type: Optional[str] = None,
+        operational_context_id: Optional[int] = None,
     ) -> EquipmentTransaction:
-        """Check out equipment."""
         if equipment.status != "available":
-            raise ValueError("Equipment is not available for check-out")
+            raise ValidationError("Equipment is not available for check-out")
+
+        auth_service = MovementAuthorizationService()
+
+        auth_service.validate_handler_identification(
+            handler_name, handler_affiliation, handler_contact
+        )
+        auth_service.validate_rationale(rationale)
+
+        auth_result = auth_service.authorize(
+            equipment, approver, MovementType.CHECK_OUT
+        )
 
         transaction = EquipmentTransaction.objects.create(
             equipment=equipment,
@@ -41,23 +60,42 @@ class EquipmentService:
             handler_name=handler_name,
             handler_affiliation=handler_affiliation,
             handler_contact=handler_contact,
-            purpose=purpose,
+            purpose=rationale,
             expected_return_date=expected_return_date,
             notes=notes,
+            approver=approver,
+            approver_role=auth_result.approver_role,
+            contract_status_at_approval=auth_result.contract_status,
+            requires_pm_approval=auth_result.requires_pm_approval,
+            pm_approval_obtained=approver.is_pm(),
+            operational_context_type=operational_context_type,
+            operational_context_id=operational_context_id,
         )
         return transaction
 
     @staticmethod
     def check_in(
         equipment: Equipment,
+        approver,
         handler_name: str,
-        handler_affiliation: str = "",
-        handler_contact: str = "",
+        handler_affiliation: str,
+        handler_contact: str,
+        rationale: str,
         notes: str = "",
+        operational_context_type: Optional[str] = None,
+        operational_context_id: Optional[int] = None,
     ) -> EquipmentTransaction:
-        """Check in equipment."""
         if equipment.status != "checked_out":
-            raise ValueError("Equipment is not checked out")
+            raise ValidationError("Equipment is not checked out")
+
+        auth_service = MovementAuthorizationService()
+
+        auth_service.validate_handler_identification(
+            handler_name, handler_affiliation, handler_contact
+        )
+        auth_service.validate_rationale(rationale)
+
+        auth_result = auth_service.authorize(equipment, approver, MovementType.CHECK_IN)
 
         transaction = EquipmentTransaction.objects.create(
             equipment=equipment,
@@ -65,7 +103,15 @@ class EquipmentService:
             handler_name=handler_name,
             handler_affiliation=handler_affiliation,
             handler_contact=handler_contact,
+            purpose=rationale,
             notes=notes,
+            approver=approver,
+            approver_role=auth_result.approver_role,
+            contract_status_at_approval=auth_result.contract_status,
+            requires_pm_approval=auth_result.requires_pm_approval,
+            pm_approval_obtained=approver.is_pm(),
+            operational_context_type=operational_context_type,
+            operational_context_id=operational_context_id,
         )
         return transaction
 
