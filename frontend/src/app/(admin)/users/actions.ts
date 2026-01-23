@@ -17,10 +17,37 @@ interface UserCreateInput {
   password?: string;
   status?: string;
   is_active?: boolean;
+  role_ids?: number[];
+}
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+}
+
+export async function getRoles(): Promise<Role[]> {
+  const token = await getToken();
+  try {
+    const res = await fetch(`${API_URL}/roles/`, {
+      cache: "no-store",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.results || [];
+    }
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 export async function createUser(formData: FormData) {
   const token = await getToken();
+  const roleIds = formData.getAll("role_ids").map((id) => parseInt(id as string, 10));
   const data: UserCreateInput = {
     username: formData.get("username") as string,
     email: formData.get("email") as string,
@@ -28,6 +55,7 @@ export async function createUser(formData: FormData) {
     password: (formData.get("password") as string) || undefined,
     status: (formData.get("status") as string) || "active",
     is_active: formData.get("is_active") === "on",
+    role_ids: roleIds.length > 0 ? roleIds : undefined,
   };
 
   try {

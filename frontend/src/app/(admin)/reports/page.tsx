@@ -1,27 +1,6 @@
 import Link from "next/link";
-
-interface Report {
-  id: number;
-  contract: number;
-  contract_name: string;
-  report_type: string;
-  period_start: string;
-  period_end: string;
-  generated_at: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getReports(): Promise<Report[]> {
-  try {
-    const res = await fetch(`${API_URL}/reports/`, { cache: "no-store" });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
-}
+import { cookies } from "next/headers";
+import { reportsApi, ReportListItem } from "@/lib/api";
 
 const TYPE_LABELS: Record<string, string> = {
   monthly: "월간 보고서",
@@ -36,7 +15,18 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default async function ReportsPage() {
-  const reports = await getReports();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+
+  let reports: ReportListItem[] = [];
+  let error: string | null = null;
+
+  try {
+    const response = await reportsApi.list(token);
+    reports = response.results || [];
+  } catch (e) {
+    error = e instanceof Error ? e.message : "보고서 목록을 불러오지 못했습니다";
+  }
 
   return (
     <div className="p-6">
@@ -49,6 +39,12 @@ export default async function ReportsPage() {
           보고서 생성
         </Link>
       </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">

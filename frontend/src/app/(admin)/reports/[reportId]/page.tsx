@@ -1,29 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-interface Report {
-  id: number;
-  contract: number;
-  contract_name: string;
-  report_type: string;
-  period_start: string;
-  period_end: string;
-  generated_at: string;
-  summary: string;
-  integrity_hash: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getReport(id: number): Promise<Report | null> {
-  try {
-    const res = await fetch(`${API_URL}/reports/${id}/`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+import { cookies } from "next/headers";
+import { reportsApi, Report } from "@/lib/api";
 
 const TYPE_LABELS: Record<string, string> = {
   monthly: "월간 보고서",
@@ -43,7 +21,15 @@ export default async function ReportDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const report = await getReport(id);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+
+  let report: Report | null = null;
+  try {
+    report = await reportsApi.get(id, token);
+  } catch {
+    notFound();
+  }
 
   if (!report) {
     notFound();

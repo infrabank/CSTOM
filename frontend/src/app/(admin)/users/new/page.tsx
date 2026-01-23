@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import { createUser, getRoles } from "../actions";
 
 interface Role {
   id: number;
@@ -27,50 +26,22 @@ export default function NewUserPage() {
 
   useEffect(() => {
     async function fetchRoles() {
-      try {
-        const res = await fetch(`${API_URL}/roles/`, { cache: "no-store" });
-        if (res.ok) {
-          const data = await res.json();
-          setRoles(data.results || []);
-        }
-      } catch {
-      }
+      const rolesData = await getRoles();
+      setRoles(rolesData);
     }
     fetchRoles();
   }, []);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function handleSubmit(formData: FormData) {
     setIsSubmitting(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
-    const roleIds = formData.getAll("role_ids").map((id) => parseInt(id as string, 10));
+    const result = await createUser(formData);
 
-    const data = {
-      username: formData.get("username") as string,
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      display_name: formData.get("display_name") as string,
-      role_ids: roleIds,
-    };
-
-    try {
-      const res = await fetch(`${API_URL}/users/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || err?.detail || "사용자 등록에 실패했습니다");
-      }
-
-      const user = await res.json();
-      router.push(`/users/${user.id}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "사용자 등록에 실패했습니다");
+    if (result.success) {
+      router.push(`/users/${result.id}`);
+    } else {
+      setError(result.error || "사용자 등록에 실패했습니다");
       setIsSubmitting(false);
     }
   }
@@ -92,7 +63,7 @@ export default function NewUserPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form action={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               아이디 *

@@ -132,6 +132,34 @@ export const contractsApi = {
     }),
 };
 
+export interface Report {
+  id: number;
+  contract: number;
+  contract_name: string;
+  report_type: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+  summary: string;
+  integrity_hash: string;
+}
+
+export interface ReportListItem {
+  id: number;
+  contract: number;
+  contract_name: string;
+  report_type: string;
+  period_start: string;
+  period_end: string;
+  generated_at: string;
+}
+
+export const reportsApi = {
+  list: (token?: string) => fetchAPI<{ results: ReportListItem[] }>("/reports/", { token }),
+
+  get: (id: number, token?: string) => fetchAPI<Report>(`/reports/${id}/`, { token }),
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
     const url = `${API_URL}/token/`;
@@ -172,7 +200,13 @@ export const authApi = {
     return tokens;
   },
 
-  logout: (): void => {
-    clearTokens();
+  logout: async (): Promise<void> => {
+    try {
+      await fetchAPI<void>("/auth/logout/", { method: "POST" });
+    } catch (error) {
+      console.error("Logout API call failed:", error);
+    } finally {
+      clearTokens();
+    }
   },
 };
