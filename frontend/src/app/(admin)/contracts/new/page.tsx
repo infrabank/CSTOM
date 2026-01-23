@@ -50,7 +50,7 @@ export default function NewContractPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               사업명 *
             </label>
             <input
@@ -62,7 +62,7 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               발주처 *
             </label>
             <input
@@ -75,7 +75,7 @@ export default function NewContractPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 시작일 *
               </label>
               <input
@@ -86,7 +86,7 @@ export default function NewContractPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 종료일 *
               </label>
               <input
@@ -99,7 +99,7 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               계약 금액
             </label>
             <input
@@ -111,7 +111,7 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               사업 범위
             </label>
             <div className="flex flex-wrap gap-4">
@@ -130,7 +130,7 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               리스크 플래그
             </label>
             <div className="space-y-2">

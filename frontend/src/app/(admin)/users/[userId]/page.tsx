@@ -38,7 +38,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
-  inactive: "bg-gray-100 text-gray-800",
+  inactive: "bg-gray-100 text-black",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -85,11 +85,11 @@ export default async function UserDetailPage({ params }: PageProps) {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold">{user.display_name || user.username}</h1>
-            <p className="text-gray-800">@{user.username}</p>
+            <p className="text-black">@{user.username}</p>
           </div>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              STATUS_COLORS[user.status] || "bg-gray-100 text-gray-800"
+              STATUS_COLORS[user.status] || "bg-gray-100 text-black"
             }`}
           >
             {STATUS_LABELS[user.status] || user.status}
@@ -98,34 +98,34 @@ export default async function UserDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">이메일</h3>
+            <h3 className="text-sm font-medium text-black mb-1">이메일</h3>
             <p>{user.email}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">등록일</h3>
+            <h3 className="text-sm font-medium text-black mb-1">등록일</h3>
             <p>{new Date(user.created_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">최종 수정일</h3>
+            <h3 className="text-sm font-medium text-black mb-1">최종 수정일</h3>
             <p>{new Date(user.updated_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-1">활성 여부</h3>
+            <h3 className="text-sm font-medium text-black mb-1">활성 여부</h3>
             <p>{user.is_active ? "예" : "아니오"}</p>
           </div>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">역할</h3>
+          <h3 className="text-sm font-medium text-black mb-2">역할</h3>
           {user.roles.length === 0 ? (
-            <p className="text-gray-700">역할이 할당되지 않았습니다</p>
+            <p className="text-black">역할이 할당되지 않았습니다</p>
           ) : (
             <div className="flex gap-2 flex-wrap">
               {user.roles.map((role) => (
                 <span
                   key={role.id}
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[role.name] || "bg-gray-100 text-gray-800"
+                    ROLE_COLORS[role.name] || "bg-gray-100 text-black"
                   }`}
                 >
                   {ROLE_LABELS[role.name] || role.name.toUpperCase()}

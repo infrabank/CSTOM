@@ -34,7 +34,7 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  routine: "bg-gray-100 text-gray-800",
+  routine: "bg-gray-100 text-black",
   incident: "bg-red-100 text-red-700",
   change: "bg-blue-100 text-blue-700",
   request: "bg-purple-100 text-purple-700",
@@ -47,7 +47,7 @@ const IMPACT_LABELS: Record<string, string> = {
 };
 
 const IMPACT_COLORS: Record<string, string> = {
-  none: "bg-gray-100 text-gray-800",
+  none: "bg-gray-100 text-black",
   partial: "bg-yellow-100 text-yellow-700",
   full: "bg-red-100 text-red-700",
 };
@@ -71,22 +71,22 @@ export default async function TasksPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 유형
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 영향도
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 승인
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 등록일
               </th>
             </tr>
@@ -94,7 +94,7 @@ export default async function TasksPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {tasks.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-700">
+                <td colSpan={6} className="px-6 py-4 text-center text-black">
                   등록된 작업이 없습니다
                 </td>
               </tr>
@@ -109,7 +109,7 @@ export default async function TasksPage() {
                       {task.title}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-800 text-sm">
+                  <td className="px-6 py-4 text-black text-sm">
                     <Link
                       href={`/contracts/${task.contract}`}
                       className="hover:underline"
@@ -120,7 +120,7 @@ export default async function TasksPage() {
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        TYPE_COLORS[task.task_type] || "bg-gray-100 text-gray-800"
+                        TYPE_COLORS[task.task_type] || "bg-gray-100 text-black"
                       }`}
                     >
                       {TYPE_LABELS[task.task_type] || task.task_type}
@@ -129,7 +129,7 @@ export default async function TasksPage() {
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        IMPACT_COLORS[task.impact_level] || "bg-gray-100 text-gray-800"
+                        IMPACT_COLORS[task.impact_level] || "bg-gray-100 text-black"
                       }`}
                     >
                       {IMPACT_LABELS[task.impact_level] || task.impact_level}
@@ -141,10 +141,10 @@ export default async function TasksPage() {
                         필요
                       </span>
                     ) : (
-                      <span className="text-gray-700 text-sm">-</span>
+                      <span className="text-black text-sm">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-800 text-sm">
+                  <td className="px-6 py-4 text-black text-sm">
                     {new Date(task.created_at).toLocaleDateString("ko-KR")}
                   </td>
                 </tr>

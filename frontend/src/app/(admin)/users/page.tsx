@@ -44,7 +44,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
-  inactive: "bg-gray-100 text-gray-800",
+  inactive: "bg-gray-100 text-black",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -62,7 +62,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
+  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
   const label = STATUS_LABELS[status] || status;
   return (
     <span
@@ -75,7 +75,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function RoleBadges({ roles }: { roles: Role[] }) {
   if (roles.length === 0) {
-    return <span className="text-gray-700 text-sm">역할 없음</span>;
+    return <span className="text-black text-sm">역할 없음</span>;
   }
 
   return (
@@ -84,7 +84,7 @@ function RoleBadges({ roles }: { roles: Role[] }) {
         <span
           key={role.id}
           className={`px-2 py-0.5 rounded text-xs font-medium ${
-            ROLE_COLORS[role.name] || "bg-gray-100 text-gray-800"
+            ROLE_COLORS[role.name] || "bg-gray-100 text-black"
           }`}
         >
           {ROLE_LABELS[role.name] || role.name.toUpperCase()}
@@ -113,22 +113,22 @@ export default async function UsersPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 아이디
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 이름
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 이메일
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 역할
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 등록일
               </th>
             </tr>
@@ -136,7 +136,7 @@ export default async function UsersPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-700">
+                <td colSpan={6} className="px-6 py-4 text-center text-black">
                   등록된 사용자가 없습니다
                 </td>
               </tr>
@@ -151,17 +151,17 @@ export default async function UsersPage() {
                       {user.username}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-800">
+                  <td className="px-6 py-4 text-black">
                     {user.display_name || "-"}
                   </td>
-                  <td className="px-6 py-4 text-gray-800">{user.email}</td>
+                  <td className="px-6 py-4 text-black">{user.email}</td>
                   <td className="px-6 py-4">
                     <RoleBadges roles={user.roles} />
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={user.status} />
                   </td>
-                  <td className="px-6 py-4 text-gray-800 text-sm">
+                  <td className="px-6 py-4 text-black text-sm">
                     {new Date(user.created_at).toLocaleDateString("ko-KR")}
                   </td>
                 </tr>

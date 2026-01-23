@@ -38,16 +38,16 @@ export default function AdminHeader() {
         
         <div className="hidden md:flex items-center gap-6">
           <nav className="flex gap-6">
-            <Link href="/contracts" className="text-gray-800 hover:text-gray-900 font-medium">사업 관리</Link>
-            <Link href="/tasks" className="text-gray-800 hover:text-gray-900 font-medium">작업 관리</Link>
-            <Link href="/events" className="text-gray-800 hover:text-gray-900 font-medium">변경/장애</Link>
-            <Link href="/reports" className="text-gray-800 hover:text-gray-900 font-medium">보고서</Link>
-            <Link href="/users" className="text-gray-800 hover:text-gray-900 font-medium">사용자</Link>
+            <Link href="/contracts" className="text-black hover:text-gray-900 font-medium">사업 관리</Link>
+            <Link href="/tasks" className="text-black hover:text-gray-900 font-medium">작업 관리</Link>
+            <Link href="/events" className="text-black hover:text-gray-900 font-medium">변경/장애</Link>
+            <Link href="/reports" className="text-black hover:text-gray-900 font-medium">보고서</Link>
+            <Link href="/users" className="text-black hover:text-gray-900 font-medium">사용자</Link>
           </nav>
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <button 
             onClick={handleLogout} 
-            className="text-gray-500 hover:text-red-600 transition-colors p-1" 
+            className="text-black hover:text-red-600 transition-colors p-1" 
             title="로그아웃"
             aria-label="로그아웃"
           >
@@ -60,7 +60,7 @@ export default function AdminHeader() {
         <div className="md:hidden flex items-center gap-4">
           <button  
             onClick={handleLogout} 
-            className="text-gray-500 hover:text-red-600 transition-colors p-1" 
+            className="text-black hover:text-red-600 transition-colors p-1" 
             title="로그아웃"
             aria-label="로그아웃"
           >
@@ -70,7 +70,7 @@ export default function AdminHeader() {
           </button>
           <button 
             onClick={toggleMenu} 
-            className="text-gray-800 hover:text-gray-900 p-1" 
+            className="text-black hover:text-gray-900 p-1" 
             aria-label="메뉴"
             aria-expanded={isMenuOpen}
           >
@@ -96,11 +96,11 @@ export default function AdminHeader() {
           />
           <div className="absolute top-full left-0 right-0 bg-white border-b shadow-lg z-50 md:hidden animate-in slide-in-from-top-2 duration-200">
              <nav className="flex flex-col p-4 space-y-4">
-              <Link href="/contracts" onClick={closeMenu} className="text-gray-800 hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사업 관리</Link>
-              <Link href="/tasks" onClick={closeMenu} className="text-gray-800 hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">작업 관리</Link>
-              <Link href="/events" onClick={closeMenu} className="text-gray-800 hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>
-              <Link href="/reports" onClick={closeMenu} className="text-gray-800 hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">보고서</Link>
-              <Link href="/users" onClick={closeMenu} className="text-gray-800 hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사용자</Link>
+              <Link href="/contracts" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사업 관리</Link>
+              <Link href="/tasks" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">작업 관리</Link>
+              <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>
+              <Link href="/reports" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">보고서</Link>
+              <Link href="/users" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사용자</Link>
             </nav>
           </div>
         </>

@@ -78,7 +78,7 @@ export default function NewTaskPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
@@ -96,7 +96,7 @@ export default function NewTaskPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               제목 *
             </label>
             <input
@@ -109,7 +109,7 @@ export default function NewTaskPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 작업 유형 *
               </label>
               <select
@@ -125,7 +125,7 @@ export default function NewTaskPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 영향도 *
               </label>
               <select
@@ -143,7 +143,7 @@ export default function NewTaskPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-800 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               상세 내용
             </label>
             <textarea
@@ -153,7 +153,7 @@ export default function NewTaskPage() {
             />
           </div>
 
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-black">
             * 영향도가 &quot;전체 영향&quot;이거나 작업 유형이 &quot;변경&quot;인 경우 자동으로 승인 필요로 설정됩니다.
           </p>
 

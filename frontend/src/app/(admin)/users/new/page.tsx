@@ -65,7 +65,7 @@ export default function NewUserPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               아이디 *
             </label>
             <input
@@ -77,7 +77,7 @@ export default function NewUserPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               이메일 *
             </label>
             <input
@@ -89,7 +89,7 @@ export default function NewUserPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               비밀번호 *
             </label>
             <input
@@ -99,11 +99,11 @@ export default function NewUserPage() {
               minLength={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-600">최소 8자 이상</p>
+            <p className="mt-1 text-xs text-black">최소 8자 이상</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               이름
             </label>
             <input
@@ -114,7 +114,7 @@ export default function NewUserPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-black mb-2">
               역할
             </label>
             <div className="space-y-2">
@@ -128,7 +128,7 @@ export default function NewUserPage() {
                   />
                   <span className="text-sm">{ROLE_LABELS[role.name] || role.name}</span>
                   {role.description && (
-                    <span className="text-xs text-gray-600">
+                    <span className="text-xs text-black">
                       - {role.description}
                     </span>
                   )}

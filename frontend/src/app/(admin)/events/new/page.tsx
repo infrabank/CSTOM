@@ -70,7 +70,7 @@ export default function NewEventPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
@@ -88,7 +88,7 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               유형 *
             </label>
             <select
@@ -105,7 +105,7 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               제목 *
             </label>
             <input
@@ -117,7 +117,7 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               상세 내용
             </label>
             <textarea
@@ -129,7 +129,7 @@ export default function NewEventPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 발생 시각 *
               </label>
               <input
@@ -140,7 +140,7 @@ export default function NewEventPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 인지 시각
               </label>
               <input
@@ -152,7 +152,7 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               해결 시각
             </label>
             <input
@@ -174,7 +174,7 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               고객 통보 시각
             </label>
             <input

@@ -71,7 +71,7 @@ export default function NewReportPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
@@ -89,7 +89,7 @@ export default function NewReportPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-black mb-1">
               보고서 유형 *
             </label>
             <select
@@ -107,7 +107,7 @@ export default function NewReportPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 시작일 *
               </label>
               <input
@@ -118,7 +118,7 @@ export default function NewReportPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-black mb-1">
                 종료일 *
               </label>
               <input

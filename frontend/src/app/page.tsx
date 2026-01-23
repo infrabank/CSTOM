@@ -18,20 +18,20 @@ export default function Home() {
           <nav className="flex gap-4">
             <Link
               href="/contracts"
-              className="text-gray-700 hover:text-gray-900"
+              className="text-black hover:text-gray-900"
             >
               사업 관리
             </Link>
-            <Link href="/tasks" className="text-gray-700 hover:text-gray-900">
+            <Link href="/tasks" className="text-black hover:text-gray-900">
               작업 관리
             </Link>
-            <Link href="/events" className="text-gray-700 hover:text-gray-900">
+            <Link href="/events" className="text-black hover:text-gray-900">
               변경/장애
             </Link>
-            <Link href="/reports" className="text-gray-700 hover:text-gray-900">
+            <Link href="/reports" className="text-black hover:text-gray-900">
               보고서
             </Link>
-            <Link href="/users" className="text-gray-700 hover:text-gray-900">
+            <Link href="/users" className="text-black hover:text-gray-900">
               사용자
             </Link>
           </nav>
@@ -43,7 +43,7 @@ export default function Home() {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             IT 유지보수 관리 시스템
           </h2>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">
+          <p className="text-xl text-black max-w-2xl mx-auto">
             공공 IT 유지보수를 위한 사업, 작업, 변경/장애, 보고서를 체계적으로
             관리합니다.
           </p>
@@ -72,7 +72,7 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               사업 관리
             </h3>
-            <p className="text-gray-700 text-sm">
+            <p className="text-black text-sm">
               유지보수 사업의 상태, 범위, 리스크 플래그를 관리합니다.
             </p>
           </Link>
@@ -99,7 +99,7 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
               변경/장애
             </h3>
-            <p className="text-gray-700 text-sm">
+            <p className="text-black text-sm">
               변경 및 장애 이력을 통합 관리하고 연관 관계를 추적합니다.
             </p>
           </Link>
@@ -124,7 +124,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">보고서</h3>
-            <p className="text-gray-700 text-sm">
+            <p className="text-black text-sm">
               월간, 장애, 감사 보고서를 자동으로 생성합니다.
             </p>
           </Link>
@@ -149,7 +149,7 @@ export default function Home() {
               </svg>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">사용자</h3>
-            <p className="text-gray-700 text-sm">
+            <p className="text-black text-sm">
               역할 기반 접근 제어로 사용자를 관리합니다.
             </p>
           </Link>

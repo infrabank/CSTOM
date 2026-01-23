@@ -68,7 +68,7 @@ export default function DecisionLogForm({
       <div>
         <label
           htmlFor="actor_role"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-black mb-1"
         >
           Decision Maker
         </label>
@@ -87,7 +87,7 @@ export default function DecisionLogForm({
       <div>
         <label
           htmlFor="rationale_notes"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-medium text-black mb-1"
         >
           Rationale / Notes
         </label>

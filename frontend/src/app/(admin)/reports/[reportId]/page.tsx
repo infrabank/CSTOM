@@ -49,7 +49,7 @@ export default async function ReportDetailPage({ params }: PageProps) {
             <h1 className="text-2xl font-bold">
               {TYPE_LABELS[report.report_type] || report.report_type}
             </h1>
-            <p className="text-gray-800">{report.contract_name}</p>
+            <p className="text-black">{report.contract_name}</p>
           </div>
           <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
             PDF 다운로드
@@ -58,18 +58,18 @@ export default async function ReportDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-700">기간</h3>
+            <h3 className="text-sm font-medium text-black">기간</h3>
             <p>
               {report.period_start} ~ {report.period_end}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-700">생성일</h3>
+            <h3 className="text-sm font-medium text-black">생성일</h3>
             <p>{new Date(report.generated_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-700">무결성 해시</h3>
-            <p className="font-mono text-xs text-gray-700 truncate" title={report.integrity_hash}>
+            <h3 className="text-sm font-medium text-black">무결성 해시</h3>
+            <p className="font-mono text-xs text-black truncate" title={report.integrity_hash}>
               {report.integrity_hash.substring(0, 16)}...
             </p>
           </div>

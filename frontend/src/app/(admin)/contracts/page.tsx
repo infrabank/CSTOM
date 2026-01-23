@@ -15,11 +15,11 @@ const STATUS_COLORS: Record<string, string> = {
   handover: "bg-blue-100 text-blue-800",
   stabilization: "bg-purple-100 text-purple-800",
   steady: "bg-green-100 text-green-800",
-  closed: "bg-gray-100 text-gray-800",
+  closed: "bg-gray-100 text-black",
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-gray-800";
+  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
   const label = STATUS_LABELS[status] || status;
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
@@ -90,19 +90,19 @@ export default async function ContractsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 사업명
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 발주처
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 기간
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
                 리스크
               </th>
             </tr>
@@ -110,7 +110,7 @@ export default async function ContractsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {contracts.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-700">
+                <td colSpan={5} className="px-6 py-4 text-center text-black">
                   등록된 사업이 없습니다
                 </td>
               </tr>
@@ -125,10 +125,10 @@ export default async function ContractsPage() {
                       {contract.name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-800">
+                  <td className="px-6 py-4 text-black">
                     {contract.client_org}
                   </td>
-                  <td className="px-6 py-4 text-gray-800 text-sm">
+                  <td className="px-6 py-4 text-black text-sm">
                     {contract.start_date} ~ {contract.end_date}
                   </td>
                   <td className="px-6 py-4">
