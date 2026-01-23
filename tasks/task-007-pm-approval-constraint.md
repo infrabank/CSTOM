@@ -1,8 +1,9 @@
 # Task 007: PM Approval Constraint for Operational Equipment
 
 **Phase**: 4 - Equipment Movement  
-**Status**: Pending  
-**Depends On**: Task 001, Task 003, Phase 1 (Contract status), Phase 2 (Decision Log pattern)
+**Status**: Completed  
+**Depends On**: Task 001, Task 003, Phase 1 (Contract status), Phase 2 (Decision Log pattern)  
+**Implementation**: `backend/equipments/authorization.py`
 
 ## Purpose
 
@@ -36,10 +37,10 @@ This task must be conceptually complete before movement recording (Tasks 004, 00
 
 ## Completion Criteria
 
-- [ ] "Operational contract" status is explicitly defined (stabilization, steady-state)
-- [ ] PM approval requirement for operational equipment check-out is documented
-- [ ] Standard approval path for non-operational equipment is documented
-- [ ] Approver role recording requirement is specified
-- [ ] Authorization failure conditions are enumerated
-- [ ] This task provides the authorization rules that Tasks 004 and 005 must implement
-- [ ] Decision Log pattern from Phase 2 is referenced for rationale immutability
+- [x] "Operational contract" status is explicitly defined (stabilization, steady-state) - `OPERATIONAL_CONTRACT_STATUSES`
+- [x] PM approval requirement for operational equipment check-out is documented - `requires_pm_approval()`
+- [x] Standard approval path for non-operational equipment is documented - `NON_OPERATIONAL_CONTRACT_STATUSES`
+- [x] Approver role recording requirement is specified - `AuthorizationResult.approver_role`
+- [x] Authorization failure conditions are enumerated - `AuthorizationDeniedError`, `RationaleMissingError`, `HandlerIdentificationError`
+- [x] This task provides the authorization rules that Tasks 004 and 005 must implement - `MovementAuthorizationService`
+- [x] Decision Log pattern from Phase 2 is referenced for rationale immutability - `MovementDecisionLog` (frozen dataclass)
