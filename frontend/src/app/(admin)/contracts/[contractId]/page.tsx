@@ -133,7 +133,7 @@ export default async function ContractDetailPage({ params }: PageProps) {
           <div>
             <h3 className="text-sm font-medium text-black mb-1">사업 범위</h3>
             <div className="flex gap-2">
-              {contract!.scopes.length > 0 ? (
+              {contract!.scopes && contract!.scopes.length > 0 ? (
                 contract!.scopes.map((scope) => (
                   <span
                     key={scope}
@@ -158,17 +158,17 @@ export default async function ContractDetailPage({ params }: PageProps) {
           <div className="grid grid-cols-3 gap-4">
             <RiskCard
               title="인수 전 환경"
-              isRisk={contract!.risk_flags.pre_env}
+              isRisk={contract!.risk_flags?.pre_env ?? false}
               description="이전 사업자로부터 환경을 인수받아야 함"
             />
             <RiskCard
               title="전 사업자 협업"
-              isRisk={contract!.risk_flags.prior_vendor_coordination}
+              isRisk={contract!.risk_flags?.prior_vendor_coordination ?? false}
               description="전 사업자와의 협업이 필요함"
             />
             <RiskCard
               title="문서 불완전"
-              isRisk={contract!.risk_flags.docs_incomplete}
+              isRisk={contract!.risk_flags?.docs_incomplete ?? false}
               description="인수 문서가 불완전하거나 누락됨"
             />
           </div>

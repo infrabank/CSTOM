@@ -77,8 +77,8 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-function RoleBadges({ roles }: { roles: Role[] }) {
-  if (roles.length === 0) {
+function RoleBadges({ roles }: { roles?: Role[] }) {
+  if (!roles || roles.length === 0) {
     return <span className="text-black text-sm">역할 없음</span>;
   }
 

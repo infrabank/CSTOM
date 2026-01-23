@@ -31,8 +31,10 @@ function StatusBadge({ status }: { status: string }) {
 function RiskIndicators({
   flags,
 }: {
-  flags: ContractListItem["risk_flags"];
+  flags?: ContractListItem["risk_flags"];
 }) {
+  if (!flags) return null;
+  
   const risks = [];
   if (flags.pre_env) risks.push("환경");
   if (flags.prior_vendor_coordination) risks.push("협업");

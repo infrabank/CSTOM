@@ -125,7 +125,7 @@ export default async function UserDetailPage({ params }: PageProps) {
 
         <div className="mb-6">
           <h3 className="text-sm font-medium text-black mb-2">역할</h3>
-          {user.roles.length === 0 ? (
+          {!user.roles || user.roles.length === 0 ? (
             <p className="text-black">역할이 할당되지 않았습니다</p>
           ) : (
             <div className="flex gap-2 flex-wrap">
