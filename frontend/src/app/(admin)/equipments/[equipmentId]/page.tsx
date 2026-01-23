@@ -7,19 +7,19 @@ import { equipmentsApi, Equipment, EquipmentTransaction } from "@/lib/api";
 import Modal from "@/components/modal";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  server: "Server",
-  network: "Network Device",
-  storage: "Storage",
-  security: "Security Device",
-  pc: "PC/Workstation",
-  other: "Other",
+  server: "서버",
+  network: "네트워크 장비",
+  storage: "스토리지",
+  security: "보안 장비",
+  pc: "PC/워크스테이션",
+  other: "기타",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  available: "Available",
-  checked_out: "Checked Out",
-  maintenance: "Under Maintenance",
-  retired: "Retired",
+  available: "보관중",
+  checked_out: "반출중",
+  maintenance: "점검중",
+  retired: "폐기",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -52,7 +52,7 @@ export default function EquipmentDetailPage() {
         setEquipment(equipmentData);
         setTransactions(transactionsData);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load equipment");
+        setError(e instanceof Error ? e.message : "장비 정보를 불러오지 못했습니다");
       } finally {
         setIsLoading(false);
       }
@@ -75,7 +75,7 @@ export default function EquipmentDetailPage() {
       router.refresh();
       window.location.reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Check-out failed");
+      setError(e instanceof Error ? e.message : "반출 처리에 실패했습니다");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,7 +94,7 @@ export default function EquipmentDetailPage() {
       router.refresh();
       window.location.reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Check-in failed");
+      setError(e instanceof Error ? e.message : "반입 처리에 실패했습니다");
     } finally {
       setIsSubmitting(false);
     }
@@ -103,7 +103,7 @@ export default function EquipmentDetailPage() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-black">Loading...</div>
+        <div className="text-center text-black">불러오는 중...</div>
       </div>
     );
   }
@@ -111,7 +111,7 @@ export default function EquipmentDetailPage() {
   if (error || !equipment) {
     return (
       <div className="p-6">
-        <div className="text-center text-red-600">{error || "Equipment not found"}</div>
+        <div className="text-center text-red-600">{error || "장비를 찾을 수 없습니다"}</div>
       </div>
     );
   }
@@ -120,7 +120,7 @@ export default function EquipmentDetailPage() {
     <div className="p-6">
       <div className="mb-6">
         <Link href="/equipments" className="text-blue-600 hover:underline">
-          &larr; Back to List
+          &larr; 목록으로
         </Link>
       </div>
 
@@ -143,7 +143,7 @@ export default function EquipmentDetailPage() {
                 onClick={() => setShowCheckOutModal(true)}
                 className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
               >
-                Check Out
+                반출
               </button>
             )}
             {equipment.status === "checked_out" && (
@@ -151,7 +151,7 @@ export default function EquipmentDetailPage() {
                 onClick={() => setShowCheckInModal(true)}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
               >
-                Check In
+                반입
               </button>
             )}
           </div>
@@ -159,46 +159,46 @@ export default function EquipmentDetailPage() {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Contract</h3>
+            <h3 className="text-sm font-medium text-black mb-1">사업</h3>
             <Link href={`/contracts/${equipment.contract}`} className="text-blue-600 hover:underline">
               {equipment.contract_name}
             </Link>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Category</h3>
+            <h3 className="text-sm font-medium text-black mb-1">분류</h3>
             <p>{CATEGORY_LABELS[equipment.category] || equipment.category}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Model</h3>
+            <h3 className="text-sm font-medium text-black mb-1">모델명</h3>
             <p>{equipment.model_name || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Manufacturer</h3>
+            <h3 className="text-sm font-medium text-black mb-1">제조사</h3>
             <p>{equipment.manufacturer || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Storage Location</h3>
+            <h3 className="text-sm font-medium text-black mb-1">보관 위치</h3>
             <p>{equipment.location || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Registered</h3>
+            <h3 className="text-sm font-medium text-black mb-1">등록일</h3>
             <p>{new Date(equipment.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
 
         {equipment.notes && (
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">Notes</h3>
+            <h3 className="text-sm font-medium text-black mb-1">비고</h3>
             <p className="text-black whitespace-pre-wrap">{equipment.notes}</p>
           </div>
         )}
       </div>
 
       <div className="bg-white shadow-sm rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4">Transaction History</h2>
+        <h2 className="text-lg font-semibold mb-4">반출입 이력</h2>
 
         {transactions.length === 0 ? (
-          <p className="text-black text-center py-8">No transactions recorded</p>
+          <p className="text-black text-center py-8">반출입 이력이 없습니다</p>
         ) : (
           <div className="space-y-4">
             {transactions.map((tx) => (
@@ -224,27 +224,27 @@ export default function EquipmentDetailPage() {
                 </div>
                 <div className="text-black">
                   <p>
-                    <span className="font-medium">Handler:</span> {tx.handler_name}
+                    <span className="font-medium">담당자:</span> {tx.handler_name}
                     {tx.handler_affiliation && ` (${tx.handler_affiliation})`}
                   </p>
                   {tx.handler_contact && (
                     <p>
-                      <span className="font-medium">Contact:</span> {tx.handler_contact}
+                      <span className="font-medium">연락처:</span> {tx.handler_contact}
                     </p>
                   )}
                   {tx.purpose && (
                     <p>
-                      <span className="font-medium">Purpose:</span> {tx.purpose}
+                      <span className="font-medium">목적:</span> {tx.purpose}
                     </p>
                   )}
                   {tx.expected_return_date && (
                     <p>
-                      <span className="font-medium">Expected Return:</span> {tx.expected_return_date}
+                      <span className="font-medium">반납예정일:</span> {tx.expected_return_date}
                     </p>
                   )}
                   {tx.notes && (
                     <p>
-                      <span className="font-medium">Notes:</span> {tx.notes}
+                      <span className="font-medium">비고:</span> {tx.notes}
                     </p>
                   )}
                 </div>
@@ -257,11 +257,11 @@ export default function EquipmentDetailPage() {
       <Modal
         isOpen={showCheckOutModal}
         onClose={() => setShowCheckOutModal(false)}
-        title="Equipment Check-Out"
+        title="장비 반출"
       >
         <form action={handleCheckOut} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Handler Name *</label>
+            <label className="block text-sm font-medium text-black mb-1">담당자명 *</label>
             <input
               type="text"
               name="handler_name"
@@ -270,7 +270,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Affiliation</label>
+            <label className="block text-sm font-medium text-black mb-1">소속</label>
             <input
               type="text"
               name="handler_affiliation"
@@ -278,7 +278,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Contact</label>
+            <label className="block text-sm font-medium text-black mb-1">연락처</label>
             <input
               type="text"
               name="handler_contact"
@@ -286,7 +286,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Purpose</label>
+            <label className="block text-sm font-medium text-black mb-1">목적</label>
             <textarea
               name="purpose"
               rows={2}
@@ -294,7 +294,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Expected Return Date</label>
+            <label className="block text-sm font-medium text-black mb-1">반납 예정일</label>
             <input
               type="date"
               name="expected_return_date"
@@ -302,7 +302,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Notes</label>
+            <label className="block text-sm font-medium text-black mb-1">비고</label>
             <textarea
               name="notes"
               rows={2}
@@ -315,14 +315,14 @@ export default function EquipmentDetailPage() {
               onClick={() => setShowCheckOutModal(false)}
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
             >
-              {isSubmitting ? "Processing..." : "Check Out"}
+              {isSubmitting ? "처리 중..." : "반출"}
             </button>
           </div>
         </form>
@@ -331,11 +331,11 @@ export default function EquipmentDetailPage() {
       <Modal
         isOpen={showCheckInModal}
         onClose={() => setShowCheckInModal(false)}
-        title="Equipment Check-In"
+        title="장비 반입"
       >
         <form action={handleCheckIn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Handler Name *</label>
+            <label className="block text-sm font-medium text-black mb-1">담당자명 *</label>
             <input
               type="text"
               name="handler_name"
@@ -344,7 +344,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Affiliation</label>
+            <label className="block text-sm font-medium text-black mb-1">소속</label>
             <input
               type="text"
               name="handler_affiliation"
@@ -352,7 +352,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Contact</label>
+            <label className="block text-sm font-medium text-black mb-1">연락처</label>
             <input
               type="text"
               name="handler_contact"
@@ -360,7 +360,7 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">Notes</label>
+            <label className="block text-sm font-medium text-black mb-1">비고</label>
             <textarea
               name="notes"
               rows={2}
@@ -373,14 +373,14 @@ export default function EquipmentDetailPage() {
               onClick={() => setShowCheckInModal(false)}
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
             >
-              {isSubmitting ? "Processing..." : "Check In"}
+              {isSubmitting ? "처리 중..." : "반입"}
             </button>
           </div>
         </form>

@@ -3,19 +3,19 @@ import { cookies } from "next/headers";
 import { equipmentsApi, EquipmentListItem } from "@/lib/api";
 
 const CATEGORY_LABELS: Record<string, string> = {
-  server: "Server",
-  network: "Network",
-  storage: "Storage",
-  security: "Security",
+  server: "서버",
+  network: "네트워크",
+  storage: "스토리지",
+  security: "보안장비",
   pc: "PC",
-  other: "Other",
+  other: "기타",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  available: "Available",
-  checked_out: "Checked Out",
-  maintenance: "Maintenance",
-  retired: "Retired",
+  available: "보관중",
+  checked_out: "반출중",
+  maintenance: "점검중",
+  retired: "폐기",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -46,18 +46,18 @@ export default async function EquipmentsPage() {
     const response = await equipmentsApi.list(token);
     equipments = response.results || [];
   } catch (e) {
-    error = e instanceof Error ? e.message : "Failed to load equipment list";
+    error = e instanceof Error ? e.message : "장비 목록을 불러오지 못했습니다";
   }
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Equipment Management</h1>
+        <h1 className="text-2xl font-bold">장비 반출입 관리</h1>
         <Link
           href="/equipments/new"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
-          Register Equipment
+          장비 등록
         </Link>
       </div>
 
@@ -72,22 +72,22 @@ export default async function EquipmentsPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Equipment Name
+                장비명
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Serial Number
+                시리얼번호
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Category
+                분류
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Contract
+                사업
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Status
+                상태
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
-                Last Transaction
+                최근 이력
               </th>
             </tr>
           </thead>
@@ -95,7 +95,7 @@ export default async function EquipmentsPage() {
             {equipments.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-4 text-center text-black">
-                  No registered equipment
+                  등록된 장비가 없습니다
                 </td>
               </tr>
             ) : (

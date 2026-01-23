@@ -35,7 +35,7 @@ export default function Home() {
               사용자
             </Link>
             <Link href="/equipments" className="text-black hover:text-gray-900">
-              장비 관리
+              장비 반출입
             </Link>
           </nav>
         </div>
@@ -176,7 +176,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">장비 관리</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">장비 반출입</h3>
             <p className="text-black text-sm">
               장비 반출입 이력을 추적하고 관리합니다.
             </p>

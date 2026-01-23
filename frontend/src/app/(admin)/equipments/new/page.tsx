@@ -6,12 +6,12 @@ import Link from "next/link";
 import { equipmentsApi, contractsApi, ContractListItem } from "@/lib/api";
 
 const CATEGORY_OPTIONS = [
-  { value: "server", label: "Server" },
-  { value: "network", label: "Network Device" },
-  { value: "storage", label: "Storage" },
-  { value: "security", label: "Security Device" },
-  { value: "pc", label: "PC/Workstation" },
-  { value: "other", label: "Other" },
+  { value: "server", label: "서버" },
+  { value: "network", label: "네트워크 장비" },
+  { value: "storage", label: "스토리지" },
+  { value: "security", label: "보안 장비" },
+  { value: "pc", label: "PC/워크스테이션" },
+  { value: "other", label: "기타" },
 ];
 
 export default function NewEquipmentPage() {
@@ -26,7 +26,7 @@ export default function NewEquipmentPage() {
         const response = await contractsApi.list();
         setContracts(response.results || []);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load contracts");
+        setError(e instanceof Error ? e.message : "사업 목록을 불러오지 못했습니다");
       }
     };
     loadContracts();
@@ -49,14 +49,14 @@ export default function NewEquipmentPage() {
       });
       router.push("/equipments");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to register equipment");
+      setError(e instanceof Error ? e.message : "장비 등록에 실패했습니다");
       setIsSubmitting(false);
     }
   }
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Register Equipment</h1>
+      <h1 className="text-2xl font-bold mb-6">장비 등록</h1>
 
       {error && (
         <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -68,14 +68,14 @@ export default function NewEquipmentPage() {
         <form action={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              Contract *
+              사업 *
             </label>
             <select
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">Select contract</option>
+              <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
                   {contract.name}
@@ -86,7 +86,7 @@ export default function NewEquipmentPage() {
 
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              Equipment Name *
+              장비명 *
             </label>
             <input
               type="text"
@@ -99,7 +99,7 @@ export default function NewEquipmentPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Category *
+                분류 *
               </label>
               <select
                 name="category"
@@ -115,7 +115,7 @@ export default function NewEquipmentPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Serial Number *
+                시리얼번호 *
               </label>
               <input
                 type="text"
@@ -129,7 +129,7 @@ export default function NewEquipmentPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Model
+                모델명
               </label>
               <input
                 type="text"
@@ -139,7 +139,7 @@ export default function NewEquipmentPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-black mb-1">
-                Manufacturer
+                제조사
               </label>
               <input
                 type="text"
@@ -151,7 +151,7 @@ export default function NewEquipmentPage() {
 
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              Storage Location
+              보관 위치
             </label>
             <input
               type="text"
@@ -162,7 +162,7 @@ export default function NewEquipmentPage() {
 
           <div>
             <label className="block text-sm font-medium text-black mb-1">
-              Notes
+              비고
             </label>
             <textarea
               name="notes"
@@ -176,14 +176,14 @@ export default function NewEquipmentPage() {
               href="/equipments"
               className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
             >
-              Cancel
+              취소
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting ? "등록 중..." : "등록"}
             </button>
           </div>
         </form>

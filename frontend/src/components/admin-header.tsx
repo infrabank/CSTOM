@@ -43,7 +43,7 @@ export default function AdminHeader() {
             <Link href="/events" className="text-black hover:text-gray-900 font-medium">변경/장애</Link>
             <Link href="/reports" className="text-black hover:text-gray-900 font-medium">보고서</Link>
             <Link href="/users" className="text-black hover:text-gray-900 font-medium">사용자</Link>
-            <Link href="/equipments" className="text-black hover:text-gray-900 font-medium">장비 관리</Link>
+            <Link href="/equipments" className="text-black hover:text-gray-900 font-medium">장비 반출입</Link>
           </nav>
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <button 
@@ -102,7 +102,7 @@ export default function AdminHeader() {
               <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>
               <Link href="/reports" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">보고서</Link>
               <Link href="/users" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사용자</Link>
-              <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">장비 관리</Link>
+              <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">장비 반출입</Link>
             </nav>
           </div>
         </>
