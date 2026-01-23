@@ -160,6 +160,126 @@ export const reportsApi = {
   get: (id: number, token?: string) => fetchAPI<Report>(`/reports/${id}/`, { token }),
 };
 
+export interface EquipmentTransaction {
+  id: number;
+  equipment: number;
+  transaction_type: string;
+  transaction_type_display: string;
+  handler_name: string;
+  handler_affiliation: string;
+  handler_contact: string;
+  purpose: string;
+  expected_return_date: string | null;
+  transaction_date: string;
+  notes: string;
+}
+
+export interface Equipment {
+  id: number;
+  contract: number;
+  contract_name: string;
+  name: string;
+  category: string;
+  category_display: string;
+  serial_number: string;
+  model_name: string;
+  manufacturer: string;
+  location: string;
+  status: string;
+  status_display: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+  recent_transactions: EquipmentTransaction[];
+}
+
+export interface EquipmentListItem {
+  id: number;
+  contract: number;
+  contract_name: string;
+  name: string;
+  category: string;
+  category_display: string;
+  serial_number: string;
+  model_name: string;
+  status: string;
+  status_display: string;
+  location: string;
+  last_transaction: {
+    type: string;
+    type_display: string;
+    handler_name: string;
+    date: string;
+  } | null;
+  created_at: string;
+}
+
+export interface EquipmentCreateInput {
+  contract: number;
+  name: string;
+  category: string;
+  serial_number: string;
+  model_name?: string;
+  manufacturer?: string;
+  location?: string;
+  notes?: string;
+}
+
+export interface EquipmentTransactionInput {
+  transaction_type?: string;
+  handler_name: string;
+  handler_affiliation?: string;
+  handler_contact?: string;
+  purpose?: string;
+  expected_return_date?: string;
+  notes?: string;
+}
+
+export const equipmentsApi = {
+  list: (token?: string) =>
+    fetchAPI<{ results: EquipmentListItem[] }>("/equipments/", { token }),
+
+  get: (id: number, token?: string) =>
+    fetchAPI<Equipment>(`/equipments/${id}/`, { token }),
+
+  create: (data: EquipmentCreateInput, token?: string) =>
+    fetchAPI<Equipment>("/equipments/", {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  update: (id: number, data: Partial<EquipmentCreateInput>, token?: string) =>
+    fetchAPI<Equipment>(`/equipments/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  delete: (id: number, token?: string) =>
+    fetchAPI<void>(`/equipments/${id}/`, {
+      method: "DELETE",
+      token,
+    }),
+
+  checkOut: (id: number, data: EquipmentTransactionInput, token?: string) =>
+    fetchAPI<EquipmentTransaction>(`/equipments/${id}/check-out/`, {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  checkIn: (id: number, data: EquipmentTransactionInput, token?: string) =>
+    fetchAPI<EquipmentTransaction>(`/equipments/${id}/check-in/`, {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  transactions: (id: number, token?: string) =>
+    fetchAPI<EquipmentTransaction[]>(`/equipments/${id}/transactions/`, { token }),
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
     const url = `${API_URL}/token/`;

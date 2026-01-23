@@ -34,6 +34,9 @@ export default function Home() {
             <Link href="/users" className="text-black hover:text-gray-900">
               사용자
             </Link>
+            <Link href="/equipments" className="text-black hover:text-gray-900">
+              장비 관리
+            </Link>
           </nav>
         </div>
       </header>
@@ -49,7 +52,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
           <Link
             href="/contracts"
             className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
@@ -151,6 +154,31 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-gray-900 mb-2">사용자</h3>
             <p className="text-black text-sm">
               역할 기반 접근 제어로 사용자를 관리합니다.
+            </p>
+          </Link>
+
+          <Link
+            href="/equipments"
+            className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div className="text-teal-600 mb-3">
+              <svg
+                className="w-8 h-8"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">장비 관리</h3>
+            <p className="text-black text-sm">
+              장비 반출입 이력을 추적하고 관리합니다.
             </p>
           </Link>
         </div>
