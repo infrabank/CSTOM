@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -21,9 +22,14 @@ interface User {
   updated_at: string;
 }
 
-async function getUser(id: number): Promise<User | null> {
+async function getUser(id: number, token?: string): Promise<User | null> {
   try {
-    const res = await fetch(`${API_URL}/users/${id}/`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/users/${id}/`, {
+      cache: "no-store",
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -67,7 +73,9 @@ export default async function UserDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const user = await getUser(id);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+  const user = await getUser(id, token);
 
   if (!user) {
     notFound();

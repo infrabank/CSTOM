@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
 import { updateUser } from "../../actions";
+import { getAccessToken } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -37,8 +38,12 @@ export default function EditUserPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchUser() {
       try {
+        const token = getAccessToken();
         const res = await fetch(`${API_URL}/users/${userId}/`, {
           cache: "no-store",
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
         });
         if (!res.ok) throw new Error("사용자 정보를 불러오지 못했습니다");
         const data = await res.json();
