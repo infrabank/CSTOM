@@ -1,47 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
+import AdminHeader from "@/components/admin-header";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/">
-            <Image
-              src="/images/ci_21.jpg"
-              alt="KRIHS 국토연구원"
-              width={180}
-              height={40}
-              priority
-            />
-          </Link>
-          <nav className="flex gap-4">
-            <Link
-              href="/contracts"
-              className="text-black hover:text-gray-900"
-            >
-              사업 관리
-            </Link>
-            <Link href="/tasks" className="text-black hover:text-gray-900">
-              작업 관리
-            </Link>
-            <Link href="/events" className="text-black hover:text-gray-900">
-              변경/장애
-            </Link>
-            <Link href="/reports" className="text-black hover:text-gray-900">
-              보고서
-            </Link>
-            <Link href="/users" className="text-black hover:text-gray-900">
-              사용자
-            </Link>
-            <Link href="/equipments" className="text-black hover:text-gray-900">
-              장비 반출입
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <AdminHeader />
 
-      <main className="max-w-7xl mx-auto px-4 py-16">
+      <main className="flex-1 max-w-7xl mx-auto px-4 py-16 w-full">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
             IT 유지보수 관리 시스템
@@ -184,13 +150,13 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t bg-white mt-16">
+      <footer className="border-t bg-white mt-auto">
         <div className="max-w-7xl mx-auto px-4 py-6 flex justify-center items-center">
           <Image
             src="/images/2-4.png"
             alt="CSTOM"
             width={120}
-            height={32}
+            height={27}
           />
         </div>
       </footer>
