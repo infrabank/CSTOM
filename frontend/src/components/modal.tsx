@@ -53,7 +53,7 @@ export default function Modal({
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500 transition-colors"
+            className="text-gray-700 hover:text-gray-900 transition-colors"
             aria-label="Close"
           >
             <svg
@@ -72,7 +72,7 @@ export default function Modal({
           </button>
         </div>
         
-        <div className="p-6 text-gray-600">
+        <div className="p-6 text-gray-800">
           {children}
         </div>
 

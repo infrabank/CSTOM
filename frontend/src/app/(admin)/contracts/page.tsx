@@ -90,19 +90,19 @@ export default async function ContractsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 사업명
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 발주처
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 기간
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 리스크
               </th>
             </tr>
@@ -110,7 +110,7 @@ export default async function ContractsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {contracts.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-4 text-center text-gray-700">
                   등록된 사업이 없습니다
                 </td>
               </tr>
@@ -125,10 +125,10 @@ export default async function ContractsPage() {
                       {contract.name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
+                  <td className="px-6 py-4 text-gray-800">
                     {contract.client_org}
                   </td>
-                  <td className="px-6 py-4 text-gray-600 text-sm">
+                  <td className="px-6 py-4 text-gray-800 text-sm">
                     {contract.start_date} ~ {contract.end_date}
                   </td>
                   <td className="px-6 py-4">

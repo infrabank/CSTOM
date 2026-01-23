@@ -93,7 +93,7 @@ export default function EditEventPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">불러오는 중...</div>
+        <div className="text-center text-gray-700">불러오는 중...</div>
       </div>
     );
   }
@@ -133,7 +133,7 @@ export default function EditEventPage({ params }: PageProps) {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               사업 *
             </label>
             <select
@@ -152,7 +152,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               유형 *
             </label>
             <select
@@ -170,7 +170,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               제목 *
             </label>
             <input
@@ -183,7 +183,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               상세 내용
             </label>
             <textarea
@@ -196,7 +196,7 @@ export default function EditEventPage({ params }: PageProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-800 mb-1">
                 발생 시각 *
               </label>
               <input
@@ -208,7 +208,7 @@ export default function EditEventPage({ params }: PageProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-800 mb-1">
                 인지 시각
               </label>
               <input
@@ -221,7 +221,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               해결 시각
             </label>
             <input
@@ -245,7 +245,7 @@ export default function EditEventPage({ params }: PageProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-800 mb-1">
               고객 통보 시각
             </label>
             <input

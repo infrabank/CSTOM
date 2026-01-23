@@ -58,7 +58,7 @@ function RiskCard({
         </span>
         <h4 className="font-medium">{title}</h4>
       </div>
-      <p className="text-sm text-gray-600">{description}</p>
+      <p className="text-sm text-gray-800">{description}</p>
     </div>
   );
 }
@@ -114,24 +114,24 @@ export default async function ContractDetailPage({ params }: PageProps) {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h1 className="text-2xl font-bold">{contract!.name}</h1>
-            <p className="text-gray-600">{contract!.client_org}</p>
+            <p className="text-gray-800">{contract!.client_org}</p>
           </div>
           <StatusBadge status={contract!.status} />
         </div>
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">사업 기간</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">사업 기간</h3>
             <p>
               {contract!.start_date} ~ {contract!.end_date}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">계약 금액</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">계약 금액</h3>
             <p>{contract!.contract_amount || "미지정"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">사업 범위</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">사업 범위</h3>
             <div className="flex gap-2">
               {contract!.scopes.length > 0 ? (
                 contract!.scopes.map((scope) => (
@@ -143,12 +143,12 @@ export default async function ContractDetailPage({ params }: PageProps) {
                   </span>
                 ))
               ) : (
-                <span className="text-gray-400">없음</span>
+                <span className="text-gray-700">없음</span>
               )}
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">등록일</h3>
+            <h3 className="text-sm font-medium text-gray-700 mb-1">등록일</h3>
             <p>{new Date(contract!.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>

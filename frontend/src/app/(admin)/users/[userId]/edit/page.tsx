@@ -69,7 +69,7 @@ export default function EditUserPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-gray-500">불러오는 중...</div>
+        <div className="text-center text-gray-600">불러오는 중...</div>
       </div>
     );
   }
@@ -156,7 +156,7 @@ export default function EditUserPage({ params }: PageProps) {
               placeholder="변경시에만 입력"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-600">
               비밀번호를 변경하려면 입력하세요. 비워두면 기존 비밀번호가 유지됩니다.
             </p>
           </div>

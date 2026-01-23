@@ -128,7 +128,7 @@ export default function NewUserPage() {
               minLength={8}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-gray-500">최소 8자 이상</p>
+            <p className="mt-1 text-xs text-gray-600">최소 8자 이상</p>
           </div>
 
           <div>
@@ -157,7 +157,7 @@ export default function NewUserPage() {
                   />
                   <span className="text-sm">{ROLE_LABELS[role.name] || role.name}</span>
                   {role.description && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-600">
                       - {role.description}
                     </span>
                   )}

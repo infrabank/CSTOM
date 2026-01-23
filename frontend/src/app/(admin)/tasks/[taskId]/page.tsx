@@ -64,7 +64,7 @@ const IMPACT_LABELS: Record<string, string> = {
 };
 
 const IMPACT_COLORS: Record<string, string> = {
-  none: "bg-gray-100 text-gray-700",
+  none: "bg-gray-100 text-gray-800",
   partial: "bg-yellow-100 text-yellow-700",
   full: "bg-red-100 text-red-700",
 };
@@ -108,7 +108,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
         <div className="flex justify-between items-start mb-4">
           <div>
             <h1 className="text-2xl font-bold">{task.title}</h1>
-            <p className="text-gray-600">{task.contract_name}</p>
+            <p className="text-gray-800">{task.contract_name}</p>
           </div>
           <div className="flex gap-2">
             <span
@@ -128,19 +128,19 @@ export default async function TaskDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">작업 유형</h3>
+            <h3 className="text-sm font-medium text-gray-700">작업 유형</h3>
             <p>{TYPE_LABELS[task.task_type] || task.task_type}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">등록일</h3>
+            <h3 className="text-sm font-medium text-gray-700">등록일</h3>
             <p>{new Date(task.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
 
         {task.description && (
           <div>
-            <h3 className="text-sm font-medium text-gray-500 mb-1">상세 내용</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">
+            <h3 className="text-sm font-medium text-gray-700 mb-1">상세 내용</h3>
+            <p className="text-gray-800 whitespace-pre-wrap">
               {task.description}
             </p>
           </div>
@@ -156,7 +156,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
         </div>
 
         {decisions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">
+          <p className="text-gray-700 text-center py-8">
             기록된 판단이 없습니다
           </p>
         ) : (
@@ -170,13 +170,13 @@ export default async function TaskDetailPage({ params }: PageProps) {
                   <span className="font-medium">
                     {ACTOR_LABELS[decision.actor_role] || decision.actor_role}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-gray-700">
                     {new Date(decision.created_at).toLocaleString("ko-KR")}
                   </span>
                 </div>
 
                 {decision.rationale_notes && (
-                  <p className="text-gray-700 mb-3">{decision.rationale_notes}</p>
+                  <p className="text-gray-800 mb-3">{decision.rationale_notes}</p>
                 )}
 
                 <div className="flex gap-4 text-sm">
@@ -184,7 +184,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                     className={
                       decision.alternatives_considered
                         ? "text-green-600"
-                        : "text-gray-400"
+                        : "text-gray-700"
                     }
                   >
                     {decision.alternatives_considered ? "O" : "X"} 대안 검토
@@ -193,7 +193,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                     className={
                       decision.risk_acknowledged
                         ? "text-green-600"
-                        : "text-gray-400"
+                        : "text-gray-700"
                     }
                   >
                     {decision.risk_acknowledged ? "O" : "X"} 리스크 인지

@@ -75,7 +75,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function RoleBadges({ roles }: { roles: Role[] }) {
   if (roles.length === 0) {
-    return <span className="text-gray-400 text-sm">역할 없음</span>;
+    return <span className="text-gray-700 text-sm">역할 없음</span>;
   }
 
   return (
@@ -113,22 +113,22 @@ export default async function UsersPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 아이디
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 이름
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 이메일
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 역할
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 등록일
               </th>
             </tr>
@@ -136,7 +136,7 @@ export default async function UsersPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {users.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-700">
                   등록된 사용자가 없습니다
                 </td>
               </tr>
@@ -151,17 +151,17 @@ export default async function UsersPage() {
                       {user.username}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
+                  <td className="px-6 py-4 text-gray-800">
                     {user.display_name || "-"}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">{user.email}</td>
+                  <td className="px-6 py-4 text-gray-800">{user.email}</td>
                   <td className="px-6 py-4">
                     <RoleBadges roles={user.roles} />
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={user.status} />
                   </td>
-                  <td className="px-6 py-4 text-gray-600 text-sm">
+                  <td className="px-6 py-4 text-gray-800 text-sm">
                     {new Date(user.created_at).toLocaleDateString("ko-KR")}
                   </td>
                 </tr>

@@ -77,7 +77,7 @@ export default async function EventDetailPage({ params }: PageProps) {
               </span>
               <h1 className="text-2xl font-bold">{event.title}</h1>
             </div>
-            <p className="text-gray-600">{event.contract_name}</p>
+            <p className="text-gray-800">{event.contract_name}</p>
           </div>
           <div>
             {event.resolved_at ? (
@@ -94,11 +94,11 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-gray-500">발생 시각</h3>
+            <h3 className="text-sm font-medium text-gray-800">발생 시각</h3>
             <p>{new Date(event.occurred_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">인지 시각</h3>
+            <h3 className="text-sm font-medium text-gray-800">인지 시각</h3>
             <p>
               {event.detected_at
                 ? new Date(event.detected_at).toLocaleString("ko-KR")
@@ -106,7 +106,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">해결 시각</h3>
+            <h3 className="text-sm font-medium text-gray-800">해결 시각</h3>
             <p>
               {event.resolved_at
                 ? new Date(event.resolved_at).toLocaleString("ko-KR")
@@ -114,7 +114,7 @@ export default async function EventDetailPage({ params }: PageProps) {
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-gray-500">고객 통보</h3>
+            <h3 className="text-sm font-medium text-gray-800">고객 통보</h3>
             <p>
               {event.customer_notified
                 ? event.customer_notified_at
@@ -127,8 +127,8 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         {event.description && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">상세 내용</h3>
-            <p className="text-gray-700 whitespace-pre-wrap">
+            <h3 className="text-sm font-medium text-gray-800 mb-1">상세 내용</h3>
+            <p className="text-gray-800 whitespace-pre-wrap">
               {event.description}
             </p>
           </div>
@@ -136,7 +136,7 @@ export default async function EventDetailPage({ params }: PageProps) {
 
         {event.related_event && (
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-            <h3 className="text-sm font-medium text-gray-500 mb-1">연관 이벤트</h3>
+            <h3 className="text-sm font-medium text-gray-800 mb-1">연관 이벤트</h3>
             <Link
               href={`/events/${event.related_event}`}
               className="text-blue-600 hover:underline"
@@ -150,14 +150,14 @@ export default async function EventDetailPage({ params }: PageProps) {
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-white shadow-sm rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-3">1차 공지 요약</h2>
-          <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+          <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans">
             {event.summary_notice || "요약이 생성되지 않았습니다"}
           </pre>
         </div>
 
         <div className="bg-white shadow-sm rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-3">감사 보고 요약</h2>
-          <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+          <pre className="text-sm text-gray-800 whitespace-pre-wrap font-sans">
             {event.audit_summary || "요약이 생성되지 않았습니다"}
           </pre>
         </div>

@@ -55,22 +55,22 @@ export default async function EventsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 유형
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 발생 시각
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 통보
               </th>
             </tr>
@@ -78,7 +78,7 @@ export default async function EventsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {events.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-700">
                   등록된 이벤트가 없습니다
                 </td>
               </tr>
@@ -102,13 +102,13 @@ export default async function EventsPage() {
                       {event.title}
                     </Link>
                     {event.has_related && (
-                      <span className="ml-2 text-xs text-gray-400">연결됨</span>
+                      <span className="ml-2 text-xs text-gray-800">연결됨</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
+                  <td className="px-6 py-4 text-gray-800">
                     {event.contract_name}
                   </td>
-                  <td className="px-6 py-4 text-gray-600 text-sm">
+                  <td className="px-6 py-4 text-gray-800 text-sm">
                     {new Date(event.occurred_at).toLocaleString("ko-KR")}
                   </td>
                   <td className="px-6 py-4">
@@ -122,7 +122,7 @@ export default async function EventsPage() {
                     {event.customer_notified ? (
                       <span className="text-green-600">완료</span>
                     ) : (
-                      <span className="text-gray-400">미통보</span>
+                      <span className="text-gray-800">미통보</span>
                     )}
                   </td>
                 </tr>

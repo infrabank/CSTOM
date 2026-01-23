@@ -22,31 +22,31 @@ export default function AdminLayout({
           <nav className="flex gap-6">
             <Link
               href="/contracts"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-800 hover:text-gray-900 font-medium"
             >
               사업 관리
             </Link>
             <Link
               href="/tasks"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-800 hover:text-gray-900 font-medium"
             >
               작업 관리
             </Link>
             <Link
               href="/events"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-800 hover:text-gray-900 font-medium"
             >
               변경/장애
             </Link>
             <Link
               href="/reports"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-800 hover:text-gray-900 font-medium"
             >
               보고서
             </Link>
             <Link
               href="/users"
-              className="text-gray-600 hover:text-gray-900 font-medium"
+              className="text-gray-800 hover:text-gray-900 font-medium"
             >
               사용자
             </Link>

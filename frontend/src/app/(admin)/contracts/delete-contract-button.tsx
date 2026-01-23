@@ -63,7 +63,7 @@ export default function DeleteContractButton({
             <button
               onClick={() => setIsOpen(false)}
               disabled={isDeleting}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
+              className="px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50"
             >
               취소
             </button>
@@ -88,8 +88,8 @@ export default function DeleteContractButton({
         }
       >
         <div className="space-y-3">
-          <p className="text-gray-600">
-            정말로 <span className="font-semibold text-gray-900">{contractName}</span> 사업을 삭제하시겠습니까?
+          <p className="text-gray-800">
+            정말로 <span className="font-semibold text-gray-800">{contractName}</span> 사업을 삭제하시겠습니까?
           </p>
           <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-100">
             이 작업은 되돌릴 수 없으며, 관련된 모든 데이터가 영구적으로 삭제됩니다.

@@ -54,16 +54,16 @@ export default async function ReportsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 유형
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 기간
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">
                 생성일
               </th>
             </tr>
@@ -71,7 +71,7 @@ export default async function ReportsPage() {
           <tbody className="bg-white divide-y divide-gray-200">
             {reports.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-700">
                   생성된 보고서가 없습니다
                 </td>
               </tr>
@@ -95,10 +95,10 @@ export default async function ReportsPage() {
                       {report.contract_name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-gray-600 text-sm">
+                  <td className="px-6 py-4 text-gray-800 text-sm">
                     {report.period_start} ~ {report.period_end}
                   </td>
-                  <td className="px-6 py-4 text-gray-600 text-sm">
+                  <td className="px-6 py-4 text-gray-800 text-sm">
                     {new Date(report.generated_at).toLocaleString("ko-KR")}
                   </td>
                 </tr>
