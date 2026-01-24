@@ -12,31 +12,31 @@ def generate_summaries(event) -> None:
 
 def generate_notice_summary(event) -> str:
     """Generate 1st notice summary for customer communication."""
-    type_label = "Change" if event.record_type == "change" else "Incident"
+    type_label = "변경" if event.record_type == "change" else "장애"
     occurred = format_datetime(event.occurred_at)
 
     lines = [
         f"[{type_label}] {event.title}",
-        f"Occurred: {occurred}",
+        f"발생 시각: {occurred}",
     ]
 
     if event.detected_at:
-        lines.append(f"Detected: {format_datetime(event.detected_at)}")
+        lines.append(f"인지 시각: {format_datetime(event.detected_at)}")
 
     if event.resolved_at:
-        lines.append(f"Resolved: {format_datetime(event.resolved_at)}")
+        lines.append(f"해결 시각: {format_datetime(event.resolved_at)}")
     else:
-        lines.append("Status: In Progress")
+        lines.append("상태: 진행 중")
 
     if event.description:
-        lines.append(f"Details: {event.description[:200]}...")
+        lines.append(f"상세 내용: {event.description[:200]}...")
 
     return "\n".join(lines)
 
 
 def generate_audit_summary(event) -> str:
     """Generate audit/report summary with key metrics."""
-    type_label = event.get_record_type_display()
+    type_label = "변경" if event.record_type == "change" else "장애"
 
     # Calculate response time if applicable
     response_time = None
@@ -51,29 +51,27 @@ def generate_audit_summary(event) -> str:
         resolution_time = format_duration(delta.total_seconds())
 
     lines = [
-        f"Type: {type_label}",
-        f"Title: {event.title}",
-        f"Contract: {event.contract.name}",
-        f"Occurred: {format_datetime(event.occurred_at)}",
+        f"유형: {type_label}",
+        f"제목: {event.title}",
+        f"계약: {event.contract.name}",
+        f"발생 시각: {format_datetime(event.occurred_at)}",
     ]
 
     if response_time:
-        lines.append(f"Detection Time: {response_time}")
+        lines.append(f"인지 소요 시간: {response_time}")
 
     if resolution_time:
-        lines.append(f"Resolution Time: {resolution_time}")
+        lines.append(f"해결 소요 시간: {resolution_time}")
     else:
-        lines.append("Resolution: Pending")
+        lines.append("해결: 진행 중")
 
-    lines.append(f"Customer Notified: {'Yes' if event.customer_notified else 'No'}")
+    lines.append(f"고객 통보: {'완료' if event.customer_notified else '미완료'}")
 
     if event.customer_notified and event.customer_notified_at:
-        lines.append(
-            f"Notification Time: {format_datetime(event.customer_notified_at)}"
-        )
+        lines.append(f"통보 시각: {format_datetime(event.customer_notified_at)}")
 
     if event.related_event:
-        lines.append(f"Related Event: {event.related_event.title}")
+        lines.append(f"연관 이벤트: {event.related_event.title}")
 
     return "\n".join(lines)
 
@@ -86,14 +84,14 @@ def format_datetime(dt: datetime) -> str:
 def format_duration(seconds: float) -> str:
     """Format duration in human-readable form."""
     if seconds < 60:
-        return f"{int(seconds)}s"
+        return f"{int(seconds)}초"
     elif seconds < 3600:
-        return f"{int(seconds / 60)}m"
+        return f"{int(seconds / 60)}분"
     elif seconds < 86400:
         hours = int(seconds / 3600)
         minutes = int((seconds % 3600) / 60)
-        return f"{hours}h {minutes}m"
+        return f"{hours}시간 {minutes}분"
     else:
         days = int(seconds / 86400)
         hours = int((seconds % 86400) / 3600)
-        return f"{days}d {hours}h"
+        return f"{days}일 {hours}시간"
