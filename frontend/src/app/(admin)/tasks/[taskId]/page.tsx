@@ -1,54 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-
-interface Task {
-  id: number;
-  contract: number;
-  contract_name: string;
-  task_type: string;
-  impact_level: string;
-  approval_required: boolean;
-  title: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface DecisionLog {
-  id: number;
-  task: number;
-  actor_role: string;
-  rationale_checklist: Record<string, boolean>;
-  rationale_notes: string;
-  alternatives_considered: boolean;
-  risk_acknowledged: boolean;
-  created_at: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getTask(id: number): Promise<Task | null> {
-  try {
-    const res = await fetch(`${API_URL}/tasks/${id}/`, { cache: "no-store" });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function getDecisions(taskId: number): Promise<DecisionLog[]> {
-  try {
-    const res = await fetch(`${API_URL}/decisions/?task=${taskId}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
-}
+import { cookies } from "next/headers";
+import { tasksApi, Task, DecisionLog } from "@/lib/api";
 
 const TYPE_LABELS: Record<string, string> = {
   routine: "정기",
@@ -87,7 +40,22 @@ export default async function TaskDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [task, decisions] = await Promise.all([getTask(id), getDecisions(id)]);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+
+  let task: Task | null = null;
+  let decisions: DecisionLog[] = [];
+
+  try {
+    const [taskData, decisionsData] = await Promise.all([
+      tasksApi.get(id, token),
+      tasksApi.decisions(id, token),
+    ]);
+    task = taskData;
+    decisions = decisionsData.results || [];
+  } catch {
+    notFound();
+  }
 
   if (!task) {
     notFound();
@@ -95,12 +63,18 @@ export default async function TaskDetailPage({ params }: PageProps) {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-between items-center">
         <Link
           href={`/contracts/${task.contract}`}
           className="text-blue-600 hover:underline text-sm"
         >
           {task.contract_name}으로 돌아가기
+        </Link>
+        <Link
+          href={`/tasks/${taskId}/edit`}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+        >
+          수정
         </Link>
       </div>
 
@@ -140,9 +114,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
         {task.description && (
           <div>
             <h3 className="text-sm font-medium text-black mb-1">상세 내용</h3>
-            <p className="text-black whitespace-pre-wrap">
-              {task.description}
-            </p>
+            <p className="text-black whitespace-pre-wrap">{task.description}</p>
           </div>
         )}
       </div>
@@ -156,9 +128,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
         </div>
 
         {decisions.length === 0 ? (
-          <p className="text-black text-center py-8">
-            기록된 판단이 없습니다
-          </p>
+          <p className="text-black text-center py-8">기록된 판단이 없습니다</p>
         ) : (
           <div className="space-y-4">
             {decisions.map((decision) => (
@@ -191,9 +161,7 @@ export default async function TaskDetailPage({ params }: PageProps) {
                   </span>
                   <span
                     className={
-                      decision.risk_acknowledged
-                        ? "text-green-600"
-                        : "text-black"
+                      decision.risk_acknowledged ? "text-green-600" : "text-black"
                     }
                   >
                     {decision.risk_acknowledged ? "O" : "X"} 리스크 인지

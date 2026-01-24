@@ -54,3 +54,41 @@ export async function generateReport(formData: FormData) {
     };
   }
 }
+
+export async function updateReport(id: number, formData: FormData) {
+  const token = await getToken();
+  const data: Partial<ReportGenerateInput> = {
+    contract: parseInt(formData.get("contract") as string, 10),
+    report_type: formData.get("report_type") as string,
+    period_start: formData.get("period_start") as string,
+    period_end: formData.get("period_end") as string,
+  };
+
+  try {
+    const res = await fetch(`${API_URL}/reports/${id}/`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      return {
+        success: false,
+        error: err?.error?.message || err?.detail || "보고서 수정에 실패했습니다",
+      };
+    }
+
+    revalidatePath("/reports");
+    revalidatePath(`/reports/${id}`);
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "보고서 수정에 실패했습니다",
+    };
+  }
+}

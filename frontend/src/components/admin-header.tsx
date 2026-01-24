@@ -38,6 +38,7 @@ export default function AdminHeader() {
         
         <div className="hidden md:flex items-center gap-6">
           <nav className="flex gap-6">
+            <Link href="/dashboard" className="text-black hover:text-gray-900 font-medium">대시보드</Link>
             <Link href="/contracts" className="text-black hover:text-gray-900 font-medium">사업 관리</Link>
             <Link href="/tasks" className="text-black hover:text-gray-900 font-medium">작업 관리</Link>
             <Link href="/events" className="text-black hover:text-gray-900 font-medium">변경/장애</Link>
@@ -97,6 +98,7 @@ export default function AdminHeader() {
           />
           <div className="absolute top-full left-0 right-0 bg-white border-b shadow-lg z-50 md:hidden animate-in slide-in-from-top-2 duration-200">
              <nav className="flex flex-col p-4 space-y-4">
+              <Link href="/dashboard" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">대시보드</Link>
               <Link href="/contracts" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사업 관리</Link>
               <Link href="/tasks" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">작업 관리</Link>
               <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>

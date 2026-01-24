@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 import { contractsApi, ContractListItem } from "@/lib/api";
+import SearchInput from "@/components/ui/search-input";
+import FilterSelect from "@/components/ui/filter-select";
+import Pagination from "@/components/ui/pagination";
+import { TableSkeleton } from "@/components/ui/skeleton";
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
@@ -18,6 +23,16 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-gray-100 text-black",
 };
 
+const STATUS_OPTIONS = [
+  { value: "pre-handover", label: "인수 전" },
+  { value: "handover", label: "인수" },
+  { value: "stabilization", label: "안정화" },
+  { value: "steady", label: "정상 운영" },
+  { value: "closed", label: "종료" },
+];
+
+const ITEMS_PER_PAGE = 10;
+
 function StatusBadge({ status }: { status: string }) {
   const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
   const label = STATUS_LABELS[status] || status;
@@ -34,7 +49,7 @@ function RiskIndicators({
   flags?: ContractListItem["risk_flags"];
 }) {
   if (!flags) return null;
-  
+
   const risks = [];
   if (flags.pre_env) risks.push("환경");
   if (flags.prior_vendor_coordination) risks.push("협업");
@@ -56,19 +71,50 @@ function RiskIndicators({
   );
 }
 
-export default async function ContractsPage() {
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function ContractsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 
-  let contracts: ContractListItem[] = [];
+  const search = (params.search as string) || "";
+  const statusFilter = (params.status as string) || "";
+  const page = parseInt((params.page as string) || "1", 10);
+
+  let allContracts: ContractListItem[] = [];
   let error: string | null = null;
 
   try {
     const response = await contractsApi.list(token);
-    contracts = response.results || [];
+    allContracts = response.results || [];
   } catch (e) {
     error = e instanceof Error ? e.message : "사업 목록을 불러오지 못했습니다";
   }
+
+  // Client-side filtering
+  let filteredContracts = allContracts;
+
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filteredContracts = filteredContracts.filter(
+      (c) =>
+        c.name.toLowerCase().includes(searchLower) ||
+        c.client_org.toLowerCase().includes(searchLower)
+    );
+  }
+
+  if (statusFilter) {
+    filteredContracts = filteredContracts.filter((c) => c.status === statusFilter);
+  }
+
+  // Pagination
+  const totalItems = filteredContracts.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (page - 1) * ITEMS_PER_PAGE;
+  const contracts = filteredContracts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   return (
     <div className="p-6">
@@ -82,112 +128,141 @@ export default async function ContractsPage() {
         </Link>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex-1 max-w-md">
+          <Suspense fallback={<div className="h-10 bg-gray-100 rounded-md animate-pulse" />}>
+            <SearchInput placeholder="사업명, 발주처 검색..." />
+          </Suspense>
         </div>
+        <Suspense fallback={<div className="h-10 w-32 bg-gray-100 rounded-md animate-pulse" />}>
+          <FilterSelect
+            options={STATUS_OPTIONS}
+            paramName="status"
+            placeholder="전체 상태"
+          />
+        </Suspense>
+      </div>
+
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
       )}
 
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                사업명
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                발주처
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                기간
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                리스크
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {contracts.length === 0 ? (
+      <Suspense fallback={<TableSkeleton rows={5} columns={5} />}>
+        <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-black">
-                  등록된 사업이 없습니다
-                </td>
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                  사업명
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                  발주처
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                  기간
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                  상태
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                  리스크
+                </th>
               </tr>
-            ) : (
-              contracts.map((contract) => (
-                <tr key={contract.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4">
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {contracts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-4 text-center text-black">
+                    {search || statusFilter
+                      ? "검색 결과가 없습니다"
+                      : "등록된 사업이 없습니다"}
+                  </td>
+                </tr>
+              ) : (
+                contracts.map((contract) => (
+                  <tr key={contract.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/contracts/${contract.id}`}
+                        className="text-blue-600 hover:underline font-medium"
+                      >
+                        {contract.name}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 text-black">{contract.client_org}</td>
+                    <td className="px-6 py-4 text-black text-sm">
+                      {contract.start_date} ~ {contract.end_date}
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusBadge status={contract.status} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <RiskIndicators flags={contract.risk_flags} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="md:hidden space-y-4">
+          {contracts.length === 0 ? (
+            <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+              {search || statusFilter
+                ? "검색 결과가 없습니다"
+                : "등록된 사업이 없습니다"}
+            </div>
+          ) : (
+            contracts.map((contract) => (
+              <div
+                key={contract.id}
+                className="bg-white rounded-lg shadow-sm p-4 space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
                     <Link
                       href={`/contracts/${contract.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="font-medium text-blue-600 block"
                     >
                       {contract.name}
                     </Link>
-                  </td>
-                  <td className="px-6 py-4 text-black">
-                    {contract.client_org}
-                  </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {contract.start_date} ~ {contract.end_date}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={contract.status} />
-                  </td>
-                  <td className="px-6 py-4">
-                    <RiskIndicators flags={contract.risk_flags} />
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="md:hidden space-y-4">
-        {contracts.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
-            등록된 사업이 없습니다
-          </div>
-        ) : (
-          contracts.map((contract) => (
-            <div key={contract.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <Link
-                    href={`/contracts/${contract.id}`}
-                    className="font-medium text-blue-600 block"
-                  >
-                    {contract.name}
-                  </Link>
-                  <div className="text-sm text-black">{contract.client_org}</div>
+                    <div className="text-sm text-black">{contract.client_org}</div>
+                  </div>
+                  <StatusBadge status={contract.status} />
                 </div>
-                <StatusBadge status={contract.status} />
-              </div>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">기간</span>
-                  <span className="text-black">
-                    {contract.start_date} ~ {contract.end_date}
-                  </span>
+                <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-black">기간</span>
+                    <span className="text-black">
+                      {contract.start_date} ~ {contract.end_date}
+                    </span>
+                  </div>
+                  {contract.risk_flags &&
+                    (contract.risk_flags.pre_env ||
+                      contract.risk_flags.prior_vendor_coordination ||
+                      contract.risk_flags.docs_incomplete) && (
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium text-black">리스크</span>
+                        <RiskIndicators flags={contract.risk_flags} />
+                      </div>
+                    )}
                 </div>
-                {contract.risk_flags &&
-                  (contract.risk_flags.pre_env ||
-                    contract.risk_flags.prior_vendor_coordination ||
-                    contract.risk_flags.docs_incomplete) && (
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-black">리스크</span>
-                      <RiskIndicators flags={contract.risk_flags} />
-                    </div>
-                  )}
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
+
+        <Suspense fallback={null}>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            totalItems={totalItems}
+          />
+        </Suspense>
+      </Suspense>
     </div>
   );
 }

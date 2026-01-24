@@ -280,6 +280,52 @@ export const equipmentsApi = {
     fetchAPI<EquipmentTransaction[]>(`/equipments/${id}/transactions/`, { token }),
 };
 
+export interface Task {
+  id: number;
+  contract: number;
+  contract_name: string;
+  task_type: string;
+  impact_level: string;
+  approval_required: boolean;
+  title: string;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaskListItem {
+  id: number;
+  contract: number;
+  contract_name: string;
+  task_type: string;
+  impact_level: string;
+  approval_required: boolean;
+  title: string;
+  created_at: string;
+}
+
+export interface DecisionLog {
+  id: number;
+  task: number;
+  actor_role: string;
+  rationale_checklist: Record<string, boolean>;
+  rationale_notes: string;
+  alternatives_considered: boolean;
+  risk_acknowledged: boolean;
+  created_at: string;
+}
+
+export const tasksApi = {
+  list: (token?: string) =>
+    fetchAPI<{ results: TaskListItem[] }>("/tasks/", { token }),
+
+  get: (id: number, token?: string) =>
+    fetchAPI<Task>(`/tasks/${id}/`, { token }),
+
+  decisions: (taskId: number, token?: string) =>
+    fetchAPI<{ results: DecisionLog[] }>(`/decisions/?task=${taskId}`, { token }),
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
     const url = `${API_URL}/token/`;
