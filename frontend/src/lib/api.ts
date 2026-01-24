@@ -361,9 +361,40 @@ export interface Event {
   created_at: string;
 }
 
+export interface EventListItem {
+  id: number;
+  contract: number;
+  contract_name: string;
+  record_type: string;
+  title: string;
+  occurred_at: string;
+  resolved_at: string | null;
+  created_at: string;
+}
+
 export const eventsApi = {
+  list: (token?: string) =>
+    fetchAPI<{ results: EventListItem[] }>("/events/", { token }),
+
+  listByContract: (contractId: number, token?: string) =>
+    fetchAPI<{ results: EventListItem[] }>(`/events/?contract=${contractId}`, { token }),
+
   get: (id: number, token?: string) =>
     fetchAPI<Event>(`/events/${id}/`, { token }),
+
+  link: (id: number, relatedEventId: number, token?: string) =>
+    fetchAPI<Event>(`/events/${id}/link/`, {
+      method: "POST",
+      body: JSON.stringify({ related_event: relatedEventId }),
+      token,
+    }),
+
+  unlink: (id: number, token?: string) =>
+    fetchAPI<Event>(`/events/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ related_event: null }),
+      token,
+    }),
 
   delete: (id: number, token?: string) =>
     fetchAPI<void>(`/events/${id}/`, {

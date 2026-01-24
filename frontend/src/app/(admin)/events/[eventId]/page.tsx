@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import EventDeleteButton from "./event-delete-button";
+import EventLinkButton from "./event-link-button";
 
 interface Event {
   id: number;
@@ -171,9 +172,11 @@ export default async function EventDetailPage({ params }: PageProps) {
         >
           수정
         </Link>
-        <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-          연관 이벤트 연결
-        </button>
+        <EventLinkButton
+          eventId={event.id}
+          contractId={event.contract}
+          currentRelatedEventId={event.related_event}
+        />
         <EventDeleteButton eventId={event.id} eventTitle={event.title} />
       </div>
     </div>
