@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 
 interface Task {
   id: number;
@@ -7,6 +8,7 @@ interface Task {
   task_type: string;
   impact_level: string;
   approval_required: boolean;
+  approval_status: string;
   title: string;
   description: string;
   created_at: string;
@@ -15,9 +17,12 @@ interface Task {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-async function getTasks(): Promise<Task[]> {
+async function getTasks(token?: string): Promise<Task[]> {
   try {
-    const res = await fetch(`${API_URL}/tasks/`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/tasks/`, {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
     if (!res.ok) return [];
     const data = await res.json();
     return data.results || [];
@@ -52,9 +57,38 @@ const IMPACT_COLORS: Record<string, string> = {
   full: "bg-red-100 text-red-700",
 };
 
-export default async function TasksPage() {
-  const tasks = await getTasks();
+const APPROVAL_STATUS_LABELS: Record<string, string> = {
+  not_required: "-",
+  pending: "대기",
+  approved: "승인",
+  rejected: "반려",
+};
 
+const APPROVAL_STATUS_COLORS: Record<string, string> = {
+  not_required: "text-gray-400",
+  pending: "bg-orange-100 text-orange-700",
+  approved: "bg-green-100 text-green-700",
+  rejected: "bg-red-100 text-red-700",
+};
+
+interface PageProps {
+  searchParams: Promise<{ filter?: string }>;
+}
+
+export default async function TasksPage({ searchParams }: PageProps) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+  const { filter } = await searchParams;
+  
+  let tasks = await getTasks(token);
+  
+  // Filter by approval status if requested
+  if (filter === "pending") {
+    tasks = tasks.filter((t) => t.approval_status === "pending");
+  }
+
+  const pendingCount = tasks.filter((t) => t.approval_status === "pending").length;
+  
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -64,6 +98,30 @@ export default async function TasksPage() {
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
         >
           작업 등록
+        </Link>
+      </div>
+      
+      {/* Filter Tabs */}
+      <div className="flex gap-2 mb-4">
+        <Link
+          href="/tasks"
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            !filter
+              ? "bg-blue-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          전체
+        </Link>
+        <Link
+          href="/tasks?filter=pending"
+          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            filter === "pending"
+              ? "bg-orange-600 text-white"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          승인 대기 {pendingCount > 0 && `(${pendingCount})`}
         </Link>
       </div>
 
@@ -138,11 +196,15 @@ export default async function TasksPage() {
                   </td>
                   <td className="px-6 py-4">
                     {task.approval_required ? (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-                        필요
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          APPROVAL_STATUS_COLORS[task.approval_status] || "bg-gray-100"
+                        }`}
+                      >
+                        {APPROVAL_STATUS_LABELS[task.approval_status] || task.approval_status}
                       </span>
                     ) : (
-                      <span className="text-black text-sm">-</span>
+                      <span className="text-gray-400 text-sm">-</span>
                     )}
                   </td>
                   <td className="px-6 py-4 text-black text-sm">
@@ -203,11 +265,15 @@ export default async function TasksPage() {
                 <div className="flex justify-between">
                   <span className="font-medium text-black">승인</span>
                   {task.approval_required ? (
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700">
-                      필요
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        APPROVAL_STATUS_COLORS[task.approval_status] || "bg-gray-100"
+                      }`}
+                    >
+                      {APPROVAL_STATUS_LABELS[task.approval_status] || task.approval_status}
                     </span>
                   ) : (
-                    <span className="text-black">-</span>
+                    <span className="text-gray-400">-</span>
                   )}
                 </div>
                 <div className="flex justify-between">

@@ -35,6 +35,8 @@ interface TaskListItem {
   title: string;
   task_type: string;
   impact_level: string;
+  approval_required: boolean;
+  approval_status: string;
   contract_name: string;
 }
 
@@ -104,13 +106,14 @@ export default async function DashboardPage() {
 
   const recentIncidents = events.filter((e) => e.record_type === "incident").slice(0, 5);
   const highImpactTasks = tasks.filter((t) => t.impact_level === "full").length;
+  const pendingApprovals = tasks.filter((t) => t.approval_status === "pending");
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">대시보드</h1>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="text-sm font-medium text-black mb-1">활성 사업</div>
           <div className="text-3xl font-bold text-blue-600">{activeContracts}</div>
@@ -136,7 +139,58 @@ export default async function DashboardPage() {
           <div className="text-3xl font-bold text-orange-600">{highImpactTasks}</div>
           <div className="text-xs text-black mt-1">총 {tasks.length}개 작업</div>
         </div>
+
+        <Link href="/tasks?filter=pending" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+          <div className="text-sm font-medium text-black mb-1">승인 대기</div>
+          <div className={`text-3xl font-bold ${pendingApprovals.length > 0 ? "text-orange-600" : "text-gray-400"}`}>
+            {pendingApprovals.length}
+          </div>
+          <div className="text-xs text-black mt-1">클릭하여 확인</div>
+        </Link>
       </div>
+
+      {/* Pending Approvals Alert */}
+      {pendingApprovals.length > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-orange-800">승인 대기 작업</h2>
+            <Link href="/tasks?filter=pending" className="text-orange-600 text-sm hover:underline">
+              전체 보기
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {pendingApprovals.slice(0, 3).map((task) => (
+              <div
+                key={task.id}
+                className="flex items-center justify-between bg-white rounded-md p-3"
+              >
+                <div>
+                  <Link
+                    href={`/tasks/${task.id}`}
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    {task.title}
+                  </Link>
+                  <div className="text-xs text-gray-500">{task.contract_name}</div>
+                </div>
+                <Link
+                  href={`/tasks/${task.id}`}
+                  className="px-3 py-1 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700"
+                >
+                  승인하기
+                </Link>
+              </div>
+            ))}
+          </div>
+          {pendingApprovals.length > 3 && (
+            <div className="text-center mt-3">
+              <span className="text-sm text-orange-600">
+                외 {pendingApprovals.length - 3}건 더 있음
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Contract Status Summary */}
