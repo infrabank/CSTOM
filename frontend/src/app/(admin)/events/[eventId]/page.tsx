@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import EventDeleteButton from "./event-delete-button";
 
 interface Event {
   id: number;
@@ -173,6 +174,7 @@ export default async function EventDetailPage({ params }: PageProps) {
         <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
           연관 이벤트 연결
         </button>
+        <EventDeleteButton eventId={event.id} eventTitle={event.title} />
       </div>
     </div>
   );

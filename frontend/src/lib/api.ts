@@ -337,6 +337,36 @@ export const tasksApi = {
     }),
 };
 
+export interface Event {
+  id: number;
+  contract: number;
+  contract_name: string;
+  record_type: string;
+  title: string;
+  description: string;
+  occurred_at: string;
+  detected_at: string | null;
+  resolved_at: string | null;
+  customer_notified: boolean;
+  customer_notified_at: string | null;
+  related_event: number | null;
+  related_event_title: string | null;
+  summary_notice: string;
+  audit_summary: string;
+  created_at: string;
+}
+
+export const eventsApi = {
+  get: (id: number, token?: string) =>
+    fetchAPI<Event>(`/events/${id}/`, { token }),
+
+  delete: (id: number, token?: string) =>
+    fetchAPI<void>(`/events/${id}/`, {
+      method: "DELETE",
+      token,
+    }),
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
     const url = `${API_URL}/token/`;
