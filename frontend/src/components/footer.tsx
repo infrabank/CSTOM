@@ -7,10 +7,10 @@ export default function Footer() {
         <Image
           src="/images/mix3-2.png"
           alt="CSTOM"
-          width={150}
-          height={28}
+          width={200}
+          height={40}
           unoptimized
-          className="h-7 w-auto"
+          className="h-10 w-auto"
         />
       </div>
     </footer>
