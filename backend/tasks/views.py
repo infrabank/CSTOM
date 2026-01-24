@@ -1,13 +1,21 @@
 """Task API views."""
 
+from django.utils import timezone
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from common.auth import JWTAuthentication
 
 from .models import Task
-from .serializers import TaskCreateSerializer, TaskListSerializer, TaskSerializer
+from .serializers import (
+    TaskApproveSerializer,
+    TaskCreateSerializer,
+    TaskListSerializer,
+    TaskSerializer,
+)
 from .services import TaskService
 
 
@@ -29,6 +37,8 @@ class TaskViewSet(ModelViewSet):
             return TaskListSerializer
         if self.action == "create":
             return TaskCreateSerializer
+        if self.action == "approve":
+            return TaskApproveSerializer
         return TaskSerializer
 
     def get_queryset(self):
@@ -54,5 +64,64 @@ class TaskViewSet(ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         task = TaskService.update(instance, serializer.validated_data)
+        output_serializer = TaskSerializer(task)
+        return Response(output_serializer.data)
+
+    @action(detail=True, methods=["post"], authentication_classes=[JWTAuthentication])
+    def approve(self, request, pk=None):
+        """Approve or reject a task.
+
+        Only PM and Admin roles can approve tasks.
+        """
+        task = self.get_object()
+
+        # Check if task requires approval
+        if not task.approval_required:
+            return Response(
+                {"error": {"message": "이 작업은 승인이 필요하지 않습니다."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if already processed
+        if task.approval_status in ["approved", "rejected"]:
+            return Response(
+                {"error": {"message": "이미 처리된 작업입니다."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get user info from JWT token
+        user = getattr(request, "user", None)
+        user_role = None
+        user_name = "Unknown"
+
+        if hasattr(request, "jwt_token") and request.jwt_token:
+            user_role = request.jwt_token.get("role")
+            user_name = request.jwt_token.get("display_name", "Unknown")
+
+        # Check permission (only PM or Admin can approve)
+        if user_role not in ["pm", "admin"]:
+            return Response(
+                {
+                    "error": {
+                        "message": "승인 권한이 없습니다. PM 또는 관리자만 승인할 수 있습니다."
+                    }
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        action_type = serializer.validated_data["action"]
+
+        if action_type == "approve":
+            task.approval_status = "approved"
+        else:
+            task.approval_status = "rejected"
+
+        task.approved_by = user_name
+        task.approved_at = timezone.now()
+        task.save()
+
         output_serializer = TaskSerializer(task)
         return Response(output_serializer.data)

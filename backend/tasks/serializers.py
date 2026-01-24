@@ -19,12 +19,23 @@ class TaskSerializer(serializers.ModelSerializer):
             "task_type",
             "impact_level",
             "approval_required",
+            "approval_status",
+            "approved_by",
+            "approved_at",
             "title",
             "description",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "approval_required", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "approval_required",
+            "approval_status",
+            "approved_by",
+            "approved_at",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class TaskListSerializer(serializers.ModelSerializer):
@@ -42,6 +53,7 @@ class TaskListSerializer(serializers.ModelSerializer):
             "task_type",
             "impact_level",
             "approval_required",
+            "approval_status",
             "title",
             "decision_count",
             "created_at",
@@ -49,6 +61,13 @@ class TaskListSerializer(serializers.ModelSerializer):
 
     def get_decision_count(self, obj) -> int:
         return obj.decision_logs.count()
+
+
+class TaskApproveSerializer(serializers.Serializer):
+    """Serializer for approving/rejecting tasks."""
+
+    action = serializers.ChoiceField(choices=["approve", "reject"])
+    notes = serializers.CharField(required=False, allow_blank=True)
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):

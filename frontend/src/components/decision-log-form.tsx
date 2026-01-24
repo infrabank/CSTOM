@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { getAccessToken } from "@/lib/auth";
 
 interface DecisionLogFormProps {
   taskId: number;
@@ -38,20 +39,26 @@ export default function DecisionLogForm({
     };
 
     try {
+      const token = getAccessToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
       const res = await fetch(`${API_URL}/decisions/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || "Failed to create decision log");
+        throw new Error(err?.error?.message || "판단 기록 등록에 실패했습니다");
       }
 
       onSuccess?.();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : "오류가 발생했습니다");
     } finally {
       setLoading(false);
     }
@@ -70,7 +77,7 @@ export default function DecisionLogForm({
           htmlFor="actor_role"
           className="block text-sm font-medium text-black mb-1"
         >
-          Decision Maker
+          결정 주체 *
         </label>
         <select
           id="actor_role"
@@ -78,9 +85,9 @@ export default function DecisionLogForm({
           required
           className="w-full border border-gray-300 rounded-md px-3 py-2"
         >
-          <option value="pm">Project Manager</option>
-          <option value="engineer">Engineer</option>
-          <option value="joint">Joint Decision</option>
+          <option value="pm">PM</option>
+          <option value="engineer">엔지니어</option>
+          <option value="joint">공동 결정</option>
         </select>
       </div>
 
@@ -89,14 +96,14 @@ export default function DecisionLogForm({
           htmlFor="rationale_notes"
           className="block text-sm font-medium text-black mb-1"
         >
-          Rationale / Notes
+          판단 근거
         </label>
         <textarea
           id="rationale_notes"
           name="rationale_notes"
           rows={4}
           className="w-full border border-gray-300 rounded-md px-3 py-2"
-          placeholder="Explain the reasoning behind this decision..."
+          placeholder="이 판단의 근거를 설명하세요..."
         />
       </div>
 
@@ -107,7 +114,7 @@ export default function DecisionLogForm({
             name="alternatives_considered"
             className="rounded border-gray-300"
           />
-          <span className="text-sm">Alternatives Considered</span>
+          <span className="text-sm">대안 검토 완료</span>
         </label>
 
         <label className="flex items-center gap-2">
@@ -116,7 +123,7 @@ export default function DecisionLogForm({
             name="risk_acknowledged"
             className="rounded border-gray-300"
           />
-          <span className="text-sm">Risk Acknowledged</span>
+          <span className="text-sm">리스크 인지 완료</span>
         </label>
       </div>
 
@@ -126,7 +133,7 @@ export default function DecisionLogForm({
           disabled={loading}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Saving..." : "Add Decision Log"}
+          {loading ? "등록 중..." : "판단 등록"}
         </button>
         {onCancel && (
           <button
@@ -134,7 +141,7 @@ export default function DecisionLogForm({
             onClick={onCancel}
             className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
           >
-            Cancel
+            취소
           </button>
         )}
       </div>

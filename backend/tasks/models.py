@@ -21,6 +21,13 @@ class Task(models.Model):
         ("full", "Full"),
     ]
 
+    APPROVAL_STATUSES = [
+        ("not_required", "Not Required"),
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
     contract = models.ForeignKey(
         Contract,
         on_delete=models.CASCADE,
@@ -31,6 +38,11 @@ class Task(models.Model):
         max_length=20, choices=IMPACT_LEVELS, default="none"
     )
     approval_required = models.BooleanField(default=False)
+    approval_status = models.CharField(
+        max_length=20, choices=APPROVAL_STATUSES, default="not_required"
+    )
+    approved_by = models.CharField(max_length=255, blank=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -43,7 +55,10 @@ class Task(models.Model):
         return f"{self.title} ({self.get_task_type_display()})"
 
     def save(self, *args, **kwargs):
-        # Auto-derive approval_required based on impact and type
+        # Auto-derive approval_required and approval_status based on impact and type
         if self.impact_level == "full" or self.task_type == "change":
             self.approval_required = True
+            # Set to pending if newly requiring approval
+            if self.approval_status == "not_required":
+                self.approval_status = "pending"
         super().save(*args, **kwargs)

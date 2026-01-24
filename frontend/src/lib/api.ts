@@ -287,6 +287,9 @@ export interface Task {
   task_type: string;
   impact_level: string;
   approval_required: boolean;
+  approval_status: string;
+  approved_by: string;
+  approved_at: string | null;
   title: string;
   description: string;
   created_at: string;
@@ -300,6 +303,7 @@ export interface TaskListItem {
   task_type: string;
   impact_level: string;
   approval_required: boolean;
+  approval_status: string;
   title: string;
   created_at: string;
 }
@@ -324,6 +328,13 @@ export const tasksApi = {
 
   decisions: (taskId: number, token?: string) =>
     fetchAPI<{ results: DecisionLog[] }>(`/decisions/?task=${taskId}`, { token }),
+
+  approve: (id: number, action: "approve" | "reject", notes?: string, token?: string) =>
+    fetchAPI<Task>(`/tasks/${id}/approve/`, {
+      method: "POST",
+      body: JSON.stringify({ action, notes }),
+      token,
+    }),
 };
 
 export const authApi = {

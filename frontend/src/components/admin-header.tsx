@@ -5,14 +5,26 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
+import Modal from "@/components/modal";
 
 export default function AdminHeader() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setIsLoggingOut(true);
     await authApi.logout();
     router.push("/login");
+  };
+
+  const handleLogoutCancel = () => {
+    setIsLogoutModalOpen(false);
   };
 
   const toggleMenu = () => {
@@ -48,7 +60,7 @@ export default function AdminHeader() {
           </nav>
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <button 
-            onClick={handleLogout} 
+            onClick={handleLogoutClick} 
             className="text-black hover:text-red-600 transition-colors p-1" 
             title="로그아웃"
             aria-label="로그아웃"
@@ -61,7 +73,7 @@ export default function AdminHeader() {
 
         <div className="md:hidden flex items-center gap-4">
           <button  
-            onClick={handleLogout} 
+            onClick={handleLogoutClick} 
             className="text-black hover:text-red-600 transition-colors p-1" 
             title="로그아웃"
             aria-label="로그아웃"
@@ -109,6 +121,32 @@ export default function AdminHeader() {
           </div>
         </>
       )}
+
+      <Modal
+        isOpen={isLogoutModalOpen}
+        onClose={handleLogoutCancel}
+        title="로그아웃"
+        footer={
+          <>
+            <button
+              onClick={handleLogoutCancel}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              disabled={isLoggingOut}
+            >
+              취소
+            </button>
+            <button
+              onClick={handleLogoutConfirm}
+              disabled={isLoggingOut}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+            >
+              {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
+            </button>
+          </>
+        }
+      >
+        <p>로그아웃 하시겠습니까?</p>
+      </Modal>
     </header>
   );
 }
