@@ -31,13 +31,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 h-[40px]">
           <Image
             src="/images/ci_21.jpg"
             alt="KRIHS 국토연구원"
             width={180}
             height={40}
             priority
+            style={{ width: "auto", height: "40px" }}
           />
         </div>
         

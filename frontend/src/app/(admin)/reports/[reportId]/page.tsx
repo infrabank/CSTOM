@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { reportsApi, Report } from "@/lib/api";
+import PdfDownloadButton from "../pdf-download-button";
 
 const TYPE_LABELS: Record<string, string> = {
   monthly: "월간 보고서",
@@ -51,9 +52,9 @@ export default async function ReportDetailPage({ params }: PageProps) {
             </h1>
             <p className="text-black">{report.contract_name}</p>
           </div>
-          <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            PDF 다운로드
-          </button>
+          <PdfDownloadButton
+            reportTitle={`${TYPE_LABELS[report.report_type] || report.report_type} - ${report.contract_name}`}
+          />
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">

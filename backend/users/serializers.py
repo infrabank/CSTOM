@@ -48,6 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for user lists."""
 
+    roles = RoleSerializer(many=True, read_only=True)
     role_names = serializers.SerializerMethodField()
 
     class Meta:
@@ -57,9 +58,11 @@ class UserListSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "display_name",
+            "roles",
             "role_names",
             "status",
             "is_active",
+            "created_at",
         ]
 
     def get_role_names(self, obj) -> list[str]:

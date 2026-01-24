@@ -48,12 +48,12 @@ export default function Modal({
         aria-labelledby="modal-title"
       >
         <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+          <h2 id="modal-title" className="text-lg font-semibold text-black">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-black hover:text-gray-900 transition-colors"
+            className="text-black hover:text-black transition-colors"
             aria-label="Close"
           >
             <svg

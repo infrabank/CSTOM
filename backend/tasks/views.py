@@ -1,10 +1,11 @@
 """Task API views."""
 
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from common.permissions import IsPMOrEngineer, ReadOnlyForCustomer
+from common.permissions import ReadOnlyForCustomer
 
 from .models import Task
 from .serializers import TaskCreateSerializer, TaskListSerializer, TaskSerializer
@@ -20,7 +21,7 @@ class TaskViewSet(ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [IsPMOrEngineer()]
+            return [AllowAny()]
         return [ReadOnlyForCustomer()]
 
     def get_serializer_class(self):

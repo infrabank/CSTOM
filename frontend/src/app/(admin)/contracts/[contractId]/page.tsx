@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { contractsApi, Contract } from "@/lib/api";
 import DeleteContractButton from "../delete-contract-button";
+import StatusChangeButton from "../status-change-button";
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
@@ -186,9 +187,10 @@ export default async function ContractDetailPage({ params }: PageProps) {
             contractName={contract!.name}
             className="px-4 py-2 text-red-600 border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors"
           />
-          <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            상태 변경
-          </button>
+          <StatusChangeButton
+            contractId={contract!.id}
+            currentStatus={contract!.status}
+          />
         </div>
       </div>
     </div>

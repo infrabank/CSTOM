@@ -62,13 +62,15 @@ export default function EquipmentDetailPage() {
 
   async function handleCheckOut(formData: FormData) {
     setIsSubmitting(true);
+    setError(null);
     try {
+      const expectedReturnDate = formData.get("expected_return_date") as string;
       await equipmentsApi.checkOut(equipmentId, {
         handler_name: formData.get("handler_name") as string,
         handler_affiliation: formData.get("handler_affiliation") as string,
         handler_contact: formData.get("handler_contact") as string,
-        purpose: formData.get("purpose") as string,
-        expected_return_date: formData.get("expected_return_date") as string || undefined,
+        rationale: formData.get("rationale") as string,
+        expected_return_date: expectedReturnDate && expectedReturnDate.trim() ? expectedReturnDate : undefined,
         notes: formData.get("notes") as string,
       });
       setShowCheckOutModal(false);
@@ -83,11 +85,13 @@ export default function EquipmentDetailPage() {
 
   async function handleCheckIn(formData: FormData) {
     setIsSubmitting(true);
+    setError(null);
     try {
       await equipmentsApi.checkIn(equipmentId, {
         handler_name: formData.get("handler_name") as string,
         handler_affiliation: formData.get("handler_affiliation") as string,
         handler_contact: formData.get("handler_contact") as string,
+        rationale: formData.get("rationale") as string,
         notes: formData.get("notes") as string,
       });
       setShowCheckInModal(false);
@@ -292,10 +296,11 @@ export default function EquipmentDetailPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">목적</label>
+            <label className="block text-sm font-medium text-black mb-1">반출 사유 *</label>
             <textarea
-              name="purpose"
+              name="rationale"
               rows={2}
+              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
           </div>
@@ -304,6 +309,7 @@ export default function EquipmentDetailPage() {
             <input
               type="date"
               name="expected_return_date"
+              min={new Date().toISOString().split("T")[0]}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
           </div>
@@ -362,6 +368,15 @@ export default function EquipmentDetailPage() {
             <input
               type="text"
               name="handler_contact"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-black mb-1">반입 사유 *</label>
+            <textarea
+              name="rationale"
+              rows={2}
+              required
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
             />
           </div>

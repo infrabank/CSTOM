@@ -230,7 +230,7 @@ export interface EquipmentTransactionInput {
   handler_name: string;
   handler_affiliation?: string;
   handler_contact?: string;
-  purpose?: string;
+  rationale?: string;
   expected_return_date?: string;
   notes?: string;
 }

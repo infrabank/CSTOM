@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import UserActions from "../user-actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -150,9 +151,11 @@ export default async function UserDetailPage({ params }: PageProps) {
           >
             수정
           </Link>
-          <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-            역할 관리
-          </button>
+          <UserActions
+            userId={user.id}
+            userName={user.display_name || user.username}
+            currentRoleIds={user.roles?.map((r) => r.id) || []}
+          />
         </div>
       </div>
     </div>

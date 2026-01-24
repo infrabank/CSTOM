@@ -2,10 +2,11 @@
 
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from common.permissions import IsPMOrEngineer, ReadOnlyForCustomer
+from common.permissions import ReadOnlyForCustomer
 
 from .models import ChangeIncident
 from .serializers import (
@@ -26,7 +27,7 @@ class ChangeIncidentViewSet(ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ["create", "update", "partial_update", "destroy", "link"]:
-            return [IsPMOrEngineer()]
+            return [AllowAny()]
         return [ReadOnlyForCustomer()]
 
     def get_serializer_class(self):

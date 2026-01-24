@@ -9,7 +9,7 @@ export default function Home() {
 
       <main className="flex-1 max-w-7xl mx-auto px-4 py-16 w-full">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-black mb-4">
             IT 유지보수 관리 시스템
           </h2>
           <p className="text-xl text-black max-w-2xl mx-auto">
@@ -38,7 +38,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-black mb-2">
               사업 관리
             </h3>
             <p className="text-black text-sm">
@@ -65,7 +65,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-black mb-2">
               변경/장애
             </h3>
             <p className="text-black text-sm">
@@ -92,7 +92,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">보고서</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">보고서</h3>
             <p className="text-black text-sm">
               월간, 장애, 감사 보고서를 자동으로 생성합니다.
             </p>
@@ -117,7 +117,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">사용자</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">사용자</h3>
             <p className="text-black text-sm">
               역할 기반 접근 제어로 사용자를 관리합니다.
             </p>
@@ -142,7 +142,7 @@ export default function Home() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">장비 반출입</h3>
+            <h3 className="text-lg font-semibold text-black mb-2">장비 반출입</h3>
             <p className="text-black text-sm">
               장비 반출입 이력을 추적하고 관리합니다.
             </p>
