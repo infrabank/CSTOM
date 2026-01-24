@@ -58,6 +58,17 @@ class Equipment(models.Model):
     def __str__(self):
         return f"{self.name} ({self.serial_number})"
 
+    def delete(self, *args, **kwargs):
+        """Prevent hard deletion of Equipment records (Task 008).
+
+        Equipment records must be preserved for audit trail integrity.
+        Use status='retired' instead of deletion.
+        """
+        raise ValidationError(
+            "Equipment records cannot be deleted. "
+            "Set status to 'retired' instead to decommission equipment."
+        )
+
 
 class EquipmentTransaction(models.Model):
     """Record of equipment check-in/check-out transactions. Immutable after creation."""
@@ -134,3 +145,69 @@ class EquipmentTransaction(models.Model):
         raise ValidationError(
             "EquipmentTransaction records are immutable and cannot be deleted."
         )
+
+
+class EquipmentCorrection(models.Model):
+    """Compensating entry for Equipment data corrections (Task 008).
+
+    Since Equipment and EquipmentTransaction records are immutable,
+    corrections are recorded as separate entries that reference the
+    original records and document the correction rationale.
+    """
+
+    CORRECTION_TYPES = [
+        ("equipment_data", "Equipment Data Correction"),
+        ("transaction_void", "Transaction Void/Reversal"),
+        ("status_override", "Status Override"),
+        ("other", "Other Correction"),
+    ]
+
+    equipment = models.ForeignKey(
+        Equipment,
+        on_delete=models.CASCADE,
+        related_name="corrections",
+    )
+    original_transaction = models.ForeignKey(
+        EquipmentTransaction,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="corrections",
+        help_text="The transaction being corrected (if applicable)",
+    )
+    correction_type = models.CharField(max_length=30, choices=CORRECTION_TYPES)
+    description = models.TextField(
+        help_text="Detailed explanation of the error and correction"
+    )
+    corrected_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="equipment_corrections",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # For status overrides, record the new status
+    new_status = models.CharField(
+        max_length=20,
+        choices=Equipment.STATUS_CHOICES,
+        blank=True,
+        help_text="New status if this is a status override correction",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Correction for {self.equipment.name}: {self.get_correction_type_display()}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        # If this is a status override, update the equipment status
+        if is_new and self.correction_type == "status_override" and self.new_status:
+            self.equipment.status = self.new_status
+            # Bypass the normal save to allow status update
+            Equipment.objects.filter(pk=self.equipment.pk).update(
+                status=self.new_status
+            )

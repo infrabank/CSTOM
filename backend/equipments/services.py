@@ -11,7 +11,38 @@ from .authorization import (
     MovementAuthorizationService,
     MovementType,
 )
-from .models import Equipment, EquipmentTransaction
+from .models import Equipment, EquipmentCorrection, EquipmentTransaction
+
+
+def validate_operational_context(
+    context_type: Optional[str],
+    context_id: Optional[int],
+) -> None:
+    """Validate that operational context references an existing record (Task 006)."""
+    if not context_type or not context_id:
+        return
+
+    if context_type == "incident":
+        from events.models import ChangeIncident
+
+        if not ChangeIncident.objects.filter(id=context_id).exists():
+            raise ValidationError(
+                f"Referenced incident (ID: {context_id}) does not exist."
+            )
+    elif context_type == "change":
+        from events.models import ChangeIncident
+
+        if not ChangeIncident.objects.filter(
+            id=context_id, record_type="change"
+        ).exists():
+            raise ValidationError(
+                f"Referenced change event (ID: {context_id}) does not exist or is not a change type."
+            )
+    elif context_type == "task":
+        from tasks.models import Task
+
+        if not Task.objects.filter(id=context_id).exists():
+            raise ValidationError(f"Referenced task (ID: {context_id}) does not exist.")
 
 
 class EquipmentService:
@@ -53,6 +84,9 @@ class EquipmentService:
             handler_name, handler_affiliation, handler_contact
         )
         auth_service.validate_rationale(rationale)
+
+        # Task 006: Validate operational context references existing records
+        validate_operational_context(operational_context_type, operational_context_id)
 
         auth_result = auth_service.authorize(
             equipment, approver, MovementType.CHECK_OUT
@@ -98,6 +132,9 @@ class EquipmentService:
             handler_name, handler_affiliation, handler_contact
         )
         auth_service.validate_rationale(rationale)
+
+        # Task 006: Validate operational context references existing records
+        validate_operational_context(operational_context_type, operational_context_id)
 
         auth_result = auth_service.authorize(equipment, approver, MovementType.CHECK_IN)
 
@@ -334,4 +371,75 @@ class ContractEquipmentMovementsService:
             movements_requiring_pm=movements_requiring_pm,
             movements_with_pm_approval=movements_with_pm_approval,
             compliance_rate=round(compliance_rate, 2),
+        )
+
+
+class EquipmentCorrectionService:
+    """Service for Task 008: Compensating entries for corrections."""
+
+    @staticmethod
+    def create_correction(
+        equipment: Equipment,
+        corrected_by,
+        correction_type: str,
+        description: str,
+        original_transaction: Optional[EquipmentTransaction] = None,
+        new_status: Optional[str] = None,
+    ) -> EquipmentCorrection:
+        """Create a compensating entry to correct equipment data.
+
+        Args:
+            equipment: The equipment being corrected
+            corrected_by: User making the correction
+            correction_type: Type of correction (equipment_data, transaction_void, status_override, other)
+            description: Detailed explanation of what was wrong and what is being corrected
+            original_transaction: The transaction being voided/corrected (optional)
+            new_status: New status for status_override corrections (optional)
+
+        Returns:
+            The created EquipmentCorrection record
+        """
+        if correction_type == "status_override" and not new_status:
+            raise ValidationError(
+                "new_status is required for status_override corrections"
+            )
+
+        if correction_type == "transaction_void" and not original_transaction:
+            raise ValidationError(
+                "original_transaction is required for transaction_void corrections"
+            )
+
+        correction = EquipmentCorrection.objects.create(
+            equipment=equipment,
+            original_transaction=original_transaction,
+            correction_type=correction_type,
+            description=description,
+            corrected_by=corrected_by,
+            new_status=new_status or "",
+        )
+
+        return correction
+
+    @staticmethod
+    def get_corrections(equipment: Equipment):
+        """Get all corrections for an equipment."""
+        return equipment.corrections.all()
+
+    @staticmethod
+    def void_transaction(
+        transaction: EquipmentTransaction,
+        corrected_by,
+        reason: str,
+    ) -> EquipmentCorrection:
+        """Create a void entry for a transaction that was recorded in error.
+
+        Note: This does NOT delete the transaction (immutable), but creates
+        a compensating record that documents the void.
+        """
+        return EquipmentCorrectionService.create_correction(
+            equipment=transaction.equipment,
+            corrected_by=corrected_by,
+            correction_type="transaction_void",
+            description=f"VOID: {reason}",
+            original_transaction=transaction,
         )

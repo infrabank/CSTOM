@@ -35,5 +35,5 @@ Enable linking Equipment Movements to their triggering operational context. Move
 - [x] Movement can be linked to a Task by identifier
 - [x] Movement can have free-text context when no formal reference applies
 - [x] Context linkage is optional but recommended
-- [ ] Linked context identifiers are validated against existing records
+- [x] Linked context identifiers are validated against existing records - `validate_operational_context()` in services.py
 - [x] Context linkage cannot be modified after movement creation

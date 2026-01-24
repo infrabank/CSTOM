@@ -29,10 +29,10 @@ Enforce data integrity constraints that preserve the audit trail. Equipment and 
 
 ## Completion Criteria
 
-- [ ] Delete operations on Equipment records are rejected
+- [x] Delete operations on Equipment records are rejected - `Equipment.delete()` override raises ValidationError
 - [x] Equipment can transition to "retired" status but record persists
 - [x] Delete operations on Movement records are rejected
 - [x] Update operations on Movement records are rejected
 - [x] Historical Equipment records remain resolvable by identifier
 - [x] Historical Movement records remain resolvable by identifier
-- [ ] System provides mechanism for compensating entries when corrections are needed
+- [x] System provides mechanism for compensating entries when corrections are needed - `EquipmentCorrection` model and `EquipmentCorrectionService`

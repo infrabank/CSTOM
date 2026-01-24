@@ -138,6 +138,12 @@ export default function EquipmentDetailPage() {
             >
               {STATUS_LABELS[equipment.status] || equipment.status}
             </span>
+            <Link
+              href={`/equipments/${equipmentId}/edit`}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              수정
+            </Link>
             {equipment.status === "available" && (
               <button
                 onClick={() => setShowCheckOutModal(true)}
