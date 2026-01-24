@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from common.auth import JWTAuthentication
+from common.auth import CustomJWTAuthentication
 
 from .models import Task
 from .serializers import (
@@ -67,7 +67,9 @@ class TaskViewSet(ModelViewSet):
         output_serializer = TaskSerializer(task)
         return Response(output_serializer.data)
 
-    @action(detail=True, methods=["post"], authentication_classes=[JWTAuthentication])
+    @action(
+        detail=True, methods=["post"], authentication_classes=[CustomJWTAuthentication]
+    )
     def approve(self, request, pk=None):
         """Approve or reject a task.
 
