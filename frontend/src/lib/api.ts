@@ -96,6 +96,11 @@ async function fetchAPI<T>(
     throw new Error(message);
   }
 
+  // Handle empty responses (e.g., 204 No Content for DELETE)
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return undefined as T;
+  }
+
   return res.json();
 }
 
