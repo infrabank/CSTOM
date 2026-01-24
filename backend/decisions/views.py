@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.errors import ImmutableRecordError
-from common.permissions import IsPM, IsPMOrEngineer, ReadOnlyForCustomer
+from common.permissions import IsPM, IsPMOrEngineerOrAdmin, ReadOnlyForCustomer
 
 from .models import DecisionLog
 from .serializers import DecisionLogCreateSerializer, DecisionLogSerializer
@@ -21,7 +21,7 @@ class DecisionLogViewSet(ModelViewSet):
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action == "create":
-            return [IsPMOrEngineer()]
+            return [IsPMOrEngineerOrAdmin()]
         if self.action in ["update", "partial_update", "destroy"]:
             return [IsPM()]  # Only PM can attempt (will still fail due to immutability)
         return [ReadOnlyForCustomer()]

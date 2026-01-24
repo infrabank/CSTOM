@@ -76,6 +76,21 @@ class IsPMOrEngineer(BasePermission):
         )
 
 
+class IsPMOrEngineerOrAdmin(BasePermission):
+    """Allow access to PM, Engineer, or Admin users."""
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.is_pm()
+                or request.user.is_engineer()
+                or request.user.is_admin_role()
+            )
+        )
+
+
 class ReadOnlyForCustomer(BasePermission):
     """Allow read-only access for customers, full access for others."""
 
