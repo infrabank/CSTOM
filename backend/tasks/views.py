@@ -5,7 +5,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from common.permissions import ReadOnlyForCustomer
 
 from .models import Task
 from .serializers import TaskCreateSerializer, TaskListSerializer, TaskSerializer
@@ -13,22 +12,16 @@ from .services import TaskService
 
 
 class TaskViewSet(ModelViewSet):
-    """ViewSet for Task CRUD operations."""
+    """ViewSet for Task CRUD operations.
+
+    Authentication and permissions are disabled to allow public access
+    for MVP phase. Production should implement proper auth.
+    """
 
     queryset = Task.objects.select_related("contract").all()
     serializer_class = TaskSerializer
-
-    def get_authenticators(self):
-        """Skip authentication for create action to allow public access."""
-        if self.action == "create":
-            return []
-        return super().get_authenticators()
-
-    def get_permissions(self):
-        """Set permissions based on action."""
-        if self.action in ["create", "update", "partial_update", "destroy"]:
-            return [AllowAny()]
-        return [ReadOnlyForCustomer()]
+    authentication_classes = []
+    permission_classes = [AllowAny]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""
