@@ -50,10 +50,11 @@ export default function NewContractPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
               사업명 *
             </label>
             <input
+              id="name"
               type="text"
               name="name"
               required
@@ -62,10 +63,11 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="client_org" className="block text-sm font-medium text-black mb-1">
               발주처 *
             </label>
             <input
+              id="client_org"
               type="text"
               name="client_org"
               required
@@ -75,10 +77,11 @@ export default function NewContractPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="start_date" className="block text-sm font-medium text-black mb-1">
                 시작일 *
               </label>
               <input
+                id="start_date"
                 type="date"
                 name="start_date"
                 required
@@ -86,10 +89,11 @@ export default function NewContractPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="end_date" className="block text-sm font-medium text-black mb-1">
                 종료일 *
               </label>
               <input
+                id="end_date"
                 type="date"
                 name="end_date"
                 required
@@ -99,10 +103,11 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="contract_amount" className="block text-sm font-medium text-black mb-1">
               계약 금액
             </label>
             <input
+              id="contract_amount"
               type="text"
               name="contract_amount"
               placeholder="예: 100,000,000"
@@ -111,9 +116,9 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <span className="block text-sm font-medium text-black mb-2">
               사업 범위
-            </label>
+            </span>
             <div className="flex flex-wrap gap-4">
               {SCOPES.map((scope) => (
                 <label key={scope.value} className="flex items-center gap-2">
@@ -130,9 +135,9 @@ export default function NewContractPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
+            <span className="block text-sm font-medium text-black mb-2">
               리스크 플래그
-            </label>
+            </span>
             <div className="space-y-2">
               <label className="flex items-center gap-2">
                 <input

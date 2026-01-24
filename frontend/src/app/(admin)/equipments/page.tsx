@@ -71,22 +71,22 @@ export default async function EquipmentsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 장비명
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 시리얼번호
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 분류
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 최근 이력
               </th>
             </tr>

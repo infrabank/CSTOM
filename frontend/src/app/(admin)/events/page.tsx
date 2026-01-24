@@ -55,22 +55,22 @@ export default async function EventsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 유형
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 발생 시각
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 통보
               </th>
             </tr>

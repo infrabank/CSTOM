@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -33,6 +34,19 @@ class EquipmentViewSet(ModelViewSet):
 
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
+
+    def get_queryset(self):
+        """Optimize queries with select_related and prefetch_related."""
+        queryset = Equipment.objects.select_related("contract").prefetch_related(
+            Prefetch(
+                "transactions",
+                queryset=EquipmentTransaction.objects.select_related(
+                    "approver"
+                ).order_by("-transaction_date"),
+                to_attr="prefetched_transactions",
+            )
+        )
+        return queryset
 
     def get_permissions(self):
         if self.action in ["list", "retrieve", "transactions"]:

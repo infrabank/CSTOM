@@ -92,19 +92,19 @@ export default async function ContractsPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 사업명
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 발주처
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 기간
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 리스크
               </th>
             </tr>

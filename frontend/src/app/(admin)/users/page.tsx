@@ -119,22 +119,22 @@ export default async function UsersPage() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 아이디
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 이름
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 이메일
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 역할
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
                 등록일
               </th>
             </tr>

@@ -71,10 +71,11 @@ export default function NewReportPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
+              id="contract"
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -89,10 +90,11 @@ export default function NewReportPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="report_type" className="block text-sm font-medium text-black mb-1">
               보고서 유형 *
             </label>
             <select
+              id="report_type"
               name="report_type"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -107,10 +109,11 @@ export default function NewReportPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="period_start" className="block text-sm font-medium text-black mb-1">
                 시작일 *
               </label>
               <input
+                id="period_start"
                 type="date"
                 name="period_start"
                 required
@@ -118,10 +121,11 @@ export default function NewReportPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="period_end" className="block text-sm font-medium text-black mb-1">
                 종료일 *
               </label>
               <input
+                id="period_end"
                 type="date"
                 name="period_end"
                 required

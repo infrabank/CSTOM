@@ -124,8 +124,11 @@ class EquipmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_recent_transactions(self, obj):
-        """Get 5 most recent transactions."""
-        transactions = obj.transactions.all()[:5]
+        """Get 5 most recent transactions (uses prefetched data if available)."""
+        if hasattr(obj, "prefetched_transactions"):
+            transactions = obj.prefetched_transactions[:5]
+        else:
+            transactions = obj.transactions.all()[:5]
         return EquipmentTransactionSerializer(transactions, many=True).data
 
 
@@ -158,8 +161,11 @@ class EquipmentListSerializer(serializers.ModelSerializer):
         ]
 
     def get_last_transaction(self, obj):
-        """Get the most recent transaction."""
-        transaction = obj.transactions.first()
+        """Get the most recent transaction (uses prefetched data if available)."""
+        if hasattr(obj, "prefetched_transactions") and obj.prefetched_transactions:
+            transaction = obj.prefetched_transactions[0]
+        else:
+            transaction = obj.transactions.first()
         if transaction:
             return {
                 "type": transaction.transaction_type,

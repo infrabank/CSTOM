@@ -78,10 +78,11 @@ export default function NewTaskPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
+              id="contract"
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -96,10 +97,11 @@ export default function NewTaskPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
               제목 *
             </label>
             <input
+              id="title"
               type="text"
               name="title"
               required
@@ -109,10 +111,11 @@ export default function NewTaskPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="task_type" className="block text-sm font-medium text-black mb-1">
                 작업 유형 *
               </label>
               <select
+                id="task_type"
                 name="task_type"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -125,10 +128,11 @@ export default function NewTaskPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="impact_level" className="block text-sm font-medium text-black mb-1">
                 영향도 *
               </label>
               <select
+                id="impact_level"
                 name="impact_level"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -143,10 +147,11 @@ export default function NewTaskPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
               상세 내용
             </label>
             <textarea
+              id="description"
               name="description"
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -70,10 +70,11 @@ export default function NewEventPage() {
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
+              id="contract"
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -88,10 +89,11 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="record_type" className="block text-sm font-medium text-black mb-1">
               유형 *
             </label>
             <select
+              id="record_type"
               name="record_type"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -105,10 +107,11 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
               제목 *
             </label>
             <input
+              id="title"
               type="text"
               name="title"
               required
@@ -117,10 +120,11 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
               상세 내용
             </label>
             <textarea
+              id="description"
               name="description"
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -129,10 +133,11 @@ export default function NewEventPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="occurred_at" className="block text-sm font-medium text-black mb-1">
                 발생 시각 *
               </label>
               <input
+                id="occurred_at"
                 type="datetime-local"
                 name="occurred_at"
                 required
@@ -140,10 +145,11 @@ export default function NewEventPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="detected_at" className="block text-sm font-medium text-black mb-1">
                 인지 시각
               </label>
               <input
+                id="detected_at"
                 type="datetime-local"
                 name="detected_at"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -152,10 +158,11 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="resolved_at" className="block text-sm font-medium text-black mb-1">
               해결 시각
             </label>
             <input
+              id="resolved_at"
               type="datetime-local"
               name="resolved_at"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -165,6 +172,7 @@ export default function NewEventPage() {
           <div className="space-y-2">
             <label className="flex items-center gap-2">
               <input
+                id="customer_notified"
                 type="checkbox"
                 name="customer_notified"
                 className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
@@ -174,10 +182,11 @@ export default function NewEventPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="customer_notified_at" className="block text-sm font-medium text-black mb-1">
               고객 통보 시각
             </label>
             <input
+              id="customer_notified_at"
               type="datetime-local"
               name="customer_notified_at"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

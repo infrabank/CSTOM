@@ -67,10 +67,11 @@ export default function NewEquipmentPage() {
       <div className="bg-white shadow-sm rounded-lg p-6">
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
               사업 *
             </label>
             <select
+              id="contract"
               name="contract"
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -85,10 +86,11 @@ export default function NewEquipmentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
               장비명 *
             </label>
             <input
+              id="name"
               type="text"
               name="name"
               required
@@ -98,10 +100,11 @@ export default function NewEquipmentPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="category" className="block text-sm font-medium text-black mb-1">
                 분류 *
               </label>
               <select
+                id="category"
                 name="category"
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -114,10 +117,11 @@ export default function NewEquipmentPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="serial_number" className="block text-sm font-medium text-black mb-1">
                 시리얼번호 *
               </label>
               <input
+                id="serial_number"
                 type="text"
                 name="serial_number"
                 required
@@ -128,20 +132,22 @@ export default function NewEquipmentPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="model_name" className="block text-sm font-medium text-black mb-1">
                 모델명
               </label>
               <input
+                id="model_name"
                 type="text"
                 name="model_name"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-1">
+              <label htmlFor="manufacturer" className="block text-sm font-medium text-black mb-1">
                 제조사
               </label>
               <input
+                id="manufacturer"
                 type="text"
                 name="manufacturer"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -150,10 +156,11 @@ export default function NewEquipmentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="location" className="block text-sm font-medium text-black mb-1">
               보관 위치
             </label>
             <input
+              id="location"
               type="text"
               name="location"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -161,10 +168,11 @@ export default function NewEquipmentPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-black mb-1">
+            <label htmlFor="notes" className="block text-sm font-medium text-black mb-1">
               비고
             </label>
             <textarea
+              id="notes"
               name="notes"
               rows={3}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
