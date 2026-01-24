@@ -53,7 +53,14 @@ export default function DecisionLogForm({
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || "판단 기록 등록에 실패했습니다");
+        // Handle various error formats
+        const message = 
+          err?.error?.message ||
+          err?.detail ||
+          (typeof err === "string" ? err : null) ||
+          (err?.error?.details ? JSON.stringify(err.error.details) : null) ||
+          `판단 기록 등록에 실패했습니다 (${res.status})`;
+        throw new Error(message);
       }
 
       onSuccess?.();
