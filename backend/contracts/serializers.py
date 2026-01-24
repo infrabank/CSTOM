@@ -5,6 +5,16 @@ from rest_framework import serializers
 from .models import Contract, ContractStatusHistory
 
 
+class ContractFieldsMixin:
+    """Mixin providing common serializer methods for Contract fields."""
+
+    def get_scopes(self, obj) -> list[str]:
+        return obj.get_scope_list()
+
+    def get_risk_flags(self, obj) -> dict:
+        return obj.get_risk_flags()
+
+
 class ContractStatusHistorySerializer(serializers.ModelSerializer):
     """Serializer for contract status history."""
 
@@ -14,7 +24,7 @@ class ContractStatusHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "changed_at"]
 
 
-class ContractSerializer(serializers.ModelSerializer):
+class ContractSerializer(ContractFieldsMixin, serializers.ModelSerializer):
     """Serializer for Contract model."""
 
     scope_list = serializers.ListField(
@@ -49,12 +59,6 @@ class ContractSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    def get_scopes(self, obj) -> list[str]:
-        return obj.get_scope_list()
-
-    def get_risk_flags(self, obj) -> dict:
-        return obj.get_risk_flags()
-
     def create(self, validated_data):
         scope_list = validated_data.pop("scope_list", None)
         contract = Contract.objects.create(**validated_data)
@@ -76,7 +80,7 @@ class ContractSerializer(serializers.ModelSerializer):
         return instance
 
 
-class ContractListSerializer(serializers.ModelSerializer):
+class ContractListSerializer(ContractFieldsMixin, serializers.ModelSerializer):
     """Lightweight serializer for contract lists."""
 
     scopes = serializers.SerializerMethodField()
@@ -95,12 +99,6 @@ class ContractListSerializer(serializers.ModelSerializer):
             "risk_flags",
             "created_at",
         ]
-
-    def get_scopes(self, obj) -> list[str]:
-        return obj.get_scope_list()
-
-    def get_risk_flags(self, obj) -> dict:
-        return obj.get_risk_flags()
 
 
 class ContractStatusUpdateSerializer(serializers.Serializer):

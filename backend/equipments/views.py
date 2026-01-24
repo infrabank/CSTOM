@@ -12,6 +12,21 @@ from rest_framework.viewsets import ModelViewSet
 from common.permissions import IsPMOrAdmin, IsPMOrEngineer
 
 from .authorization import AuthorizationDeniedError
+
+
+def _authorization_error_response(e: AuthorizationDeniedError) -> Response:
+    """Build standardized response for authorization denied errors."""
+    return Response(
+        {
+            "error": str(e),
+            "requires_pm": e.requires_pm,
+            "approver_role": e.approver_role,
+            "contract_status": e.contract_status,
+        },
+        status=status.HTTP_403_FORBIDDEN,
+    )
+
+
 from .models import Equipment, EquipmentTransaction
 from .serializers import (
     EquipmentSerializer,
@@ -118,15 +133,7 @@ class EquipmentViewSet(ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
         except AuthorizationDeniedError as e:
-            return Response(
-                {
-                    "error": str(e),
-                    "requires_pm": e.requires_pm,
-                    "approver_role": e.approver_role,
-                    "contract_status": e.contract_status,
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return _authorization_error_response(e)
 
     @action(detail=True, methods=["post"], url_path="check-in")
     def check_in(self, request, pk=None):
@@ -155,15 +162,7 @@ class EquipmentViewSet(ModelViewSet):
                 status=status.HTTP_201_CREATED,
             )
         except AuthorizationDeniedError as e:
-            return Response(
-                {
-                    "error": str(e),
-                    "requires_pm": e.requires_pm,
-                    "approver_role": e.approver_role,
-                    "contract_status": e.contract_status,
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return _authorization_error_response(e)
 
     @action(detail=True, methods=["get"])
     def transactions(self, request, pk=None):
