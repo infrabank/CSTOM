@@ -3,7 +3,6 @@
 from django.db.models import QuerySet
 
 from common.errors import BusinessLogicError, ResourceNotFoundError
-from contracts.models import Contract
 
 from .models import ChangeIncident
 
@@ -35,15 +34,11 @@ class ChangeIncidentService:
 
     @staticmethod
     def create(data: dict) -> ChangeIncident:
-        """Create a new event."""
-        contract_id = data.pop("contract", None)
-        if contract_id:
-            try:
-                contract = Contract.objects.get(pk=contract_id)
-            except Contract.DoesNotExist:
-                raise ResourceNotFoundError(f"Contract with id {contract_id} not found")
-            data["contract"] = contract
+        """Create a new event.
 
+        Note: DRF ModelSerializer converts FK fields to model instances,
+        so data["contract"] is already a Contract instance.
+        """
         event = ChangeIncident(**data)
         event.full_clean()  # Validate timestamp ordering
         event.save()
