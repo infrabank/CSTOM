@@ -24,6 +24,12 @@ class ChangeIncidentViewSet(ModelViewSet):
     queryset = ChangeIncident.objects.select_related("contract", "related_event").all()
     serializer_class = ChangeIncidentSerializer
 
+    def get_authenticators(self):
+        """Skip authentication for create action to allow public access."""
+        if self.action == "create":
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ["create", "update", "partial_update", "destroy", "link"]:

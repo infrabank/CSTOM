@@ -18,6 +18,12 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.select_related("contract").all()
     serializer_class = TaskSerializer
 
+    def get_authenticators(self):
+        """Skip authentication for create action to allow public access."""
+        if self.action == "create":
+            return []
+        return super().get_authenticators()
+
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ["create", "update", "partial_update", "destroy"]:

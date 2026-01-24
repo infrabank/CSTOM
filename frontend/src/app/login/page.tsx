@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
@@ -31,14 +30,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <div className="flex justify-center mb-6 h-[40px]">
-          <Image
+        <div className="flex justify-center mb-6">
+          <img
             src="/images/ci_21.jpg"
             alt="KRIHS 국토연구원"
-            width={180}
-            height={40}
-            priority
-            style={{ width: "auto", height: "40px" }}
+            className="h-10 w-auto"
           />
         </div>
         
