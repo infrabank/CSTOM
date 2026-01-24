@@ -56,9 +56,17 @@ class Task(models.Model):
 
     def save(self, *args, **kwargs):
         # Auto-derive approval_required and approval_status based on impact and type
-        if self.impact_level == "full" or self.task_type == "change":
-            self.approval_required = True
+        requires_approval = self.impact_level == "full" or self.task_type == "change"
+        self.approval_required = requires_approval
+
+        if requires_approval:
             # Set to pending if newly requiring approval
             if self.approval_status == "not_required":
                 self.approval_status = "pending"
+        else:
+            # Reset to not_required if approval no longer needed
+            # Keep approved/rejected as historical record
+            if self.approval_status == "pending":
+                self.approval_status = "not_required"
+
         super().save(*args, **kwargs)
