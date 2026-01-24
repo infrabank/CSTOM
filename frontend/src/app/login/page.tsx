@@ -35,11 +35,11 @@ export default function LoginPage() {
           <Image
             src="/images/ci_21.jpg"
             alt="KRIHS 국토연구원"
-            width={200}
-            height={40}
+            width={280}
+            height={56}
             priority
             unoptimized
-            className="h-10 w-auto"
+            className="h-14 w-auto"
           />
         </div>
         
