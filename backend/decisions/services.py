@@ -3,7 +3,6 @@
 from django.db.models import QuerySet
 
 from common.errors import ImmutableRecordError, ResourceNotFoundError
-from tasks.models import Task
 
 from .models import DecisionLog
 
@@ -26,15 +25,11 @@ class DecisionLogService:
 
     @staticmethod
     def create(data: dict) -> DecisionLog:
-        """Create a new decision log (append-only)."""
-        task_id = data.pop("task", None)
-        if task_id:
-            try:
-                task = Task.objects.get(pk=task_id)
-            except Task.DoesNotExist:
-                raise ResourceNotFoundError(f"Task with id {task_id} not found")
-            data["task"] = task
+        """Create a new decision log (append-only).
 
+        Note: DRF ModelSerializer already validates and converts the task field
+        to a Task instance, so we can create directly.
+        """
         return DecisionLog.objects.create(**data)
 
     @staticmethod
