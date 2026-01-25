@@ -1,7 +1,22 @@
+'use client';
+
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { useEffect, useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+interface DashboardSummary {
+  sla_compliance_rate: number;
+  mttr_hours: number;
+  inspection_completion_rate: number;
+  task_summary: {
+    total: number;
+    pending: number;
+    in_progress: number;
+    completed: number;
+  };
+}
 
 interface ContractListItem {
   id: number;
@@ -76,21 +91,77 @@ const EQUIPMENT_STATUS_COLORS: Record<string, string> = {
   retired: "bg-gray-100 text-black",
 };
 
-export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("cstom_access_token")?.value;
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
-  const [contractsData, equipmentsData, eventsData, tasksData] = await Promise.all([
-    fetchData<{ results: ContractListItem[] }>("/contracts/", token),
-    fetchData<{ results: EquipmentListItem[] }>("/equipments/", token),
-    fetchData<{ results: EventListItem[] }>("/events/", token),
-    fetchData<{ results: TaskListItem[] }>("/tasks/", token),
-  ]);
+export default function DashboardPage() {
+  const [kpiData, setKpiData] = useState<DashboardSummary | null>(null);
+  const [contracts, setContracts] = useState<ContractListItem[]>([]);
+  const [equipments, setEquipments] = useState<EquipmentListItem[]>([]);
+  const [events, setEvents] = useState<EventListItem[]>([]);
+  const [tasks, setTasks] = useState<TaskListItem[]>([]);
+  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
+  const [loading, setLoading] = useState(true);
 
-  const contracts = contractsData?.results || [];
-  const equipments = equipmentsData?.results || [];
-  const events = eventsData?.results || [];
-  const tasks = tasksData?.results || [];
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("cstom_access_token="))
+          ?.split("=")[1];
+
+        const [kpiRes, contractsRes, equipmentsRes, eventsRes, tasksRes] = await Promise.all([
+          fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }),
+          fetch(`${API_URL}/contracts/`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }),
+          fetch(`${API_URL}/equipments/`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }),
+          fetch(`${API_URL}/events/`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }),
+          fetch(`${API_URL}/tasks/`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }),
+        ]);
+
+        if (kpiRes.ok) {
+          const kpiJson = await kpiRes.json();
+          setKpiData(kpiJson);
+        }
+
+        if (contractsRes.ok) {
+          const contractsJson = await contractsRes.json();
+          setContracts(contractsJson.results || []);
+        }
+
+        if (equipmentsRes.ok) {
+          const equipmentsJson = await equipmentsRes.json();
+          setEquipments(equipmentsJson.results || []);
+        }
+
+        if (eventsRes.ok) {
+          const eventsJson = await eventsRes.json();
+          setEvents(eventsJson.results || []);
+        }
+
+        if (tasksRes.ok) {
+          const tasksJson = await tasksRes.json();
+          setTasks(tasksJson.results || []);
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [period]);
 
   // Calculate stats
   const activeContracts = contracts.filter((c) => c.status !== "closed").length;
@@ -108,9 +179,128 @@ export default async function DashboardPage() {
   const highImpactTasks = tasks.filter((t) => t.impact_level === "full").length;
   const pendingApprovals = tasks.filter((t) => t.approval_status === "pending");
 
+  const taskChartData = kpiData ? [
+    { name: '대기', value: kpiData.task_summary.pending },
+    { name: '진행중', value: kpiData.task_summary.in_progress },
+    { name: '완료', value: kpiData.task_summary.completed },
+  ] : [];
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="text-center text-gray-500">로딩 중...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">대시보드</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">대시보드</h1>
+        
+        {/* Period Selector */}
+        <div className="flex gap-2">
+          {(['today', 'week', 'month', 'quarter'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                period === p
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              {p === 'today' ? '오늘' : p === 'week' ? '주간' : p === 'month' ? '월간' : '분기'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* KPI Cards */}
+      {kpiData && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">SLA 준수율</div>
+            <div className={`text-3xl font-bold ${kpiData.sla_compliance_rate >= 90 ? 'text-green-600' : kpiData.sla_compliance_rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
+              {kpiData.sla_compliance_rate.toFixed(1)}%
+            </div>
+            <div className="text-xs text-gray-500 mt-1">목표: 90% 이상</div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">평균 복구 시간 (MTTR)</div>
+            <div className="text-3xl font-bold text-blue-600">
+              {kpiData.mttr_hours.toFixed(1)}h
+            </div>
+            <div className="text-xs text-gray-500 mt-1">시간 단위</div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">예방점검 완료율</div>
+            <div className={`text-3xl font-bold ${kpiData.inspection_completion_rate >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>
+              {kpiData.inspection_completion_rate.toFixed(1)}%
+            </div>
+            <div className="text-xs text-gray-500 mt-1">목표: 80% 이상</div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="text-sm font-medium text-gray-600 mb-1">총 작업</div>
+            <div className="text-3xl font-bold text-purple-600">
+              {kpiData.task_summary.total}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">
+              완료 {kpiData.task_summary.completed} / 진행 {kpiData.task_summary.in_progress}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Charts */}
+      {kpiData && (
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4">작업 현황</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={taskChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, value }) => `${name}: ${value}`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {taskChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4">KPI 요약</h2>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={[
+                  { name: 'SLA 준수율', value: kpiData.sla_compliance_rate },
+                  { name: '점검 완료율', value: kpiData.inspection_completion_rate },
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis domain={[0, 100]} />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="value" fill="#3b82f6" name="비율 (%)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
