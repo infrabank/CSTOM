@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "sop",
     "sla",
     "kb",
+    "tickets",
 ]
 
 MIDDLEWARE = [
