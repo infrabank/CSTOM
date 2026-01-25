@@ -193,6 +193,12 @@ export interface Equipment {
   status: string;
   status_display: string;
   notes: string;
+  // CMDB fields
+  purchase_date: string | null;
+  warranty_expiry_date: string | null;
+  ip_address: string | null;
+  mac_address: string | null;
+  operating_system: string | null;
   created_at: string;
   updated_at: string;
   recent_transactions: EquipmentTransaction[];

@@ -222,6 +222,36 @@ export default function EquipmentDetailPage() {
           </div>
         </div>
 
+        {/* CMDB Information */}
+        <div className="border-t pt-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">CMDB 정보</h2>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="text-sm font-medium text-black mb-1">IP 주소</h3>
+              <p className="font-mono">{equipment.ip_address || "-"}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-black mb-1">MAC 주소</h3>
+              <p className="font-mono">{equipment.mac_address || "-"}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-black mb-1">운영체제</h3>
+              <p>{equipment.operating_system || "-"}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-black mb-1">구매일</h3>
+              <p>{equipment.purchase_date ? new Date(equipment.purchase_date).toLocaleDateString("ko-KR") : "-"}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-black mb-1">보증만료일</h3>
+              <p className={equipment.warranty_expiry_date && new Date(equipment.warranty_expiry_date) < new Date() ? "text-red-600 font-medium" : ""}>
+                {equipment.warranty_expiry_date ? new Date(equipment.warranty_expiry_date).toLocaleDateString("ko-KR") : "-"}
+                {equipment.warranty_expiry_date && new Date(equipment.warranty_expiry_date) < new Date() && " (만료)"}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {equipment.notes && (
           <div>
             <h3 className="text-sm font-medium text-black mb-1">비고</h3>
