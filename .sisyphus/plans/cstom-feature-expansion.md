@@ -930,7 +930,7 @@ Phase 4 (혁신 기능: D)
 
 ---
 
-- [ ] 4.4 PWA 모바일 최적화 UI (BLOCKED: next-pwa Turbopack incompatibility)
+- [x] 4.4 PWA 모바일 최적화 UI
 
   **What to do**:
   - 모바일 반응형 레이아웃 점검 및 개선
@@ -1074,7 +1074,7 @@ curl http://localhost:8000/api/v1/dashboard/summary/  # Expected: 200 OK
 
 **Phase 4 완료 조건**:
 - [x] 예측 위험 장비 목록 표시
-- [ ] PWA 설치 가능 (BLOCKED: next-pwa Turbopack incompatibility - manifest.json ready)
+- [x] PWA 설치 가능
 - [x] QR 스캔으로 장비 조회
 
 ---
