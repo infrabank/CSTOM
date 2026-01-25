@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
 import { updateReport } from "../../actions";
+import { getAccessToken } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -46,9 +47,14 @@ export default function EditReportPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
+        const token = getAccessToken();
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
         const [reportRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/reports/${reportId}/`, { cache: "no-store" }),
-          fetch(`${API_URL}/contracts/`, { cache: "no-store" }),
+          fetch(`${API_URL}/reports/${reportId}/`, { cache: "no-store", headers }),
+          fetch(`${API_URL}/contracts/`, { cache: "no-store", headers }),
         ]);
 
         if (!reportRes.ok) throw new Error("보고서 정보를 불러오지 못했습니다");
