@@ -9,3 +9,7 @@ class EquipmentsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "equipments"
     verbose_name = "Equipment Management"
+
+    def ready(self):
+        """Register signal handlers."""
+        import equipments.signals  # noqa: F401

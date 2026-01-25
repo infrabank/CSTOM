@@ -49,6 +49,41 @@ class Equipment(models.Model):
         max_length=20, choices=STATUS_CHOICES, default="available"
     )
     notes = models.TextField(blank=True)
+
+    # CMDB fields
+    purchase_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Purchase Date",
+        help_text="Date when equipment was purchased",
+    )
+    warranty_expiry_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Warranty Expiry Date",
+        help_text="Date when warranty expires",
+    )
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name="IP Address",
+        help_text="IPv4 or IPv6 address",
+    )
+    mac_address = models.CharField(
+        max_length=17,
+        null=True,
+        blank=True,
+        verbose_name="MAC Address",
+        help_text="Media Access Control address (e.g., 00:1A:2B:3C:4D:5E)",
+    )
+    operating_system = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        verbose_name="Operating System",
+        help_text="OS name and version (e.g., Windows Server 2022, Ubuntu 22.04)",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -211,3 +246,100 @@ class EquipmentCorrection(models.Model):
             Equipment.objects.filter(pk=self.equipment.pk).update(
                 status=self.new_status
             )
+
+
+class AssetRelationship(models.Model):
+    """Track dependencies and relationships between equipment items."""
+
+    RELATIONSHIP_TYPES = [
+        ("depends_on", "Depends On"),
+        ("connected_to", "Connected To"),
+        ("powers", "Powers"),
+        ("backed_up_by", "Backed Up By"),
+        ("clustered_with", "Clustered With"),
+        ("replicates_to", "Replicates To"),
+        ("managed_by", "Managed By"),
+    ]
+
+    equipment = models.ForeignKey(
+        Equipment,
+        on_delete=models.CASCADE,
+        related_name="outgoing_relationships",
+        help_text="Source equipment",
+    )
+    related_equipment = models.ForeignKey(
+        Equipment,
+        on_delete=models.CASCADE,
+        related_name="incoming_relationships",
+        help_text="Target equipment",
+    )
+    relationship_type = models.CharField(
+        max_length=20, choices=RELATIONSHIP_TYPES, verbose_name="Relationship Type"
+    )
+    description = models.TextField(
+        blank=True, help_text="Additional details about the relationship"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ("equipment", "related_equipment", "relationship_type")
+        verbose_name_plural = "Asset Relationships"
+
+    def __str__(self):
+        return f"{self.equipment.name} {self.get_relationship_type_display()} {self.related_equipment.name}"
+
+
+class AssetHistory(models.Model):
+    """Immutable audit trail of equipment configuration changes."""
+
+    equipment = models.ForeignKey(
+        Equipment,
+        on_delete=models.CASCADE,
+        related_name="history",
+        help_text="Equipment that was changed",
+    )
+    field_name = models.CharField(
+        max_length=100,
+        verbose_name="Field Name",
+        help_text="Name of the field that changed",
+    )
+    old_value = models.TextField(
+        null=True, blank=True, verbose_name="Old Value", help_text="Previous value"
+    )
+    new_value = models.TextField(
+        null=True, blank=True, verbose_name="New Value", help_text="New value"
+    )
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="equipment_history_changes",
+        help_text="User who made the change (null for system changes)",
+    )
+    changed_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ["-changed_at"]
+        verbose_name_plural = "Asset History"
+        indexes = [
+            models.Index(fields=["equipment", "-changed_at"]),
+            models.Index(fields=["field_name", "-changed_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.equipment.name}: {self.field_name} changed at {self.changed_at}"
+
+    def save(self, *args, **kwargs):
+        """AssetHistory records are immutable."""
+        if self.pk:
+            raise ValidationError(
+                "AssetHistory records are immutable and cannot be modified."
+            )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """AssetHistory records cannot be deleted."""
+        raise ValidationError("AssetHistory records cannot be deleted.")
