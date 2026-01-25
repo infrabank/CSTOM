@@ -106,41 +106,57 @@ class ReportService:
         resolved = events.exclude(resolved_at=None).count()
 
         # Build summary
+        task_type_labels = {
+            "maintenance": "유지보수",
+            "inspection": "점검",
+            "repair": "수리",
+            "installation": "설치",
+            "other": "기타",
+        }
+
         lines = [
-            f"Monthly Report: {contract.name}",
-            f"Period: {period_start} to {period_end}",
-            f"Status: {contract.get_status_display()}",
+            f"월간 보고서: {contract.name}",
+            f"기간: {period_start} ~ {period_end}",
+            f"상태: {contract.get_status_display()}",
             "",
-            "Task Summary:",
+            "작업 요약:",
         ]
 
         for task_type, count in task_summary.items():
-            lines.append(f"  - {task_type.capitalize()}: {count}")
+            label = task_type_labels.get(task_type, task_type)
+            lines.append(f"  - {label}: {count}건")
 
         if not task_summary:
-            lines.append("  No tasks in this period")
+            lines.append("  해당 기간 작업 없음")
 
         lines.extend(
             [
                 "",
-                "Event Summary:",
-                f"  - Changes: {changes}",
-                f"  - Incidents: {incidents}",
-                f"  - Resolved: {resolved}",
+                "이벤트 요약:",
+                f"  - 변경: {changes}건",
+                f"  - 장애: {incidents}건",
+                f"  - 해결됨: {resolved}건",
             ]
         )
 
         # Add risk flag status
+        risk_flag_labels = {
+            "overdue_tasks": "지연 작업",
+            "unresolved_incidents": "미해결 장애",
+            "pending_approvals": "대기 중 승인",
+            "contract_expiring": "계약 만료 임박",
+        }
         lines.extend(
             [
                 "",
-                "Risk Status:",
+                "위험 현황:",
             ]
         )
         flags = contract.get_risk_flags()
         for flag, value in flags.items():
-            status = "ACTIVE" if value else "Clear"
-            lines.append(f"  - {flag.replace('_', ' ').title()}: {status}")
+            label = risk_flag_labels.get(flag, flag.replace("_", " ").title())
+            status = "주의" if value else "정상"
+            lines.append(f"  - {label}: {status}")
 
         return "\n".join(lines)
 
@@ -160,12 +176,12 @@ class ReportService:
         ).order_by("occurred_at")
 
         if not incidents.exists():
-            return f"No incidents recorded for {contract.name} in period {period_start} to {period_end}"
+            return f"{contract.name}의 {period_start} ~ {period_end} 기간 동안 기록된 장애가 없습니다."
 
         lines = [
-            f"Incident Report: {contract.name}",
-            f"Period: {period_start} to {period_end}",
-            f"Total Incidents: {incidents.count()}",
+            f"장애 보고서: {contract.name}",
+            f"기간: {period_start} ~ {period_end}",
+            f"총 장애 건수: {incidents.count()}건",
             "",
         ]
 
@@ -173,12 +189,12 @@ class ReportService:
             lines.extend(
                 [
                     f"[{incident.occurred_at.strftime('%Y-%m-%d %H:%M')}] {incident.title}",
-                    f"  Status: {'Resolved' if incident.resolved_at else 'Open'}",
-                    f"  Customer Notified: {'Yes' if incident.customer_notified else 'No'}",
+                    f"  상태: {'해결됨' if incident.resolved_at else '진행 중'}",
+                    f"  고객 통보: {'완료' if incident.customer_notified else '미완료'}",
                 ]
             )
             if incident.audit_summary:
-                lines.append(f"  Summary: {incident.audit_summary[:100]}...")
+                lines.append(f"  요약: {incident.audit_summary[:100]}...")
             lines.append("")
 
         return "\n".join(lines)
@@ -198,20 +214,29 @@ class ReportService:
             created_at__date__lte=period_end,
         ).select_related("task")
 
+        role_labels = {
+            "operator": "운영자",
+            "manager": "관리자",
+            "admin": "관리자",
+            "engineer": "엔지니어",
+        }
+
         lines = [
-            f"Audit Summary: {contract.name}",
-            f"Period: {period_start} to {period_end}",
-            f"Contract Status: {contract.get_status_display()}",
+            f"감사 보고서: {contract.name}",
+            f"기간: {period_start} ~ {period_end}",
+            f"계약 상태: {contract.get_status_display()}",
             "",
-            f"Decision Logs Recorded: {decisions.count()}",
+            f"의사결정 기록: {decisions.count()}건",
             "",
         ]
 
         # Summarize by actor role
         role_counts = decisions.values("actor_role").annotate(count=Count("id"))
-        lines.append("Decisions by Role:")
+        lines.append("역할별 의사결정:")
         for rc in role_counts:
-            lines.append(f"  - {rc['actor_role'].upper()}: {rc['count']}")
+            role = rc["actor_role"]
+            label = role_labels.get(role, role.upper())
+            lines.append(f"  - {label}: {rc['count']}건")
 
         # Risk acknowledgment stats
         risk_ack = decisions.filter(risk_acknowledged=True).count()
@@ -219,16 +244,16 @@ class ReportService:
         lines.extend(
             [
                 "",
-                "Decision Quality Metrics:",
-                f"  - Risk Acknowledged: {risk_ack}/{decisions.count()}",
-                f"  - Alternatives Considered: {alt_considered}/{decisions.count()}",
+                "의사결정 품질 지표:",
+                f"  - 위험 인지: {risk_ack}/{decisions.count()}건",
+                f"  - 대안 검토: {alt_considered}/{decisions.count()}건",
             ]
         )
 
         # Key decisions with notes
         key_decisions = decisions.exclude(rationale_notes="")[:5]
         if key_decisions:
-            lines.extend(["", "Key Decisions:"])
+            lines.extend(["", "주요 의사결정:"])
             for d in key_decisions:
                 lines.append(f"  [{d.task.title}] {d.rationale_notes[:100]}...")
 
