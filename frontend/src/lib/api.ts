@@ -227,6 +227,7 @@ export interface EquipmentCreateInput {
   model_name?: string;
   manufacturer?: string;
   location?: string;
+  status?: string;
   notes?: string;
 }
 
