@@ -20,6 +20,10 @@ app.conf.beat_schedule = {
         "task": "inspections.tasks.send_inspection_reminders",
         "schedule": crontab(hour=9, minute=0),  # Run daily at 09:00
     },
+    "check-sla-violations-hourly": {
+        "task": "sla.tasks.check_sla_violations",
+        "schedule": crontab(minute=0),  # Run every hour at :00
+    },
 }
 
 
