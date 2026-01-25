@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "sla",
     "kb",
     "tickets",
+    "notifications",
     "dashboard",
 ]
 
