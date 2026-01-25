@@ -1,6 +1,6 @@
 """Equipment API views."""
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db.models import Prefetch
 from rest_framework import status
@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
 
 from common.permissions import IsPMOrAdmin, IsPMOrEngineer
 
@@ -27,7 +28,7 @@ def _authorization_error_response(e: AuthorizationDeniedError) -> Response:
     )
 
 
-from .models import Equipment, EquipmentTransaction
+from .models import Equipment, EquipmentTransaction, AssetRelationship, AssetHistory
 from .serializers import (
     EquipmentSerializer,
     EquipmentListSerializer,
@@ -36,6 +37,8 @@ from .serializers import (
     CheckOutSerializer,
     CheckInSerializer,
     CustodyHistoryResultSerializer,
+    AssetRelationshipSerializer,
+    AssetHistorySerializer,
 )
 from .services import (
     EquipmentService,
@@ -44,11 +47,20 @@ from .services import (
 )
 
 
+class StandardPagination(PageNumberPagination):
+    """Standard pagination for API responses."""
+
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
+
+
 class EquipmentViewSet(ModelViewSet):
     """ViewSet for Equipment CRUD operations."""
 
     queryset = Equipment.objects.all()
     serializer_class = EquipmentSerializer
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         """Optimize queries with select_related and prefetch_related."""
@@ -64,7 +76,14 @@ class EquipmentViewSet(ModelViewSet):
         return queryset
 
     def get_permissions(self):
-        if self.action in ["list", "retrieve", "transactions"]:
+        if self.action in [
+            "list",
+            "retrieve",
+            "transactions",
+            "relationships",
+            "history",
+            "warranty_expiring",
+        ]:
             return [AllowAny()]
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
@@ -81,6 +100,10 @@ class EquipmentViewSet(ModelViewSet):
             return CheckOutSerializer
         if self.action == "check_in":
             return CheckInSerializer
+        if self.action == "relationships":
+            return AssetRelationshipSerializer
+        if self.action == "history":
+            return AssetHistorySerializer
         return EquipmentSerializer
 
     def create(self, request, *args, **kwargs):
@@ -197,4 +220,64 @@ class EquipmentViewSet(ModelViewSet):
 
         result = CustodyHistoryService.get_custody_history(equipment, filters)
         serializer = CustodyHistoryResultSerializer(result)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get", "post"], url_path="relationships")
+    def relationships(self, request, pk=None):
+        """Get or create equipment relationships."""
+        equipment = self.get_object()
+
+        if request.method == "GET":
+            # List all relationships for this equipment
+            relationships = AssetRelationship.objects.filter(equipment=equipment)
+            serializer = AssetRelationshipSerializer(relationships, many=True)
+            return Response(serializer.data)
+
+        elif request.method == "POST":
+            # Create new relationship
+            serializer = AssetRelationshipSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save(equipment=equipment)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="history")
+    def history(self, request, pk=None):
+        """Get change history for equipment."""
+        equipment = self.get_object()
+        history = AssetHistory.objects.filter(equipment=equipment)
+
+        # Paginate results
+        page = self.paginate_queryset(history)
+        if page is not None:
+            serializer = AssetHistorySerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = AssetHistorySerializer(history, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="warranty-expiring")
+    def warranty_expiring(self, request):
+        """List equipment with warranty expiring soon (within 30/60/90 days)."""
+        days = request.query_params.get("days", 30)
+        try:
+            days = int(days)
+        except (ValueError, TypeError):
+            days = 30
+
+        today = datetime.now().date()
+        expiry_date = today + timedelta(days=days)
+
+        equipment = Equipment.objects.filter(
+            warranty_expiry_date__isnull=False,
+            warranty_expiry_date__lte=expiry_date,
+            warranty_expiry_date__gte=today,
+        ).select_related("contract")
+
+        # Paginate results
+        page = self.paginate_queryset(equipment)
+        if page is not None:
+            serializer = EquipmentSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = EquipmentSerializer(equipment, many=True)
         return Response(serializer.data)

@@ -1,7 +1,7 @@
 """Serializers for Equipment and EquipmentTransaction."""
 
 from rest_framework import serializers
-from .models import Equipment, EquipmentTransaction
+from .models import Equipment, EquipmentTransaction, AssetRelationship, AssetHistory
 
 
 class EquipmentTransactionSerializer(serializers.ModelSerializer):
@@ -117,6 +117,11 @@ class EquipmentSerializer(serializers.ModelSerializer):
             "status",
             "status_display",
             "notes",
+            "purchase_date",
+            "warranty_expiry_date",
+            "ip_address",
+            "mac_address",
+            "operating_system",
             "created_at",
             "updated_at",
             "recent_transactions",
@@ -280,3 +285,71 @@ class ContractEquipmentMovementsResultSerializer(serializers.Serializer):
     movements_requiring_pm = serializers.IntegerField()
     movements_with_pm_approval = serializers.IntegerField()
     compliance_rate = serializers.FloatField()
+
+
+class AssetRelationshipSerializer(serializers.ModelSerializer):
+    """Serializer for equipment relationships with nested equipment details."""
+
+    equipment_name = serializers.CharField(source="equipment.name", read_only=True)
+    equipment_serial = serializers.CharField(
+        source="equipment.serial_number", read_only=True
+    )
+    related_equipment_name = serializers.CharField(
+        source="related_equipment.name", read_only=True
+    )
+    related_equipment_serial = serializers.CharField(
+        source="related_equipment.serial_number", read_only=True
+    )
+    relationship_type_display = serializers.CharField(
+        source="get_relationship_type_display", read_only=True
+    )
+
+    class Meta:
+        model = AssetRelationship
+        fields = [
+            "id",
+            "equipment",
+            "equipment_name",
+            "equipment_serial",
+            "related_equipment",
+            "related_equipment_name",
+            "related_equipment_serial",
+            "relationship_type",
+            "relationship_type_display",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class AssetHistorySerializer(serializers.ModelSerializer):
+    """Read-only serializer for equipment change history."""
+
+    equipment_name = serializers.CharField(source="equipment.name", read_only=True)
+    changed_by_username = serializers.CharField(
+        source="changed_by.username", read_only=True, allow_null=True
+    )
+
+    class Meta:
+        model = AssetHistory
+        fields = [
+            "id",
+            "equipment",
+            "equipment_name",
+            "field_name",
+            "old_value",
+            "new_value",
+            "changed_by",
+            "changed_by_username",
+            "changed_at",
+        ]
+        read_only_fields = [
+            "id",
+            "equipment",
+            "field_name",
+            "old_value",
+            "new_value",
+            "changed_by",
+            "changed_at",
+        ]
