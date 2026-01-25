@@ -37,7 +37,8 @@ export default function AdminHeader() {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center relative bg-white z-50">
+      {/* Desktop Header */}
+      <div className="hidden md:flex max-w-7xl mx-auto px-4 py-3 justify-between items-center relative bg-white z-50">
         <Link href="/">
           <Image
             src="/images/ci_21.jpg"
@@ -48,7 +49,7 @@ export default function AdminHeader() {
           />
         </Link>
         
-        <div className="hidden md:flex items-center gap-6">
+        <div className="flex items-center gap-6">
           <nav className="flex gap-6">
             <Link href="/dashboard" className="text-black hover:text-gray-900 font-medium">대시보드</Link>
             <Link href="/contracts" className="text-black hover:text-gray-900 font-medium">사업 관리</Link>
@@ -70,8 +71,45 @@ export default function AdminHeader() {
             </svg>
           </button>
         </div>
+      </div>
 
-        <div className="md:hidden flex items-center gap-4">
+      {/* Mobile Header */}
+      <div className="md:hidden flex px-4 py-3 items-center relative bg-white z-50">
+        {/* Left: Hamburger Menu */}
+        <div className="flex-1">
+          <button 
+            onClick={toggleMenu} 
+            className="text-black hover:text-gray-900 p-1" 
+            aria-label="메뉴"
+            aria-expanded={isMenuOpen}
+          >
+            {isMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+            )}
+          </button>
+        </div>
+
+        {/* Center: Logo */}
+        <div className="flex-1 flex justify-center">
+          <Link href="/">
+            <Image
+              src="/images/ci_21.jpg"
+              alt="KRIHS 국토연구원"
+              width={120}
+              height={27}
+              priority
+            />
+          </Link>
+        </div>
+
+        {/* Right: Logout Button */}
+        <div className="flex-1 flex justify-end">
           <button  
             onClick={handleLogoutClick} 
             className="text-black hover:text-red-600 transition-colors p-1" 
@@ -81,22 +119,6 @@ export default function AdminHeader() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
             </svg>
-          </button>
-          <button 
-            onClick={toggleMenu} 
-            className="text-black hover:text-gray-900 p-1" 
-            aria-label="메뉴"
-            aria-expanded={isMenuOpen}
-          >
-             {isMenuOpen ? (
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-               </svg>
-             ) : (
-               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-               </svg>
-             )}
           </button>
         </div>
       </div>
