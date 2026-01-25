@@ -67,7 +67,8 @@ Call retries were exceeded
 **Attempted Solutions:**
 1. ❌ Install next-pwa with default config - Turbopack incompatibility
 2. ❌ Configure withPWA wrapper - Build fails
-3. ❌ Generate OpenAPI schema - django-filter compatibility issue (non-blocking)
+3. ❌ Manual service worker registration - Next.js 16 segmentation fault
+4. ❌ Generate OpenAPI schema - django-filter compatibility issue (non-blocking)
 
 **Workarounds Implemented:**
 1. ✅ Created manifest.json for future PWA support
