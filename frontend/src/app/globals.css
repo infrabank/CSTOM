@@ -18,3 +18,70 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print styles for single-page PDF export */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide non-essential elements */
+  .no-print,
+  nav,
+  header,
+  footer,
+  button,
+  a[href="/reports"] {
+    display: none !important;
+  }
+
+  /* Optimize report container for single page */
+  .bg-white.shadow-sm.rounded-lg {
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  /* Compact spacing */
+  .p-6 {
+    padding: 0 !important;
+  }
+
+  .mb-6 {
+    margin-bottom: 0.5rem !important;
+  }
+
+  .pt-6 {
+    padding-top: 0.5rem !important;
+  }
+
+  /* Scale content to fit single page */
+  .grid.grid-cols-3 {
+    gap: 0.5rem !important;
+  }
+
+  pre {
+    font-size: 0.7rem !important;
+    padding: 0.5rem !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  h1 {
+    font-size: 1.25rem !important;
+  }
+
+  h2 {
+    font-size: 1rem !important;
+    margin-bottom: 0.25rem !important;
+  }
+
+  h3 {
+    font-size: 0.75rem !important;
+  }
+}
