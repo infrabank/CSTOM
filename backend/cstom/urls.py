@@ -26,4 +26,5 @@ urlpatterns = [
     path("api/", include("inspections.urls")),
     path("api/", include("sla.urls")),
     path("api/", include("kb.urls")),
+    path("api/", include("tickets.urls")),
 ]
