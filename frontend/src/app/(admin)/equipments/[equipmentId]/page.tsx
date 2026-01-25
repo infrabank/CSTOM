@@ -61,18 +61,18 @@ export default function EquipmentDetailPage() {
     loadData();
   }, [equipmentId]);
 
-  async function handleDelete() {
-    if (!confirm("정말 이 장비를 삭제하시겠습니까?")) {
+  async function handleRetire() {
+    if (!confirm("이 장비를 폐기 처리하시겠습니까?")) {
       return;
     }
 
     setIsDeleting(true);
     setError(null);
     try {
-      await equipmentsApi.delete(equipmentId);
-      router.push("/equipments");
+      await equipmentsApi.update(equipmentId, { status: "retired" });
+      window.location.reload();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "장비 삭제에 실패했습니다");
+      setError(e instanceof Error ? e.message : "장비 폐기 처리에 실패했습니다");
       setIsDeleting(false);
     }
   }
@@ -165,13 +165,15 @@ export default function EquipmentDetailPage() {
             >
               수정
             </Link>
-            <button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
-            >
-              {isDeleting ? "삭제 중..." : "삭제"}
-            </button>
+            {equipment.status !== "retired" && equipment.status !== "checked_out" && (
+              <button
+                onClick={handleRetire}
+                disabled={isDeleting}
+                className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
+              >
+                {isDeleting ? "처리 중..." : "폐기"}
+              </button>
+            )}
             {equipment.status === "available" && (
               <button
                 onClick={() => setShowCheckOutModal(true)}
