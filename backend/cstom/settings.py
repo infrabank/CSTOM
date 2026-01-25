@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     "inspections",
     "sop",
     "sla",
+    "kb",
 ]
 
 MIDDLEWARE = [
