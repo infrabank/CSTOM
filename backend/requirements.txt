@@ -19,3 +19,4 @@ django-celery-beat>=2.5,<3.0
 # Production server
 gunicorn>=21.0,<23.0
 whitenoise>=6.6,<7.0
+qrcode[pil]>=8.0
