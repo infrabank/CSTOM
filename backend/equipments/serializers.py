@@ -177,7 +177,7 @@ class EquipmentListSerializer(serializers.ModelSerializer):
 
 
 class EquipmentCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating Equipment."""
+    """Serializer for creating and updating Equipment."""
 
     class Meta:
         model = Equipment
@@ -189,6 +189,7 @@ class EquipmentCreateSerializer(serializers.ModelSerializer):
             "model_name",
             "manufacturer",
             "location",
+            "status",
             "notes",
         ]
 
