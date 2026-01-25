@@ -61,6 +61,9 @@ INSTALLED_APPS = [
     "events",
     "reports",
     "equipments",
+    "inspections",
+    "sop",
+    "sla",
 ]
 
 MIDDLEWARE = [
