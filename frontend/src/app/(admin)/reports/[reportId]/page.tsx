@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { reportsApi, Report } from "@/lib/api";
 import PdfDownloadButton from "../pdf-download-button";
+import DeleteButton from "../delete-button";
 
 const TYPE_LABELS: Record<string, string> = {
   monthly: "월간 보고서",
@@ -52,9 +53,18 @@ export default async function ReportDetailPage({ params }: PageProps) {
             </h1>
             <p className="text-black">{report.contract_name}</p>
           </div>
-          <PdfDownloadButton
-            reportTitle={`${TYPE_LABELS[report.report_type] || report.report_type} - ${report.contract_name}`}
-          />
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/reports/${report.id}/edit`}
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              수정
+            </Link>
+            <DeleteButton reportId={report.id} />
+            <PdfDownloadButton
+              reportTitle={`${TYPE_LABELS[report.report_type] || report.report_type} - ${report.contract_name}`}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4 mb-6">

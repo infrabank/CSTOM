@@ -23,7 +23,7 @@ class ReportViewSet(ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ["create", "destroy"]:
+        if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
         return [ReadOnlyForCustomer()]
 
