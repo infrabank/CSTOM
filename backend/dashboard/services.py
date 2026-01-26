@@ -113,11 +113,13 @@ def calculate_inspection_completion_rate(start_date, end_date):
 
 def get_task_status_summary(start_date, end_date):
     """
-    Get task status summary.
+    Get inspection task status summary.
 
     Returns: Dict with counts by status (pending, in_progress, completed)
     """
-    tasks = Task.objects.filter(created_at__gte=start_date, created_at__lte=end_date)
+    inspection_tasks = InspectionTask.objects.filter(
+        created_at__gte=start_date, created_at__lte=end_date
+    )
 
     summary = {
         "pending": 0,
@@ -125,8 +127,8 @@ def get_task_status_summary(start_date, end_date):
         "completed": 0,
     }
 
-    # Count tasks by status
-    status_counts = tasks.values("status").annotate(count=Count("id"))
+    # Count inspection tasks by status
+    status_counts = inspection_tasks.values("status").annotate(count=Count("id"))
 
     for item in status_counts:
         status = item["status"]
