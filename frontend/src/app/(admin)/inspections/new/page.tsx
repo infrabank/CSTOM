@@ -54,7 +54,7 @@ export default function NewInspectionSchedulePage() {
           : {};
 
         // Fetch contracts
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, {
+        const contractsRes = await fetch(`${API_URL}/contracts/`, {
           headers,
         });
         if (contractsRes.ok) {
@@ -63,7 +63,7 @@ export default function NewInspectionSchedulePage() {
         }
 
         // Fetch users
-        const usersRes = await fetch(`${API_URL}/v1/users/`, {
+        const usersRes = await fetch(`${API_URL}/users/`, {
           headers,
         });
         if (usersRes.ok) {
