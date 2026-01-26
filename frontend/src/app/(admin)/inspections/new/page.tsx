@@ -1,0 +1,307 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+interface Contract {
+  id: number;
+  name: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+const CYCLE_OPTIONS = [
+  { value: "monthly", label: "월간" },
+  { value: "quarterly", label: "분기" },
+  { value: "biannual", label: "반기" },
+  { value: "annual", label: "연간" },
+];
+
+export default function NewInspectionSchedulePage() {
+  const router = useRouter();
+  const [contractId, setContractId] = useState("");
+  const [equipmentType, setEquipmentType] = useState("");
+  const [cycle, setCycle] = useState("monthly");
+  const [assignedTo, setAssignedTo] = useState("");
+  const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
+
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  // Fetch contracts and users on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("cstom_access_token="))
+          ?.split("=")[1];
+
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
+        // Fetch contracts
+        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, {
+          headers,
+        });
+        if (contractsRes.ok) {
+          const contractsData = await contractsRes.json();
+          setContracts(contractsData.results || contractsData || []);
+        }
+
+        // Fetch users
+        const usersRes = await fetch(`${API_URL}/v1/users/`, {
+          headers,
+        });
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          setUsers(usersData.results || usersData || []);
+        }
+      } catch (err) {
+        console.error("Failed to fetch data:", err);
+        setError("데이터를 불러올 수 없습니다");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      const token = document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("cstom_access_token="))
+        ?.split("=")[1];
+
+      if (!token) {
+        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/v1/inspections/schedules/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          contract: parseInt(contractId),
+          equipment_type: equipmentType,
+          cycle,
+          assigned_to: assignedTo ? parseInt(assignedTo) : null,
+          description,
+          is_active: isActive,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        const errMsg =
+          errData.detail ||
+          Object.values(errData).flat().join(", ") ||
+          "등록에 실패했습니다";
+        throw new Error(errMsg);
+      }
+
+      router.push("/inspections");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "등록에 실패했습니다");
+      setIsSubmitting(false);
+    }
+  };
+
+  const getUserDisplayName = (user: User) => {
+    if (user.first_name || user.last_name) {
+      return `${user.last_name}${user.first_name} (${user.username})`;
+    }
+    return user.username;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        <div className="text-center text-gray-600">로딩 중...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      <div className="mb-6">
+        <Link href="/inspections" className="text-blue-600 hover:underline text-sm">
+          점검 스케줄 목록으로
+        </Link>
+      </div>
+
+      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+        <h1 className="text-2xl font-bold mb-6">점검 스케줄 등록</h1>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Contract */}
+          <div>
+            <label
+              htmlFor="contract"
+              className="block text-sm font-medium text-black mb-1"
+            >
+              사업 *
+            </label>
+            <select
+              id="contract"
+              value={contractId}
+              onChange={(e) => setContractId(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">사업 선택</option>
+              {contracts.map((contract) => (
+                <option key={contract.id} value={contract.id}>
+                  {contract.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Equipment Type */}
+          <div>
+            <label
+              htmlFor="equipmentType"
+              className="block text-sm font-medium text-black mb-1"
+            >
+              장비 유형 *
+            </label>
+            <input
+              id="equipmentType"
+              type="text"
+              value={equipmentType}
+              onChange={(e) => setEquipmentType(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="예: 서버, 네트워크 장비, 스토리지"
+            />
+          </div>
+
+          {/* Cycle */}
+          <div>
+            <label
+              htmlFor="cycle"
+              className="block text-sm font-medium text-black mb-1"
+            >
+              점검 주기 *
+            </label>
+            <select
+              id="cycle"
+              value={cycle}
+              onChange={(e) => setCycle(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {CYCLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Assigned To */}
+          <div>
+            <label
+              htmlFor="assignedTo"
+              className="block text-sm font-medium text-black mb-1"
+            >
+              담당자
+            </label>
+            <select
+              id="assignedTo"
+              value={assignedTo}
+              onChange={(e) => setAssignedTo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">담당자 선택</option>
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {getUserDisplayName(user)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-black mb-1"
+            >
+              설명
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="점검 스케줄에 대한 설명을 입력하세요"
+            />
+          </div>
+
+          {/* Is Active */}
+          <div className="flex items-center gap-2">
+            <input
+              id="isActive"
+              type="checkbox"
+              checked={isActive}
+              onChange={(e) => setIsActive(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="isActive" className="text-sm text-black">
+              활성화 (체크 해제 시 자동 작업 생성 중단)
+            </label>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex gap-3 pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting || !contractId || !equipmentType}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "등록 중..." : "등록"}
+            </button>
+            <Link
+              href="/inspections"
+              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
+            >
+              취소
+            </Link>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
