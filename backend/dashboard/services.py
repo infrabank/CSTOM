@@ -122,6 +122,7 @@ def get_task_status_summary(start_date, end_date):
     )
 
     summary = {
+        "total": 0,
         "pending": 0,
         "in_progress": 0,
         "completed": 0,
@@ -134,6 +135,7 @@ def get_task_status_summary(start_date, end_date):
         status = item["status"]
         if status in summary:
             summary[status] = item["count"]
+        summary["total"] += item["count"]
 
     return summary
 
