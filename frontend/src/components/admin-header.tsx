@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,8 @@ export default function AdminHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleLogoutClick = () => {
     setIsLogoutModalOpen(true);
@@ -35,10 +37,46 @@ export default function AdminHeader() {
     setIsMenuOpen(false);
   };
 
+  const toggleDropdown = (menu: string) => {
+    setOpenDropdown(openDropdown === menu ? null : menu);
+  };
+
+  const closeDropdown = () => {
+    setOpenDropdown(null);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [openDropdown]);
+
+  // Close dropdown on Escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeDropdown();
+      }
+    };
+
+    if (openDropdown) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [openDropdown]);
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       {/* Desktop Header */}
-      <div className="hidden md:flex max-w-7xl mx-auto px-4 py-3 justify-between items-center relative bg-white z-50">
+      <div className="hidden md:flex max-w-7xl mx-auto px-4 py-3 justify-between items-center relative bg-white z-50" ref={dropdownRef}>
         <Link href="/">
           <Image
             src="/images/ci_21.jpg"
@@ -52,20 +90,77 @@ export default function AdminHeader() {
         <div className="flex items-center gap-6">
           <nav className="flex gap-6">
             <Link href="/dashboard" className="text-black hover:text-gray-900 font-medium">대시보드</Link>
-            <Link href="/contracts" className="text-black hover:text-gray-900 font-medium">사업 관리</Link>
-            <Link href="/tasks" className="text-black hover:text-gray-900 font-medium">작업 관리</Link>
-            <Link href="/inspections" className="text-black hover:text-gray-900 font-medium">예방점검</Link>
-            <Link href="/events" className="text-black hover:text-gray-900 font-medium">변경/장애</Link>
-            <Link href="/sop" className="text-black hover:text-gray-900 font-medium">SOP</Link>
-            <Link href="/sla" className="text-black hover:text-gray-900 font-medium">SLA</Link>
-            <Link href="/kb" className="text-black hover:text-gray-900 font-medium">지식베이스</Link>
-            <Link href="/tickets" className="text-black hover:text-gray-900 font-medium">티켓</Link>
-            <Link href="/reports" className="text-black hover:text-gray-900 font-medium">보고서</Link>
-            <Link href="/users" className="text-black hover:text-gray-900 font-medium">사용자</Link>
-            <Link href="/equipments" className="text-black hover:text-gray-900 font-medium">장비</Link>
-            <Link href="/workforce" className="text-black hover:text-gray-900 font-medium">인력</Link>
-            <Link href="/predictions" className="text-black hover:text-gray-900 font-medium">AI예측</Link>
-            <Link href="/scan" className="text-black hover:text-gray-900 font-medium">QR스캔</Link>
+            
+            {/* 운영관리 Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('operations')}
+                className="text-black hover:text-gray-900 font-medium flex items-center gap-1"
+                aria-expanded={openDropdown === 'operations'}
+                aria-haspopup="true"
+              >
+                운영관리
+                <svg className={`w-4 h-4 transition-transform ${openDropdown === 'operations' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openDropdown === 'operations' && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1" role="menu">
+                  <Link href="/contracts" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">사업 관리</Link>
+                  <Link href="/tasks" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">작업 관리</Link>
+                  <Link href="/inspections" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">예방점검</Link>
+                  <Link href="/events" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">변경/장애</Link>
+                  <Link href="/tickets" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">티켓</Link>
+                  <Link href="/workforce" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">인력</Link>
+                </div>
+              )}
+            </div>
+
+            {/* 문서관리 Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('documents')}
+                className="text-black hover:text-gray-900 font-medium flex items-center gap-1"
+                aria-expanded={openDropdown === 'documents'}
+                aria-haspopup="true"
+              >
+                문서관리
+                <svg className={`w-4 h-4 transition-transform ${openDropdown === 'documents' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openDropdown === 'documents' && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1" role="menu">
+                  <Link href="/sop" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">SOP</Link>
+                  <Link href="/sla" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">SLA</Link>
+                  <Link href="/kb" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">지식베이스</Link>
+                  <Link href="/reports" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">보고서</Link>
+                </div>
+              )}
+            </div>
+
+            {/* 시스템 Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('system')}
+                className="text-black hover:text-gray-900 font-medium flex items-center gap-1"
+                aria-expanded={openDropdown === 'system'}
+                aria-haspopup="true"
+              >
+                시스템
+                <svg className={`w-4 h-4 transition-transform ${openDropdown === 'system' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {openDropdown === 'system' && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1" role="menu">
+                  <Link href="/equipments" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">장비</Link>
+                  <Link href="/users" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">사용자</Link>
+                  <Link href="/predictions" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">AI예측</Link>
+                  <Link href="/scan" onClick={closeDropdown} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">QR스캔</Link>
+                </div>
+              )}
+            </div>
           </nav>
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <button 
@@ -141,20 +236,29 @@ export default function AdminHeader() {
           <div className="absolute top-full left-0 right-0 bg-white border-b shadow-lg z-50 md:hidden animate-in slide-in-from-top-2 duration-200">
              <nav className="flex flex-col p-4 space-y-4">
               <Link href="/dashboard" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">대시보드</Link>
-              <Link href="/contracts" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사업 관리</Link>
-              <Link href="/tasks" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">작업 관리</Link>
-              <Link href="/inspections" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">예방점검</Link>
-              <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>
-              <Link href="/sop" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">SOP</Link>
-              <Link href="/sla" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">SLA</Link>
-              <Link href="/kb" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">지식베이스</Link>
-              <Link href="/tickets" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">티켓</Link>
-              <Link href="/reports" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">보고서</Link>
-              <Link href="/users" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사용자</Link>
-              <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">장비</Link>
-              <Link href="/workforce" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">인력</Link>
-              <Link href="/predictions" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">AI예측</Link>
-              <Link href="/scan" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">QR스캔</Link>
+              <div className="border-t pt-2">
+                <div className="text-xs font-semibold text-gray-500 px-2 mb-2">운영관리</div>
+                <Link href="/contracts" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">사업 관리</Link>
+                <Link href="/tasks" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">작업 관리</Link>
+                <Link href="/inspections" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">예방점검</Link>
+                <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">변경/장애</Link>
+                <Link href="/tickets" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">티켓</Link>
+                <Link href="/workforce" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">인력</Link>
+              </div>
+              <div className="border-t pt-2">
+                <div className="text-xs font-semibold text-gray-500 px-2 mb-2">문서관리</div>
+                <Link href="/sop" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">SOP</Link>
+                <Link href="/sla" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">SLA</Link>
+                <Link href="/kb" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">지식베이스</Link>
+                <Link href="/reports" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">보고서</Link>
+              </div>
+              <div className="border-t pt-2">
+                <div className="text-xs font-semibold text-gray-500 px-2 mb-2">시스템</div>
+                <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">장비</Link>
+                <Link href="/users" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">사용자</Link>
+                <Link href="/predictions" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">AI예측</Link>
+                <Link href="/scan" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded block">QR스캔</Link>
+              </div>
             </nav>
           </div>
         </>
