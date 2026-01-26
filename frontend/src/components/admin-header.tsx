@@ -54,10 +54,18 @@ export default function AdminHeader() {
             <Link href="/dashboard" className="text-black hover:text-gray-900 font-medium">대시보드</Link>
             <Link href="/contracts" className="text-black hover:text-gray-900 font-medium">사업 관리</Link>
             <Link href="/tasks" className="text-black hover:text-gray-900 font-medium">작업 관리</Link>
+            <Link href="/inspections" className="text-black hover:text-gray-900 font-medium">예방점검</Link>
             <Link href="/events" className="text-black hover:text-gray-900 font-medium">변경/장애</Link>
+            <Link href="/sop" className="text-black hover:text-gray-900 font-medium">SOP</Link>
+            <Link href="/sla" className="text-black hover:text-gray-900 font-medium">SLA</Link>
+            <Link href="/kb" className="text-black hover:text-gray-900 font-medium">지식베이스</Link>
+            <Link href="/tickets" className="text-black hover:text-gray-900 font-medium">티켓</Link>
             <Link href="/reports" className="text-black hover:text-gray-900 font-medium">보고서</Link>
             <Link href="/users" className="text-black hover:text-gray-900 font-medium">사용자</Link>
-            <Link href="/equipments" className="text-black hover:text-gray-900 font-medium">장비 반출입</Link>
+            <Link href="/equipments" className="text-black hover:text-gray-900 font-medium">장비</Link>
+            <Link href="/workforce" className="text-black hover:text-gray-900 font-medium">인력</Link>
+            <Link href="/predictions" className="text-black hover:text-gray-900 font-medium">AI예측</Link>
+            <Link href="/scan" className="text-black hover:text-gray-900 font-medium">QR스캔</Link>
           </nav>
           <div className="h-6 w-px bg-gray-300 mx-2"></div>
           <button 
@@ -135,10 +143,18 @@ export default function AdminHeader() {
               <Link href="/dashboard" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">대시보드</Link>
               <Link href="/contracts" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사업 관리</Link>
               <Link href="/tasks" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">작업 관리</Link>
+              <Link href="/inspections" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">예방점검</Link>
               <Link href="/events" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">변경/장애</Link>
+              <Link href="/sop" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">SOP</Link>
+              <Link href="/sla" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">SLA</Link>
+              <Link href="/kb" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">지식베이스</Link>
+              <Link href="/tickets" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">티켓</Link>
               <Link href="/reports" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">보고서</Link>
               <Link href="/users" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">사용자</Link>
-              <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">장비 반출입</Link>
+              <Link href="/equipments" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">장비</Link>
+              <Link href="/workforce" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">인력</Link>
+              <Link href="/predictions" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">AI예측</Link>
+              <Link href="/scan" onClick={closeMenu} className="text-black hover:text-gray-900 font-medium px-2 py-1 hover:bg-gray-50 rounded">QR스캔</Link>
             </nav>
           </div>
         </>
