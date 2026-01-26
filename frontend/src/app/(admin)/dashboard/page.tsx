@@ -55,18 +55,7 @@ interface TaskListItem {
   contract_name: string;
 }
 
-async function fetchData<T>(endpoint: string, token?: string): Promise<T | null> {
-  try {
-    const res = await fetch(`${API_URL}${endpoint}`, {
-      cache: "no-store",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+// Removed unused fetchData function
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",

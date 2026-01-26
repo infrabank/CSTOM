@@ -227,43 +227,43 @@ export default function NewSOPPage() {
               <div className="min-h-96 p-4 border border-gray-300 rounded-md bg-gray-50 prose prose-sm max-w-none">
                 <ReactMarkdown
                   components={{
-                    h1: ({ node, ...props }) => (
+                    h1: (props) => (
                       <h1 className="text-2xl font-bold mt-4 mb-2" {...props} />
                     ),
-                    h2: ({ node, ...props }) => (
+                    h2: (props) => (
                       <h2 className="text-xl font-bold mt-3 mb-2" {...props} />
                     ),
-                    h3: ({ node, ...props }) => (
+                    h3: (props) => (
                       <h3 className="text-lg font-bold mt-2 mb-1" {...props} />
                     ),
-                    p: ({ node, ...props }) => (
+                    p: (props) => (
                       <p className="mb-2 text-gray-700" {...props} />
                     ),
-                    ul: ({ node, ...props }) => (
+                    ul: (props) => (
                       <ul className="list-disc list-inside mb-2 text-gray-700" {...props} />
                     ),
-                    ol: ({ node, ...props }) => (
+                    ol: (props) => (
                       <ol className="list-decimal list-inside mb-2 text-gray-700" {...props} />
                     ),
-                    li: ({ node, ...props }) => (
+                    li: (props) => (
                       <li className="mb-1" {...props} />
                     ),
-                    code: ({ node, ...props }: any) =>
-                      props.inline ? (
+                    code: (props) =>
+                      'inline' in props && props.inline ? (
                         <code className="bg-gray-200 px-1 py-0.5 rounded text-sm" {...props} />
                       ) : (
                         <code className="block bg-gray-200 p-2 rounded mb-2 overflow-x-auto" {...props} />
                       ),
-                    blockquote: ({ node, ...props }) => (
+                    blockquote: (props) => (
                       <blockquote className="border-l-4 border-gray-300 pl-4 italic text-gray-600 mb-2" {...props} />
                     ),
-                    table: ({ node, ...props }) => (
+                    table: (props) => (
                       <table className="border-collapse border border-gray-300 mb-2" {...props} />
                     ),
-                    th: ({ node, ...props }) => (
+                    th: (props) => (
                       <th className="border border-gray-300 px-2 py-1 bg-gray-100" {...props} />
                     ),
-                    td: ({ node, ...props }) => (
+                    td: (props) => (
                       <td className="border border-gray-300 px-2 py-1" {...props} />
                     ),
                   }}

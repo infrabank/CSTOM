@@ -34,6 +34,7 @@ export default function EventLinkButton({
     if (isModalOpen) {
       loadEvents();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isModalOpen]);
 
   const loadEvents = async () => {

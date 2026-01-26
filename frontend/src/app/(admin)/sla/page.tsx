@@ -81,11 +81,7 @@ function ActiveStatusBadge({ isActive }: { isActive: boolean }) {
   );
 }
 
-interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function SLAPage({ searchParams }: PageProps) {
+export default async function SLAPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 

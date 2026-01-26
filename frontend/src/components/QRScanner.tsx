@@ -29,7 +29,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
         (decodedText) => {
           onScan(decodedText);
         },
-        (errorMessage) => {
+        () => {
           // Ignore continuous scanning errors
         }
       );

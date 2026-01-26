@@ -26,11 +26,7 @@ async function getSOPDocuments(token?: string): Promise<SOPDocument[]> {
   }
 }
 
-interface PageProps {
-  searchParams: Promise<{ filter?: string }>;
-}
-
-export default async function SOPPage({ searchParams }: PageProps) {
+export default async function SOPPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
   
