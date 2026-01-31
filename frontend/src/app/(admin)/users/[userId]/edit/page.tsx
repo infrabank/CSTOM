@@ -39,7 +39,7 @@ export default function EditUserPage({ params }: PageProps) {
     async function fetchUser() {
       try {
         const token = getAccessToken();
-        const res = await fetch(`${API_URL}/users/${userId}/`, {
+        const res = await fetch(`${API_URL}/v1/users/${userId}/`, {
           cache: "no-store",
           headers: {
             ...(token && { Authorization: `Bearer ${token}` }),

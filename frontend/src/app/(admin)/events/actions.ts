@@ -38,7 +38,7 @@ export async function createEvent(formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/events/`, {
+    const res = await fetch(`${API_URL}/v1/events/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export async function updateEvent(id: number, formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/events/${id}/`, {
+    const res = await fetch(`${API_URL}/v1/events/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -113,7 +113,7 @@ export async function updateEvent(id: number, formData: FormData) {
 export async function linkEvent(eventId: number, relatedEventId: number) {
   const token = await getToken();
   try {
-    const res = await fetch(`${API_URL}/events/${eventId}/link/`, {
+    const res = await fetch(`${API_URL}/v1/events/${eventId}/link/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

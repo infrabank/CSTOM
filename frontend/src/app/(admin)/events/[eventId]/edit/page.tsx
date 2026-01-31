@@ -55,8 +55,8 @@ export default function EditEventPage({ params }: PageProps) {
     async function fetchData() {
       try {
         const [eventRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/events/${eventId}/`, { cache: "no-store" }),
-          fetch(`${API_URL}/contracts/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/events/${eventId}/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" }),
         ]);
 
         if (!eventRes.ok) throw new Error("이벤트 정보를 불러오지 못했습니다");

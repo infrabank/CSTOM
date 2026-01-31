@@ -59,7 +59,7 @@ export async function createUser(formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/users/`, {
+    const res = await fetch(`${API_URL}/v1/users/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,7 +103,7 @@ export async function updateUser(id: number, formData: FormData) {
   }
 
   try {
-    const res = await fetch(`${API_URL}/users/${id}/`, {
+    const res = await fetch(`${API_URL}/v1/users/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

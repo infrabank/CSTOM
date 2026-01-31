@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { equipmentsApi, Equipment, EquipmentTransaction } from "@/lib/api";
 import Modal from "@/components/modal";
+import ConfirmModal from "@/components/confirm-modal";
 
 const CATEGORY_LABELS: Record<string, string> = {
   server: "서버",
@@ -42,6 +43,7 @@ export default function EquipmentDetailPage() {
   const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showRetireConfirm, setShowRetireConfirm] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -62,10 +64,6 @@ export default function EquipmentDetailPage() {
   }, [equipmentId]);
 
   async function handleRetire() {
-    if (!confirm("이 장비를 폐기 처리하시겠습니까?")) {
-      return;
-    }
-
     setIsDeleting(true);
     setError(null);
     try {
@@ -74,6 +72,7 @@ export default function EquipmentDetailPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "장비 폐기 처리에 실패했습니다");
       setIsDeleting(false);
+      setShowRetireConfirm(false);
     }
   }
 
@@ -167,7 +166,7 @@ export default function EquipmentDetailPage() {
             </Link>
             {equipment.status !== "retired" && equipment.status !== "checked_out" && (
               <button
-                onClick={handleRetire}
+                onClick={() => setShowRetireConfirm(true)}
                 disabled={isDeleting}
                 className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
               >
@@ -462,6 +461,17 @@ export default function EquipmentDetailPage() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmModal
+        isOpen={showRetireConfirm}
+        onClose={() => setShowRetireConfirm(false)}
+        onConfirm={handleRetire}
+        title="장비 폐기"
+        message="이 장비를 폐기 처리하시겠습니까?"
+        confirmText="폐기"
+        isDestructive
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

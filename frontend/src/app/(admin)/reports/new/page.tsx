@@ -27,7 +27,7 @@ export default function NewReportPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        const res = await fetch(`${API_URL}/contracts/`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setContracts(data.results || []);

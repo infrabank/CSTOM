@@ -45,7 +45,7 @@ export default function DecisionLogForm({
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const res = await fetch(`${API_URL}/decisions/`, {
+      const res = await fetch(`${API_URL}/v1/decisions/`, {
         method: "POST",
         headers,
         body: JSON.stringify(data),

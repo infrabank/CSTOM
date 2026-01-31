@@ -102,16 +102,16 @@ export default function DashboardPage() {
           fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
-          fetch(`${API_URL}/contracts/`, {
+          fetch(`${API_URL}/v1/contracts/`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
-          fetch(`${API_URL}/equipments/`, {
+          fetch(`${API_URL}/v1/equipments/`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
-          fetch(`${API_URL}/events/`, {
+          fetch(`${API_URL}/v1/events/`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
-          fetch(`${API_URL}/tasks/`, {
+          fetch(`${API_URL}/v1/tasks/`, {
             headers: token ? { Authorization: `Bearer ${token}` } : {},
           }),
         ]);

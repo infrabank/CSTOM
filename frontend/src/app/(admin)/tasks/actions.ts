@@ -29,7 +29,7 @@ export async function createTask(formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/tasks/`, {
+    const res = await fetch(`${API_URL}/v1/tasks/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export async function updateTask(id: number, formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/tasks/${id}/`, {
+    const res = await fetch(`${API_URL}/v1/tasks/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

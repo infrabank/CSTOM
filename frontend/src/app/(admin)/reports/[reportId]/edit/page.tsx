@@ -53,8 +53,8 @@ export default function EditReportPage({ params }: PageProps) {
           : {};
 
         const [reportRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/reports/${reportId}/`, { cache: "no-store", headers }),
-          fetch(`${API_URL}/contracts/`, { cache: "no-store", headers }),
+          fetch(`${API_URL}/v1/reports/${reportId}/`, { cache: "no-store", headers }),
+          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
         ]);
 
         if (!reportRes.ok) throw new Error("보고서 정보를 불러오지 못했습니다");

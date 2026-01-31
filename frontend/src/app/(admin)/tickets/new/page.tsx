@@ -44,14 +44,14 @@ export default function NewTicketPage() {
           : {};
 
         // Fetch contracts
-        const contractsRes = await fetch(`${API_URL}/contracts/`, { headers });
+        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
         if (contractsRes.ok) {
           const contractsData = await contractsRes.json();
           setContracts(contractsData.results || contractsData || []);
         }
 
         // Fetch users
-        const usersRes = await fetch(`${API_URL}/users/`, { headers });
+        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
         if (usersRes.ok) {
           const usersData = await usersRes.json();
           setUsers(usersData.results || usersData || []);

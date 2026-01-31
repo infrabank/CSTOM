@@ -27,7 +27,7 @@ export async function generateReport(formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/reports/`, {
+    const res = await fetch(`${API_URL}/v1/reports/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -65,7 +65,7 @@ export async function updateReport(id: number, formData: FormData) {
   };
 
   try {
-    const res = await fetch(`${API_URL}/reports/${id}/`, {
+    const res = await fetch(`${API_URL}/v1/reports/${id}/`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -97,7 +97,7 @@ export async function deleteReport(id: number) {
   const token = await getToken();
 
   try {
-    const res = await fetch(`${API_URL}/reports/${id}/`, {
+    const res = await fetch(`${API_URL}/v1/reports/${id}/`, {
       method: "DELETE",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),

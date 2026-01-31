@@ -26,7 +26,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 async function getEvent(id: number): Promise<Event | null> {
   try {
-    const res = await fetch(`${API_URL}/events/${id}/`, { cache: "no-store" });
+    const res = await fetch(`${API_URL}/v1/events/${id}/`, { cache: "no-store" });
     if (!res.ok) return null;
     return res.json();
   } catch {

@@ -54,8 +54,8 @@ export default function EditTaskPage({ params }: PageProps) {
     async function fetchData() {
       try {
         const [taskRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/tasks/${taskId}/`, { cache: "no-store" }),
-          fetch(`${API_URL}/contracts/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/tasks/${taskId}/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" }),
         ]);
 
         if (!taskRes.ok) throw new Error("작업 정보를 불러오지 못했습니다");

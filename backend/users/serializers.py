@@ -1,8 +1,31 @@
 """User and Role serializers."""
 
+import re
+
 from rest_framework import serializers
 
 from .models import Role, User
+
+
+def validate_password_complexity(password: str) -> str:
+    """Validate password meets complexity requirements."""
+    errors = []
+
+    if len(password) < 8:
+        errors.append("Password must be at least 8 characters long")
+    if not re.search(r"[A-Z]", password):
+        errors.append("Password must contain at least one uppercase letter")
+    if not re.search(r"[a-z]", password):
+        errors.append("Password must contain at least one lowercase letter")
+    if not re.search(r"\d", password):
+        errors.append("Password must contain at least one digit")
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password):
+        errors.append("Password must contain at least one special character")
+
+    if errors:
+        raise serializers.ValidationError(errors)
+
+    return password
 
 
 class RoleSerializer(serializers.ModelSerializer):
@@ -72,7 +95,11 @@ class UserListSerializer(serializers.ModelSerializer):
 class UserCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating users."""
 
-    password = serializers.CharField(write_only=True, min_length=8)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        validators=[validate_password_complexity],
+    )
     role_ids = serializers.ListField(
         child=serializers.IntegerField(),
         required=False,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { getAccessToken } from "@/lib/auth";
+import ConfirmModal from "@/components/confirm-modal";
 
 interface Contract {
   id: number;
@@ -82,6 +83,8 @@ export default function InspectionScheduleDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [error, setError] = useState("");
 
   // Edit form state
@@ -143,14 +146,14 @@ export default function InspectionScheduleDetailPage() {
         }
 
         // Fetch contracts for edit mode
-        const contractsRes = await fetch(`${API_URL}/contracts/`, { headers });
+        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
         if (contractsRes.ok) {
           const contractsData = await contractsRes.json();
           setContracts(contractsData.results || contractsData || []);
         }
 
         // Fetch users for edit mode
-        const usersRes = await fetch(`${API_URL}/users/`, { headers });
+        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
         if (usersRes.ok) {
           const usersData = await usersRes.json();
           setUsers(usersData.results || usersData || []);
@@ -214,12 +217,13 @@ export default function InspectionScheduleDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm("이 점검 스케줄을 삭제하시겠습니까?")) return;
-
+    setIsDeleting(true);
     try {
       const token = getToken();
       if (!token) {
         setError("인증 토큰이 없습니다");
+        setIsDeleting(false);
+        setShowDeleteConfirm(false);
         return;
       }
 
@@ -237,6 +241,8 @@ export default function InspectionScheduleDetailPage() {
       router.push("/inspections");
     } catch (err) {
       setError(err instanceof Error ? err.message : "삭제에 실패했습니다");
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -308,10 +314,11 @@ export default function InspectionScheduleDetailPage() {
                   수정
                 </button>
                 <button
-                  onClick={handleDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
-                  삭제
+                  {isDeleting ? "삭제 중..." : "삭제"}
                 </button>
               </>
             ) : (
@@ -574,6 +581,17 @@ export default function InspectionScheduleDetailPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="점검 스케줄 삭제"
+        message="이 점검 스케줄을 삭제하시겠습니까?"
+        confirmText="삭제"
+        isDestructive
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

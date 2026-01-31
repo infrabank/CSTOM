@@ -75,7 +75,7 @@ export default function UserActions({
 
     try {
       const token = getAccessToken();
-      const res = await fetch(`${API_URL}/users/${userId}/roles/`, {
+      const res = await fetch(`${API_URL}/v1/users/${userId}/roles/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ export default function UserActions({
 
     try {
       const token = getAccessToken();
-      const res = await fetch(`${API_URL}/users/${userId}/`, {
+      const res = await fetch(`${API_URL}/v1/users/${userId}/`, {
         method: "DELETE",
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),

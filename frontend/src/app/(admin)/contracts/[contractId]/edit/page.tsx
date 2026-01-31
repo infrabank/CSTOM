@@ -47,7 +47,7 @@ export default function EditContractPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchContract() {
       try {
-        const res = await fetch(`${API_URL}/contracts/${contractId}/`, {
+        const res = await fetch(`${API_URL}/v1/contracts/${contractId}/`, {
           cache: "no-store",
         });
         if (!res.ok) throw new Error("사업 정보를 불러오지 못했습니다");

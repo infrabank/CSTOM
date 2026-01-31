@@ -1,5 +1,6 @@
 import AdminHeader from "@/components/admin-header";
 import Footer from "@/components/footer";
+import ErrorBoundary from "@/components/error-boundary";
 
 export default function AdminLayout({
   children,
@@ -9,7 +10,9 @@ export default function AdminLayout({
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <AdminHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <ErrorBoundary>{children}</ErrorBoundary>
+      </main>
       <Footer />
     </div>
   );
