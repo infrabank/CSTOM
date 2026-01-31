@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
+import { getAccessToken } from "@/lib/auth";
 
 interface Category {
   id: number;
@@ -27,10 +28,7 @@ export default function NewSOPPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("cstom_access_token="))
-          ?.split("=")[1];
+        const token = getAccessToken();
 
         const res = await fetch(`${API_URL}/v1/sop/categories/`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},

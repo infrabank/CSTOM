@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { getAccessToken } from "@/lib/auth";
 
 interface SLADefinition {
   id: number;
@@ -110,10 +111,7 @@ export default function SLADetailPage() {
       try {
         setLoading(true);
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-        const token = document.cookie
-          .split('; ')
-          .find((row) => row.startsWith('cstom_access_token='))
-          ?.split('=')[1];
+        const token = getAccessToken();
 
         // Fetch SLA definition
         const slaResponse = await fetch(

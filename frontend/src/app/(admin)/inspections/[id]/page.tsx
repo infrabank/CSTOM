@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
+import { getAccessToken } from "@/lib/auth";
 
 interface Contract {
   id: number;
@@ -92,10 +93,7 @@ export default function InspectionScheduleDetailPage() {
   const [isActive, setIsActive] = useState(true);
 
   const getToken = () => {
-    return document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("cstom_access_token="))
-      ?.split("=")[1];
+    return getAccessToken();
   };
 
   // Fetch schedule and related data

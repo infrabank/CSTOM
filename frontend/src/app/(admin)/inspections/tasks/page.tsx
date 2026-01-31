@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getAccessToken } from "@/lib/auth";
 
 interface InspectionTask {
   id: number;
@@ -49,10 +50,7 @@ export default function InspectionTasksPage() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("cstom_access_token="))
-          ?.split("=")[1];
+        const token = getAccessToken();
 
         const res = await fetch(`${API_URL}/v1/inspections/tasks/`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},

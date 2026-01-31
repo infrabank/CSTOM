@@ -64,7 +64,8 @@ interface FetchOptions extends RequestInit {
 
 async function fetchAPI<T>(
   endpoint: string,
-  options: FetchOptions = {}
+  options: FetchOptions = {},
+  _isRetry = false
 ): Promise<T> {
   const { token: providedToken, ...fetchOptions } = options;
   const url = `${API_URL}${endpoint}`;
@@ -86,10 +87,24 @@ async function fetchAPI<T>(
     },
   });
 
+  // Handle 401 Unauthorized - attempt token refresh once
+  if (res.status === 401 && !_isRetry && !providedToken) {
+    const refreshed = await authApi.refresh();
+    if (refreshed) {
+      // Retry with new token
+      return fetchAPI<T>(endpoint, options, true);
+    }
+    // Refresh failed - redirect to login
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+    throw new Error("Session expired. Please login again.");
+  }
+
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    const message = error?.error?.message 
-      || error?.detail 
+    const message = error?.error?.message
+      || error?.detail
       || error?.message
       || (typeof error === 'string' ? error : JSON.stringify(error))
       || `API error: ${res.status}`;

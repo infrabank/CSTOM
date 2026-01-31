@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { getAccessToken } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -95,10 +96,7 @@ export default function DashboardPage() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("cstom_access_token="))
-          ?.split("=")[1];
+        const token = getAccessToken();
 
         const [kpiRes, contractsRes, equipmentsRes, eventsRes, tasksRes] = await Promise.all([
           fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {

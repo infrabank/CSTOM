@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getAccessToken } from "@/lib/auth";
 
 interface Contract {
   id: number;
@@ -36,10 +37,7 @@ export default function NewTicketPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = document.cookie
-          .split("; ")
-          .find((row) => row.startsWith("cstom_access_token="))
-          ?.split("=")[1];
+        const token = getAccessToken();
 
         const headers: HeadersInit = token
           ? { Authorization: `Bearer ${token}` }
