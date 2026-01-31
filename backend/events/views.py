@@ -2,7 +2,7 @@
 
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -18,16 +18,11 @@ from .services import ChangeIncidentService
 
 
 class ChangeIncidentViewSet(ModelViewSet):
-    """ViewSet for ChangeIncident CRUD operations.
-
-    Authentication and permissions are disabled to allow public access
-    for MVP phase. Production should implement proper auth.
-    """
+    """ViewSet for ChangeIncident CRUD operations."""
 
     queryset = ChangeIncident.objects.select_related("contract", "related_event").all()
     serializer_class = ChangeIncidentSerializer
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""

@@ -3,7 +3,7 @@
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -20,16 +20,11 @@ from .services import TaskService
 
 
 class TaskViewSet(ModelViewSet):
-    """ViewSet for Task CRUD operations.
-
-    Authentication and permissions are disabled to allow public access
-    for MVP phase. Production should implement proper auth.
-    """
+    """ViewSet for Task CRUD operations."""
 
     queryset = Task.objects.select_related("contract").all()
     serializer_class = TaskSerializer
-    authentication_classes = []
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""

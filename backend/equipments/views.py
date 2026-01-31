@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from django.db.models import Prefetch
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
@@ -84,7 +84,7 @@ class EquipmentViewSet(ModelViewSet):
             "history",
             "warranty_expiring",
         ]:
-            return [AllowAny()]
+            return [IsAuthenticated()]
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
         if self.action in ["check_out", "check_in"]:
