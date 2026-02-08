@@ -19,6 +19,7 @@ const ROUTE_LABELS: Record<string, string> = {
   users: "사용자",
   predictions: "AI 예측",
   scan: "QR 스캔",
+  schedule: "일정관리",
   new: "신규",
   edit: "수정",
 };

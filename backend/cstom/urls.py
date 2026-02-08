@@ -29,4 +29,5 @@ urlpatterns = [
     path("api/", include("tickets.urls")),
     path("api/", include("notifications.urls")),
     path("api/", include("dashboard.urls")),
+    path("api/", include("workforce.urls")),
 ]
