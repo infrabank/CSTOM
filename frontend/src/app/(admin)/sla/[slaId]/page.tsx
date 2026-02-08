@@ -15,7 +15,7 @@ interface SLADefinition {
   target_resolution_time_minutes: number;
   description: string;
   is_active: boolean;
-  compliance_rate: number;
+  compliance_rate: number | null;
   created_at: string;
 }
 
@@ -58,7 +58,14 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-function ComplianceRateBadge({ rate }: { rate: number }) {
+function ComplianceRateBadge({ rate }: { rate: number | null }) {
+  if (rate === null || rate === undefined) {
+    return (
+      <span className="px-3 py-1 rounded-full text-sm font-medium bg-surface-sunken text-text-muted">
+        -
+      </span>
+    );
+  }
   let colorClass = 'bg-danger-bg text-danger';
   if (rate > 90) {
     colorClass = 'bg-success-bg text-success';
@@ -249,8 +256,8 @@ export default function SLADetailPage() {
           <div className="p-4 bg-surface-sunken rounded-lg border border-border-light">
             <h3 className="text-sm font-medium text-text-secondary mb-2">준수율</h3>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-semibold text-text text-text">
-                {sla.compliance_rate.toFixed(1)}%
+              <p className="text-2xl font-semibold text-text">
+                {sla.compliance_rate !== null && sla.compliance_rate !== undefined ? `${sla.compliance_rate.toFixed(1)}%` : '-'}
               </p>
               <ComplianceRateBadge rate={sla.compliance_rate} />
             </div>
