@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -58,14 +59,15 @@ export default function EditSOPPage() {
         setError(null);
 
         // Fetch document
+        const token = getAccessToken();
+        const authHeaders: HeadersInit = {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
+
         const docRes = await fetch(
           `${API_URL}/v1/sop/documents/${sopId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
+          { headers: authHeaders }
         );
 
         if (!docRes.ok) {
@@ -82,10 +84,7 @@ export default function EditSOPPage() {
 
         // Fetch categories
         const catRes = await fetch(`${API_URL}/v1/sop/categories/`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+          headers: authHeaders,
         });
 
         if (catRes.ok) {
@@ -125,14 +124,17 @@ export default function EditSOPPage() {
       }
 
       // Step 1: Update document title and category
+      const token = getAccessToken();
+      const submitHeaders: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      };
+
       const updateRes = await fetch(
         `${API_URL}/v1/sop/documents/${sopId}/`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+          headers: submitHeaders,
           body: JSON.stringify({
             title: formData.title,
             category: parseInt(formData.category, 10),
@@ -147,10 +149,7 @@ export default function EditSOPPage() {
       // Step 2: Create new version
       const versionRes = await fetch(`${API_URL}/v1/sop/versions/`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+        headers: submitHeaders,
         body: JSON.stringify({
           document: parseInt(sopId, 10),
           version_number: document.current_version.version_number + 1,

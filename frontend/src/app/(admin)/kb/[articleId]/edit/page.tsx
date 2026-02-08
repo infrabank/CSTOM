@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { getAccessToken } from '@/lib/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -54,14 +55,15 @@ export default function EditKBArticlePage() {
         setError(null);
 
         // Fetch article
+        const token = getAccessToken();
+        const authHeaders: HeadersInit = {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
+
         const articleRes = await fetch(
           `${API_URL}/v1/kb/articles/${articleId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
+          { headers: authHeaders }
         );
 
         if (!articleRes.ok) {
@@ -80,10 +82,7 @@ export default function EditKBArticlePage() {
 
         // Fetch categories
         const catRes = await fetch(`${API_URL}/v1/kb/categories/`, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+          headers: authHeaders,
         });
 
         if (catRes.ok) {
@@ -130,14 +129,15 @@ export default function EditKBArticlePage() {
         throw new Error('아티클 정보를 찾을 수 없습니다');
       }
 
+      const token = getAccessToken();
       const updateRes = await fetch(
         `${API_URL}/v1/kb/articles/${articleId}/`,
         {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
-          credentials: 'include',
           body: JSON.stringify({
             title: formData.title,
             content: formData.content,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
+import { getAccessToken } from "@/lib/auth";
 import { updateTask } from "../../actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -53,9 +54,13 @@ export default function EditTaskPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
+        const token = getAccessToken();
+        const headers: HeadersInit = {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
         const [taskRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/tasks/${taskId}/`, { cache: "no-store" }),
-          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/tasks/${taskId}/`, { cache: "no-store", headers }),
+          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
         ]);
 
         if (!taskRes.ok) throw new Error("작업 정보를 불러오지 못했습니다");

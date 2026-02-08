@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
+import { getAccessToken } from "@/lib/auth";
 import { updateEvent } from "../../actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -54,9 +55,13 @@ export default function EditEventPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
+        const token = getAccessToken();
+        const headers: HeadersInit = {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
         const [eventRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/events/${eventId}/`, { cache: "no-store" }),
-          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" }),
+          fetch(`${API_URL}/v1/events/${eventId}/`, { cache: "no-store", headers }),
+          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
         ]);
 
         if (!eventRes.ok) throw new Error("이벤트 정보를 불러오지 못했습니다");

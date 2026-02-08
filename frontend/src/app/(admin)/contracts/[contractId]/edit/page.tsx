@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
+import { getAccessToken } from "@/lib/auth";
 import { updateContract } from "../../actions";
 import DeleteContractButton from "../../delete-contract-button";
 
@@ -47,8 +48,12 @@ export default function EditContractPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchContract() {
       try {
+        const token = getAccessToken();
         const res = await fetch(`${API_URL}/v1/contracts/${contractId}/`, {
           cache: "no-store",
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
         });
         if (!res.ok) throw new Error("사업 정보를 불러오지 못했습니다");
         const data = await res.json();
