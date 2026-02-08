@@ -49,7 +49,7 @@ export default function UserActions({
   async function fetchRoles() {
     try {
       const token = getAccessToken();
-      const res = await fetch(`${API_URL}/roles/`, {
+      const res = await fetch(`${API_URL}/v1/roles/`, {
         headers: {
           ...(token && { Authorization: `Bearer ${token}` }),
         },

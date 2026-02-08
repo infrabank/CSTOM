@@ -120,33 +120,33 @@ async function fetchAPI<T>(
 }
 
 export const contractsApi = {
-  list: (token?: string) => fetchAPI<{ results: ContractListItem[] }>("/contracts/", { token }),
+  list: (token?: string) => fetchAPI<{ results: ContractListItem[] }>("/v1/contracts/", { token }),
 
-  get: (id: number, token?: string) => fetchAPI<Contract>(`/contracts/${id}/`, { token }),
+  get: (id: number, token?: string) => fetchAPI<Contract>(`/v1/contracts/${id}/`, { token }),
 
   create: (data: ContractCreateInput, token?: string) =>
-    fetchAPI<Contract>("/contracts/", {
+    fetchAPI<Contract>("/v1/contracts/", {
       method: "POST",
       body: JSON.stringify(data),
       token,
     }),
 
   update: (id: number, data: Partial<ContractCreateInput>, token?: string) =>
-    fetchAPI<Contract>(`/contracts/${id}/`, {
+    fetchAPI<Contract>(`/v1/contracts/${id}/`, {
       method: "PATCH",
       body: JSON.stringify(data),
       token,
     }),
 
   updateStatus: (id: number, status: string, notes?: string, token?: string) =>
-    fetchAPI<Contract>(`/contracts/${id}/status/`, {
+    fetchAPI<Contract>(`/v1/contracts/${id}/status/`, {
       method: "POST",
       body: JSON.stringify({ status, notes }),
       token,
     }),
 
   delete: (id: number, token?: string) =>
-    fetchAPI<void>(`/contracts/${id}/`, {
+    fetchAPI<void>(`/v1/contracts/${id}/`, {
       method: "DELETE",
       token,
     }),
@@ -175,9 +175,9 @@ export interface ReportListItem {
 }
 
 export const reportsApi = {
-  list: (token?: string) => fetchAPI<{ results: ReportListItem[] }>("/reports/", { token }),
+  list: (token?: string) => fetchAPI<{ results: ReportListItem[] }>("/v1/reports/", { token }),
 
-  get: (id: number, token?: string) => fetchAPI<Report>(`/reports/${id}/`, { token }),
+  get: (id: number, token?: string) => fetchAPI<Report>(`/v1/reports/${id}/`, { token }),
 };
 
 export interface EquipmentTransaction {
@@ -264,47 +264,47 @@ export interface EquipmentTransactionInput {
 
 export const equipmentsApi = {
   list: (token?: string) =>
-    fetchAPI<{ results: EquipmentListItem[] }>("/equipments/", { token }),
+    fetchAPI<{ results: EquipmentListItem[] }>("/v1/equipments/", { token }),
 
   get: (id: number, token?: string) =>
-    fetchAPI<Equipment>(`/equipments/${id}/`, { token }),
+    fetchAPI<Equipment>(`/v1/equipments/${id}/`, { token }),
 
   create: (data: EquipmentCreateInput, token?: string) =>
-    fetchAPI<Equipment>("/equipments/", {
+    fetchAPI<Equipment>("/v1/equipments/", {
       method: "POST",
       body: JSON.stringify(data),
       token,
     }),
 
   update: (id: number, data: Partial<EquipmentCreateInput>, token?: string) =>
-    fetchAPI<Equipment>(`/equipments/${id}/`, {
+    fetchAPI<Equipment>(`/v1/equipments/${id}/`, {
       method: "PATCH",
       body: JSON.stringify(data),
       token,
     }),
 
   delete: (id: number, token?: string) =>
-    fetchAPI<void>(`/equipments/${id}/`, {
+    fetchAPI<void>(`/v1/equipments/${id}/`, {
       method: "DELETE",
       token,
     }),
 
   checkOut: (id: number, data: EquipmentTransactionInput, token?: string) =>
-    fetchAPI<EquipmentTransaction>(`/equipments/${id}/check-out/`, {
+    fetchAPI<EquipmentTransaction>(`/v1/equipments/${id}/check-out/`, {
       method: "POST",
       body: JSON.stringify(data),
       token,
     }),
 
   checkIn: (id: number, data: EquipmentTransactionInput, token?: string) =>
-    fetchAPI<EquipmentTransaction>(`/equipments/${id}/check-in/`, {
+    fetchAPI<EquipmentTransaction>(`/v1/equipments/${id}/check-in/`, {
       method: "POST",
       body: JSON.stringify(data),
       token,
     }),
 
   transactions: (id: number, token?: string) =>
-    fetchAPI<EquipmentTransaction[]>(`/equipments/${id}/transactions/`, { token }),
+    fetchAPI<EquipmentTransaction[]>(`/v1/equipments/${id}/transactions/`, { token }),
 };
 
 export interface Task {
@@ -348,16 +348,16 @@ export interface DecisionLog {
 
 export const tasksApi = {
   list: (token?: string) =>
-    fetchAPI<{ results: TaskListItem[] }>("/tasks/", { token }),
+    fetchAPI<{ results: TaskListItem[] }>("/v1/tasks/", { token }),
 
   get: (id: number, token?: string) =>
-    fetchAPI<Task>(`/tasks/${id}/`, { token }),
+    fetchAPI<Task>(`/v1/tasks/${id}/`, { token }),
 
   decisions: (taskId: number, token?: string) =>
-    fetchAPI<{ results: DecisionLog[] }>(`/decisions/?task=${taskId}`, { token }),
+    fetchAPI<{ results: DecisionLog[] }>(`/v1/decisions/?task=${taskId}`, { token }),
 
   approve: (id: number, action: "approve" | "reject", notes?: string, token?: string) =>
-    fetchAPI<Task>(`/tasks/${id}/approve/`, {
+    fetchAPI<Task>(`/v1/tasks/${id}/approve/`, {
       method: "POST",
       body: JSON.stringify({ action, notes }),
       token,
@@ -396,30 +396,30 @@ export interface EventListItem {
 
 export const eventsApi = {
   list: (token?: string) =>
-    fetchAPI<{ results: EventListItem[] }>("/events/", { token }),
+    fetchAPI<{ results: EventListItem[] }>("/v1/events/", { token }),
 
   listByContract: (contractId: number, token?: string) =>
-    fetchAPI<{ results: EventListItem[] }>(`/events/?contract=${contractId}`, { token }),
+    fetchAPI<{ results: EventListItem[] }>(`/v1/events/?contract=${contractId}`, { token }),
 
   get: (id: number, token?: string) =>
-    fetchAPI<Event>(`/events/${id}/`, { token }),
+    fetchAPI<Event>(`/v1/events/${id}/`, { token }),
 
   link: (id: number, relatedEventId: number, token?: string) =>
-    fetchAPI<Event>(`/events/${id}/link/`, {
+    fetchAPI<Event>(`/v1/events/${id}/link/`, {
       method: "POST",
       body: JSON.stringify({ related_event: relatedEventId }),
       token,
     }),
 
   unlink: (id: number, token?: string) =>
-    fetchAPI<Event>(`/events/${id}/`, {
+    fetchAPI<Event>(`/v1/events/${id}/`, {
       method: "PATCH",
       body: JSON.stringify({ related_event: null }),
       token,
     }),
 
   delete: (id: number, token?: string) =>
-    fetchAPI<void>(`/events/${id}/`, {
+    fetchAPI<void>(`/v1/events/${id}/`, {
       method: "DELETE",
       token,
     }),

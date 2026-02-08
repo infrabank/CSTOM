@@ -29,7 +29,7 @@ interface Role {
 export async function getRoles(): Promise<Role[]> {
   const token = await getToken();
   try {
-    const res = await fetch(`${API_URL}/roles/`, {
+    const res = await fetch(`${API_URL}/v1/roles/`, {
       cache: "no-store",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
