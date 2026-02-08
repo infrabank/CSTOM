@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { getAccessToken } from "@/lib/auth";
 import { createEvent } from "../actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -26,7 +27,12 @@ export default function NewEventPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        const res = await fetch(`${API_URL}/v1/contracts/`, { cache: "no-store" });
+        const token = getAccessToken();
+        const headers: HeadersInit = token
+          ? { Authorization: `Bearer ${token}` }
+          : {};
+
+        const res = await fetch(`${API_URL}/v1/contracts/`, { headers });
         if (res.ok) {
           const data = await res.json();
           setContracts(data.results || []);
