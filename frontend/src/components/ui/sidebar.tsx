@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
@@ -82,28 +82,28 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("cstom-sidebar-expanded");
+    return saved !== null ? saved === "true" : true;
+  });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(["operations", "documents", "system"]));
+
+  // User-toggled groups (manual expand/collapse)
+  const [toggledGroups, setToggledGroups] = useState<Set<string>>(new Set(["operations", "documents", "system"]));
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Restore sidebar state from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem("cstom-sidebar-expanded");
-    if (saved !== null) {
-      setIsExpanded(saved === "true");
-    }
-  }, []);
-
-  // Auto-expand group containing active route
-  useEffect(() => {
+  // Merge user-toggled groups with active-route groups (active route always visible)
+  const expandedGroups = useMemo(() => {
+    const merged = new Set(toggledGroups);
     for (const group of NAV_GROUPS) {
       if (group.items.some((item) => pathname.startsWith(item.href))) {
-        setExpandedGroups((prev) => new Set(prev).add(group.id));
+        merged.add(group.id);
       }
     }
-  }, [pathname]);
+    return merged;
+  }, [toggledGroups, pathname]);
 
   const toggleExpanded = useCallback(() => {
     setIsExpanded((prev) => {
@@ -114,7 +114,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   }, []);
 
   const toggleGroup = useCallback((groupId: string) => {
-    setExpandedGroups((prev) => {
+    setToggledGroups((prev) => {
       const next = new Set(prev);
       if (next.has(groupId)) {
         next.delete(groupId);
