@@ -14,7 +14,7 @@ interface SLADefinition {
   target_resolution_time_minutes: number;
   is_active: boolean;
   metric_count: number;
-  compliance_rate: number;
+  compliance_rate: number | null;
   created_at: string;
 }
 
@@ -46,7 +46,14 @@ function PriorityBadge({ priority }: { priority: string }) {
   );
 }
 
-function ComplianceRateBadge({ rate }: { rate: number }) {
+function ComplianceRateBadge({ rate }: { rate: number | null }) {
+  if (rate === null || rate === undefined) {
+    return (
+      <span className="px-2 py-1 rounded-full text-xs font-medium bg-surface-sunken text-text-muted">
+        -
+      </span>
+    );
+  }
   let colorClass = "bg-danger-bg text-danger";
   if (rate > 90) {
     colorClass = "bg-success-bg text-success";
