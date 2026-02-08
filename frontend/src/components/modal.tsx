@@ -42,19 +42,19 @@ export default function Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+        className="bg-surface rounded-lg shadow-modal w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-border-light"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
       >
-        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-          <h2 id="modal-title" className="text-lg font-semibold text-black">
+        <div className="px-6 py-4 border-b border-border-light bg-surface-sunken flex justify-between items-center">
+          <h2 id="modal-title" className="text-lg font-semibold text-text">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="text-black hover:text-black transition-colors"
-            aria-label="Close"
+            className="text-text-muted hover:text-text transition-colors rounded-md p-1 cursor-pointer"
+            aria-label="닫기"
           >
             <svg
               className="w-5 h-5"
@@ -72,12 +72,12 @@ export default function Modal({
           </button>
         </div>
         
-        <div className="p-6 text-black">
+        <div className="p-6 text-text">
           {children}
         </div>
 
         {footer && (
-          <div className="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
+          <div className="bg-surface-sunken px-6 py-4 flex justify-end gap-3 border-t border-border-light">
             {footer}
           </div>
         )}

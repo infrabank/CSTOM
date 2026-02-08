@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface Event {
   id: number;
@@ -32,59 +33,61 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  change: "bg-blue-100 text-blue-700",
-  incident: "bg-red-100 text-red-700",
+  change: "bg-info-bg text-accent",
+  incident: "bg-danger-bg text-danger",
 };
 
 export default async function EventsPage() {
   const events = await getEvents();
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">변경/장애 관리</h1>
+        <h1 className="text-2xl font-semibold text-text">변경/장애 관리</h1>
         <Link
           href="/events/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
         >
           이벤트 등록
         </Link>
       </div>
 
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
+        <table className="min-w-full divide-y divide-border-light">
+          <thead className="bg-surface-sunken">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 유형
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 발생 시각
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 상태
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 통보
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-surface divide-y divide-border-light">
             {events.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-black">
+                <td colSpan={6} className="px-6 py-8 text-center text-text-muted">
                   등록된 이벤트가 없습니다
                 </td>
               </tr>
             ) : (
               events.map((event) => (
-                <tr key={event.id} className="hover:bg-gray-50">
+                <tr key={event.id} className="hover:bg-surface-sunken transition-colors">
                   <td className="px-6 py-4">
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${
@@ -97,32 +100,32 @@ export default async function EventsPage() {
                   <td className="px-6 py-4">
                     <Link
                       href={`/events/${event.id}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-accent hover:underline"
                     >
                       {event.title}
                     </Link>
                     {event.has_related && (
-                      <span className="ml-2 text-xs text-black">연결됨</span>
+                      <span className="ml-2 text-xs text-text-muted">연결됨</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-black">
+                  <td className="px-6 py-4 text-text-secondary">
                     {event.contract_name}
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {new Date(event.occurred_at).toLocaleString("ko-KR")}
                   </td>
                   <td className="px-6 py-4">
                     {event.resolved_at ? (
-                      <span className="text-green-600 text-sm">해결됨</span>
+                      <span className="text-success text-sm">해결됨</span>
                     ) : (
-                      <span className="text-orange-600 text-sm">진행 중</span>
+                      <span className="text-warning text-sm">진행 중</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     {event.customer_notified ? (
-                      <span className="text-green-600">완료</span>
+                      <span className="text-success">완료</span>
                     ) : (
-                      <span className="text-black">미통보</span>
+                      <span className="text-text-muted">미통보</span>
                     )}
                   </td>
                 </tr>
@@ -134,12 +137,12 @@ export default async function EventsPage() {
 
       <div className="md:hidden space-y-4">
         {events.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
             등록된 이벤트가 없습니다
           </div>
         ) : (
           events.map((event) => (
-            <div key={event.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+            <div key={event.id} className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3">
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -151,46 +154,46 @@ export default async function EventsPage() {
                       {TYPE_LABELS[event.record_type] || event.record_type}
                     </span>
                     {event.has_related && (
-                      <span className="text-xs text-black border border-gray-200 px-1 rounded">
+                      <span className="text-xs text-text-muted border border-border-light px-1 rounded">
                         연결됨
                       </span>
                     )}
                   </div>
                   <Link
                     href={`/events/${event.id}`}
-                    className="font-medium text-blue-600 block"
+                    className="font-medium text-accent block text-sm"
                   >
                     {event.title}
                   </Link>
                 </div>
                 {event.resolved_at ? (
-                  <span className="text-green-600 text-sm font-medium">
+                  <span className="text-success text-sm font-medium">
                     해결됨
                   </span>
                 ) : (
-                  <span className="text-orange-600 text-sm font-medium">
+                  <span className="text-warning text-sm font-medium">
                     진행 중
                   </span>
                 )}
               </div>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+              <div className="space-y-2 text-sm border-t border-border-light pt-3">
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">사업</span>
-                  <span className="text-black">{event.contract_name}</span>
+                  <span className="font-medium text-text-secondary">사업</span>
+                  <span className="text-text-muted">{event.contract_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">발생 시각</span>
-                  <span className="text-black">
+                  <span className="font-medium text-text-secondary">발생 시각</span>
+                  <span className="text-text-muted">
                     {new Date(event.occurred_at).toLocaleString("ko-KR")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">통보</span>
+                  <span className="font-medium text-text-secondary">통보</span>
                   {event.customer_notified ? (
-                    <span className="text-green-600">완료</span>
+                    <span className="text-success">완료</span>
                   ) : (
-                    <span className="text-black">미통보</span>
+                    <span className="text-text-muted">미통보</span>
                   )}
                 </div>
               </div>

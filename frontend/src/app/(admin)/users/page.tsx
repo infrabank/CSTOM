@@ -47,9 +47,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-100 text-green-800",
-  inactive: "bg-gray-100 text-black",
-};
+   active: "bg-success-bg text-success",
+   inactive: "bg-surface-sunken text-text",
+ };
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "관리자",
@@ -59,14 +59,14 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-red-100 text-red-800",
-  pm: "bg-blue-100 text-blue-800",
-  engineer: "bg-purple-100 text-purple-800",
-  customer: "bg-yellow-100 text-yellow-800",
+  admin: "bg-danger-bg text-danger",
+  pm: "bg-info-bg text-info",
+  engineer: "bg-info-bg text-info",
+  customer: "bg-warning-bg text-warning",
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
+   const colorClass = STATUS_COLORS[status] || "bg-surface-sunken text-text";
   const label = STATUS_LABELS[status] || status;
   return (
     <span
@@ -78,18 +78,18 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function RoleBadges({ roles }: { roles?: Role[] }) {
-  if (!roles || roles.length === 0) {
-    return <span className="text-black text-sm">역할 없음</span>;
-  }
+   if (!roles || roles.length === 0) {
+     return <span className="text-text text-sm">역할 없음</span>;
+   }
 
   return (
     <div className="flex gap-1 flex-wrap">
       {roles.map((role) => (
         <span
           key={role.id}
-          className={`px-2 py-0.5 rounded text-xs font-medium ${
-            ROLE_COLORS[role.name] || "bg-gray-100 text-black"
-          }`}
+           className={`px-2 py-0.5 rounded text-xs font-medium ${
+             ROLE_COLORS[role.name] || "bg-surface-sunken text-text"
+           }`}
         >
           {ROLE_LABELS[role.name] || role.name.toUpperCase()}
         </span>
@@ -109,67 +109,67 @@ export default async function UsersPage() {
         <h1 className="text-2xl font-bold">사용자 관리</h1>
         <Link
           href="/users/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+           className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
         >
           사용자 등록
         </Link>
       </div>
 
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                아이디
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                이름
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                이메일
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                역할
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                등록일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {users.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-4 text-center text-black">
-                  등록된 사용자가 없습니다
-                </td>
-              </tr>
+       <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
+         <table className="min-w-full divide-y divide-border-light">
+           <thead className="bg-surface-sunken">
+             <tr>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 아이디
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 이름
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 이메일
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 역할
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 상태
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 등록일
+               </th>
+             </tr>
+           </thead>
+           <tbody className="bg-surface divide-y divide-border-light">
+             {users.length === 0 ? (
+               <tr>
+                 <td colSpan={6} className="px-6 py-4 text-center text-text">
+                   등록된 사용자가 없습니다
+                 </td>
+               </tr>
             ) : (
-              users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+               users.map((user) => (
+                 <tr key={user.id} className="hover:bg-surface-sunken">
                   <td className="px-6 py-4">
                     <Link
                       href={`/users/${user.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                       className="text-accent hover:underline font-medium"
                     >
                       {user.username}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-black">
-                    {user.display_name || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-black">{user.email}</td>
+                   <td className="px-6 py-4 text-text">
+                     {user.display_name || "-"}
+                   </td>
+                   <td className="px-6 py-4 text-text">{user.email}</td>
                   <td className="px-6 py-4">
                     <RoleBadges roles={user.roles} />
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={user.status} />
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {new Date(user.created_at).toLocaleDateString("ko-KR")}
-                  </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {new Date(user.created_at).toLocaleDateString("ko-KR")}
+                   </td>
                 </tr>
               ))
             )}
@@ -177,44 +177,44 @@ export default async function UsersPage() {
         </table>
       </div>
 
-      {/* Mobile Card View */}
-      <div className="md:hidden space-y-4">
-        {users.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
-            등록된 사용자가 없습니다
-          </div>
+       {/* Mobile Card View */}
+       <div className="md:hidden space-y-4">
+         {users.length === 0 ? (
+           <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
+             등록된 사용자가 없습니다
+           </div>
         ) : (
-          users.map((user) => (
-            <div key={user.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+           users.map((user) => (
+             <div key={user.id} className="bg-surface rounded-lg shadow-card p-4 space-y-3">
               <div className="flex justify-between items-start">
                 <div>
                   <Link
                     href={`/users/${user.id}`}
-                    className="font-medium text-blue-600 block"
+                     className="font-medium text-accent block"
                   >
                     {user.username}
                   </Link>
-                  <div className="text-sm text-black mt-1">{user.email}</div>
+                   <div className="text-sm text-text mt-1">{user.email}</div>
                 </div>
                 <StatusBadge status={user.status} />
               </div>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">이름</span>
-                  <span className="text-black">{user.display_name || "-"}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="font-medium text-black">역할</span>
-                  <RoleBadges roles={user.roles} />
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">등록일</span>
-                  <span className="text-black">
-                    {new Date(user.created_at).toLocaleDateString("ko-KR")}
-                  </span>
-                </div>
-              </div>
+               <div className="space-y-2 text-sm border-t border-border-light pt-3">
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">이름</span>
+                   <span className="text-text">{user.display_name || "-"}</span>
+                 </div>
+                 <div className="flex justify-between items-center">
+                   <span className="font-medium text-text">역할</span>
+                   <RoleBadges roles={user.roles} />
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">등록일</span>
+                   <span className="text-text">
+                     {new Date(user.created_at).toLocaleDateString("ko-KR")}
+                   </span>
+                 </div>
+               </div>
             </div>
           ))
         )}

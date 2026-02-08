@@ -135,47 +135,47 @@ export default function NewInspectionSchedulePage() {
     return user.username;
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-600">로딩 중...</div>
-      </div>
-    );
-  }
+   if (isLoading) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-text-muted">로딩 중...</div>
+       </div>
+     );
+   }
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link href="/inspections" className="text-blue-600 hover:underline text-sm">
-          점검 스케줄 목록으로
-        </Link>
-      </div>
+       <div className="mb-6">
+         <Link href="/inspections" className="text-accent hover:underline text-sm">
+           점검 스케줄 목록으로
+         </Link>
+       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">점검 스케줄 등록</h1>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+         {error && (
+           <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
+             {error}
+           </div>
+         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Contract */}
           <div>
-            <label
-              htmlFor="contract"
-              className="block text-sm font-medium text-black mb-1"
-            >
-              사업 *
-            </label>
-            <select
-              id="contract"
-              value={contractId}
-              onChange={(e) => setContractId(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label
+               htmlFor="contract"
+               className="block text-sm font-medium text-text mb-1"
+             >
+               사업 *
+             </label>
+             <select
+               id="contract"
+               value={contractId}
+               onChange={(e) => setContractId(e.target.value)}
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -187,38 +187,38 @@ export default function NewInspectionSchedulePage() {
 
           {/* Equipment Type */}
           <div>
-            <label
-              htmlFor="equipmentType"
-              className="block text-sm font-medium text-black mb-1"
-            >
-              장비 유형 *
-            </label>
-            <input
-              id="equipmentType"
-              type="text"
-              value={equipmentType}
-              onChange={(e) => setEquipmentType(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="예: 서버, 네트워크 장비, 스토리지"
-            />
+             <label
+               htmlFor="equipmentType"
+               className="block text-sm font-medium text-text mb-1"
+             >
+               장비 유형 *
+             </label>
+             <input
+               id="equipmentType"
+               type="text"
+               value={equipmentType}
+               onChange={(e) => setEquipmentType(e.target.value)}
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               placeholder="예: 서버, 네트워크 장비, 스토리지"
+             />
           </div>
 
           {/* Cycle */}
           <div>
-            <label
-              htmlFor="cycle"
-              className="block text-sm font-medium text-black mb-1"
-            >
-              점검 주기 *
-            </label>
-            <select
-              id="cycle"
-              value={cycle}
-              onChange={(e) => setCycle(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label
+               htmlFor="cycle"
+               className="block text-sm font-medium text-text mb-1"
+             >
+               점검 주기 *
+             </label>
+             <select
+               id="cycle"
+               value={cycle}
+               onChange={(e) => setCycle(e.target.value)}
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               {CYCLE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -229,18 +229,18 @@ export default function NewInspectionSchedulePage() {
 
           {/* Assigned To */}
           <div>
-            <label
-              htmlFor="assignedTo"
-              className="block text-sm font-medium text-black mb-1"
-            >
-              담당자
-            </label>
-            <select
-              id="assignedTo"
-              value={assignedTo}
-              onChange={(e) => setAssignedTo(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label
+               htmlFor="assignedTo"
+               className="block text-sm font-medium text-text mb-1"
+             >
+               담당자
+             </label>
+             <select
+               id="assignedTo"
+               value={assignedTo}
+               onChange={(e) => setAssignedTo(e.target.value)}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">담당자 선택</option>
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
@@ -252,34 +252,34 @@ export default function NewInspectionSchedulePage() {
 
           {/* Description */}
           <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-black mb-1"
-            >
-              설명
-            </label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="점검 스케줄에 대한 설명을 입력하세요"
-            />
+             <label
+               htmlFor="description"
+               className="block text-sm font-medium text-text mb-1"
+             >
+               설명
+             </label>
+             <textarea
+               id="description"
+               value={description}
+               onChange={(e) => setDescription(e.target.value)}
+               rows={4}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               placeholder="점검 스케줄에 대한 설명을 입력하세요"
+             />
           </div>
 
           {/* Is Active */}
           <div className="flex items-center gap-2">
-            <input
-              id="isActive"
-              type="checkbox"
-              checked={isActive}
-              onChange={(e) => setIsActive(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="isActive" className="text-sm text-black">
-              활성화 (체크 해제 시 자동 작업 생성 중단)
-            </label>
+             <input
+               id="isActive"
+               type="checkbox"
+               checked={isActive}
+               onChange={(e) => setIsActive(e.target.checked)}
+               className="w-4 h-4 text-accent border-border rounded focus:ring-accent"
+             />
+             <label htmlFor="isActive" className="text-sm text-text">
+               활성화 (체크 해제 시 자동 작업 생성 중단)
+             </label>
           </div>
 
           {/* Buttons */}
@@ -287,16 +287,16 @@ export default function NewInspectionSchedulePage() {
             <button
               type="submit"
               disabled={isSubmitting || !contractId || !equipmentType}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "등록 중..." : "등록"}
             </button>
-            <Link
-              href="/inspections"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
-            >
-              취소
-            </Link>
+             <Link
+               href="/inspections"
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken text-text-secondary"
+             >
+               취소
+             </Link>
           </div>
         </form>
       </div>

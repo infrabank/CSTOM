@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface EngineerProfile {
   id: number;
@@ -14,10 +15,10 @@ interface EngineerProfile {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const STATUS_COLORS: Record<string, string> = {
-  available: "bg-green-100 text-green-800",
-  busy: "bg-yellow-100 text-yellow-800",
-  on_leave: "bg-gray-100 text-gray-800",
-  unavailable: "bg-red-100 text-red-800",
+  available: "bg-success-bg text-success",
+  busy: "bg-warning-bg text-warning",
+  on_leave: "bg-surface-sunken text-text-muted",
+  unavailable: "bg-danger-bg text-danger",
 };
 
 async function getEngineers(token?: string): Promise<EngineerProfile[]> {
@@ -41,67 +42,69 @@ export default async function WorkforcePage() {
   const engineers = await getEngineers(token);
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">인력 관리</h1>
+        <h1 className="text-2xl font-semibold text-text">인력 관리</h1>
         <Link
           href="/workforce/schedule"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
         >
           일정 관리
         </Link>
       </div>
 
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
+        <table className="min-w-full divide-y divide-border-light">
+          <thead className="bg-surface-sunken">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 이름
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 이메일
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 전문분야
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 기술스택
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 상태
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-surface divide-y divide-border-light">
             {engineers.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-black">
+                <td colSpan={5} className="px-6 py-8 text-center text-text-muted">
                   등록된 엔지니어가 없습니다
                 </td>
               </tr>
             ) : (
               engineers.map((engineer) => (
-                <tr key={engineer.id} className="hover:bg-gray-50">
+                <tr key={engineer.id} className="hover:bg-surface-sunken transition-colors">
                   <td className="px-6 py-4">
                     <Link
                       href={`/workforce/${engineer.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-accent hover:underline font-medium text-sm"
                     >
                       {engineer.user_name}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {engineer.user_email}
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {engineer.specialization || "-"}
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {engineer.skills || "-"}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[engineer.availability_status] || "bg-gray-100 text-gray-800"}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[engineer.availability_status] || "bg-surface-sunken text-text-muted"}`}>
                       {engineer.availability_status_display}
                     </span>
                   </td>
@@ -114,37 +117,37 @@ export default async function WorkforcePage() {
 
       <div className="md:hidden space-y-4">
         {engineers.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
             등록된 엔지니어가 없습니다
           </div>
         ) : (
           engineers.map((engineer) => (
-            <div key={engineer.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+            <div key={engineer.id} className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3">
               <Link
                 href={`/workforce/${engineer.id}`}
-                className="font-medium text-blue-600 block hover:underline"
+                className="font-medium text-accent block hover:underline text-sm"
               >
                 {engineer.user_name}
               </Link>
 
               <div className="flex gap-2">
-                <span className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[engineer.availability_status] || "bg-gray-100 text-gray-800"}`}>
+                <span className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[engineer.availability_status] || "bg-surface-sunken text-text-muted"}`}>
                   {engineer.availability_status_display}
                 </span>
               </div>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+              <div className="space-y-2 text-sm border-t border-border-light pt-3">
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">이메일</span>
-                  <span className="text-black">{engineer.user_email}</span>
+                  <span className="font-medium text-text-secondary">이메일</span>
+                  <span className="text-text-muted">{engineer.user_email}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">전문분야</span>
-                  <span className="text-black">{engineer.specialization || "-"}</span>
+                  <span className="font-medium text-text-secondary">전문분야</span>
+                  <span className="text-text-muted">{engineer.specialization || "-"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">기술스택</span>
-                  <span className="text-black">{engineer.skills || "-"}</span>
+                  <span className="font-medium text-text-secondary">기술스택</span>
+                  <span className="text-text-muted">{engineer.skills || "-"}</span>
                 </div>
               </div>
             </div>

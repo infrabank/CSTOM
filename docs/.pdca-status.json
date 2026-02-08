@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-01-22T00:00:00Z",
+  "project_level": "dynamic",
+  "backend_type": "django",
+  "features": {},
+  "quick_changes": [],
+  "statistics": {
+    "total_features": 0,
+    "completed": 0,
+    "in_progress": 0,
+    "quick_changes_count": 0
+  }
+}

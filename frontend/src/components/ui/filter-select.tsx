@@ -34,7 +34,7 @@ export default function FilterSelect({
     } else {
       params.delete(paramName);
     }
-    params.delete("page"); // Reset to first page on filter change
+    params.delete("page");
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`);
     });
@@ -45,7 +45,7 @@ export default function FilterSelect({
       value={currentValue}
       onChange={(e) => handleChange(e.target.value)}
       disabled={isPending}
-      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+      className={`px-3 py-2 border border-border rounded-md bg-surface text-text focus:outline-none focus:ring-3 focus:ring-accent/30 focus:border-accent transition-colors cursor-pointer ${
         isPending ? "opacity-50" : ""
       } ${className}`}
     >

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import UserActions from "../user-actions";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -44,8 +45,8 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  active: "bg-green-100 text-green-800",
-  inactive: "bg-gray-100 text-black",
+  active: "bg-success-bg text-success",
+  inactive: "bg-surface-sunken text-text",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -56,10 +57,10 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-red-100 text-red-800",
-  pm: "bg-blue-100 text-blue-800",
-  engineer: "bg-purple-100 text-purple-800",
-  customer: "bg-yellow-100 text-yellow-800",
+  admin: "bg-danger-bg text-danger",
+  pm: "bg-info-bg text-info",
+  engineer: "bg-info-bg text-info",
+  customer: "bg-warning-bg text-warning",
 };
 
 interface PageProps {
@@ -83,22 +84,23 @@ export default async function UserDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
       <div className="mb-6">
-        <Link href="/users" className="text-blue-600 hover:underline text-sm">
+        <Link href="/users" className="text-accent hover:underline text-sm">
           사용자 목록으로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+      <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold">{user.display_name || user.username}</h1>
-            <p className="text-black">@{user.username}</p>
+            <h1 className="text-2xl font-semibold text-text">{user.display_name || user.username}</h1>
+            <p className="text-text">@{user.username}</p>
           </div>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              STATUS_COLORS[user.status] || "bg-gray-100 text-black"
+              STATUS_COLORS[user.status] || "bg-surface-sunken text-text"
             }`}
           >
             {STATUS_LABELS[user.status] || user.status}
@@ -107,34 +109,34 @@ export default async function UserDetailPage({ params }: PageProps) {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">이메일</h3>
+            <h3 className="text-sm font-medium text-text mb-1">이메일</h3>
             <p>{user.email}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">등록일</h3>
+            <h3 className="text-sm font-medium text-text mb-1">등록일</h3>
             <p>{new Date(user.created_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">최종 수정일</h3>
+            <h3 className="text-sm font-medium text-text mb-1">최종 수정일</h3>
             <p>{new Date(user.updated_at).toLocaleString("ko-KR")}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">활성 여부</h3>
+            <h3 className="text-sm font-medium text-text mb-1">활성 여부</h3>
             <p>{user.is_active ? "예" : "아니오"}</p>
           </div>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-black mb-2">역할</h3>
+          <h3 className="text-sm font-medium text-text mb-2">역할</h3>
           {!user.roles || user.roles.length === 0 ? (
-            <p className="text-black">역할이 할당되지 않았습니다</p>
+            <p className="text-text">역할이 할당되지 않았습니다</p>
           ) : (
             <div className="flex gap-2 flex-wrap">
               {user.roles.map((role) => (
                 <span
                   key={role.id}
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[role.name] || "bg-gray-100 text-black"
+                    ROLE_COLORS[role.name] || "bg-surface-sunken text-text"
                   }`}
                 >
                   {ROLE_LABELS[role.name] || role.name.toUpperCase()}
@@ -147,7 +149,7 @@ export default async function UserDetailPage({ params }: PageProps) {
         <div className="flex gap-3">
           <Link
             href={`/users/${user.id}/edit`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
           >
             수정
           </Link>

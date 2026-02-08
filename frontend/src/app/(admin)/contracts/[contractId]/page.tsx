@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { contractsApi, Contract } from "@/lib/api";
 import DeleteContractButton from "../delete-contract-button";
 import StatusChangeButton from "../status-change-button";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
@@ -14,11 +15,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "pre-handover": "bg-yellow-100 text-yellow-800",
-  handover: "bg-blue-100 text-blue-800",
-  stabilization: "bg-purple-100 text-purple-800",
-  steady: "bg-green-100 text-green-800",
-  closed: "bg-gray-100 text-black",
+  "pre-handover": "bg-warning-bg text-warning",
+  handover: "bg-info-bg text-info",
+  stabilization: "bg-info-bg text-info",
+  steady: "bg-success-bg text-success",
+  closed: "bg-surface-sunken text-text",
 };
 
 const SCOPE_LABELS: Record<string, string> = {
@@ -29,7 +30,7 @@ const SCOPE_LABELS: Record<string, string> = {
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
+  const colorClass = STATUS_COLORS[status] || "bg-surface-sunken text-text";
   const label = STATUS_LABELS[status] || status;
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
@@ -50,16 +51,16 @@ function RiskCard({
   return (
     <div
       className={`p-4 rounded-lg border ${
-        isRisk ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"
+        isRisk ? "border-danger-border bg-danger-bg" : "border-success-border bg-success-bg"
       }`}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span className={isRisk ? "text-red-600" : "text-green-600"}>
+        <span className={isRisk ? "text-danger" : "text-success"}>
           {isRisk ? "!" : "OK"}
         </span>
         <h4 className="font-medium">{title}</h4>
       </div>
-      <p className="text-sm text-black">{description}</p>
+      <p className="text-sm text-text">{description}</p>
     </div>
   );
 }
@@ -94,9 +95,10 @@ export default async function ContractDetailPage({ params }: PageProps) {
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
-        <Link href="/contracts" className="text-blue-600 hover:underline">
+      <div>
+        <Breadcrumb />
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
+        <Link href="/contracts" className="text-accent hover:underline">
           사업 목록으로
         </Link>
       </div>
@@ -104,52 +106,53 @@ export default async function ContractDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
       <div className="mb-6">
-        <Link href="/contracts" className="text-blue-600 hover:underline text-sm">
+        <Link href="/contracts" className="text-accent hover:underline text-sm">
           사업 목록으로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6">
+      <div className="bg-surface shadow-card rounded-lg p-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold">{contract!.name}</h1>
-            <p className="text-black">{contract!.client_org}</p>
+            <h1 className="text-2xl font-semibold text-text">{contract!.name}</h1>
+            <p className="text-text">{contract!.client_org}</p>
           </div>
           <StatusBadge status={contract!.status} />
         </div>
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">사업 기간</h3>
+            <h3 className="text-sm font-medium text-text mb-1">사업 기간</h3>
             <p>
               {contract!.start_date} ~ {contract!.end_date}
             </p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">계약 금액</h3>
+            <h3 className="text-sm font-medium text-text mb-1">계약 금액</h3>
             <p>{contract!.contract_amount || "미지정"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">사업 범위</h3>
+            <h3 className="text-sm font-medium text-text mb-1">사업 범위</h3>
             <div className="flex gap-2">
               {contract!.scopes && contract!.scopes.length > 0 ? (
                 contract!.scopes.map((scope) => (
                   <span
                     key={scope}
-                    className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm"
+                    className="px-2 py-1 bg-info-bg text-info rounded text-sm"
                   >
                     {SCOPE_LABELS[scope] || scope.toUpperCase()}
                   </span>
                 ))
               ) : (
-                <span className="text-black">없음</span>
+                <span className="text-text">없음</span>
               )}
             </div>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">등록일</h3>
+            <h3 className="text-sm font-medium text-text mb-1">등록일</h3>
             <p>{new Date(contract!.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
@@ -178,14 +181,14 @@ export default async function ContractDetailPage({ params }: PageProps) {
         <div className="flex gap-3">
           <Link
             href={`/contracts/${contract!.id}/edit`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
           >
             수정
           </Link>
           <DeleteContractButton
             contractId={contract!.id}
             contractName={contract!.name}
-            className="px-4 py-2 text-red-600 border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors"
+            className="px-4 py-2 text-danger border border-danger-border rounded-md hover:bg-danger-bg hover:border-danger-border transition-colors"
           />
           <StatusChangeButton
             contractId={contract!.id}

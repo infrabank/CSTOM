@@ -2,16 +2,19 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="border-t bg-white mt-auto">
-      <div className="max-w-7xl mx-auto px-4 py-6 flex justify-center items-center">
+    <footer className="border-t border-border-light bg-surface mt-auto print:hidden">
+      <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-2">
         <Image
           src="/images/mix3-2.png"
           alt="CSTOM"
-          width={200}
-          height={40}
+          width={160}
+          height={32}
           unoptimized
-          className="h-10 w-auto"
+          className="h-8 w-auto"
         />
+        <span className="text-xs text-text-muted">
+          KRIHS 국토연구원 CSTOM
+        </span>
       </div>
     </footer>
   );

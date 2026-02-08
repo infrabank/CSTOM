@@ -6,6 +6,7 @@ import Link from "next/link";
 import { equipmentsApi, Equipment, EquipmentTransaction } from "@/lib/api";
 import Modal from "@/components/modal";
 import ConfirmModal from "@/components/confirm-modal";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 const CATEGORY_LABELS: Record<string, string> = {
   server: "서버",
@@ -24,10 +25,10 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  available: "bg-green-100 text-green-800",
-  checked_out: "bg-red-100 text-red-800",
-  maintenance: "bg-yellow-100 text-yellow-800",
-  retired: "bg-gray-100 text-black",
+  available: "bg-success-bg text-success",
+  checked_out: "bg-danger-bg text-danger",
+  maintenance: "bg-warning-bg text-warning",
+  retired: "bg-surface-sunken text-text",
 };
 
 export default function EquipmentDetailPage() {
@@ -122,45 +123,48 @@ export default function EquipmentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center text-black">불러오는 중...</div>
+      <div>
+        <Breadcrumb />
+        <div className="text-center text-text">불러오는 중...</div>
       </div>
     );
   }
 
   if (error || !equipment) {
     return (
-      <div className="p-6">
-        <div className="text-center text-red-600">{error || "장비를 찾을 수 없습니다"}</div>
+      <div>
+        <Breadcrumb />
+        <div className="text-center text-danger">{error || "장비를 찾을 수 없습니다"}</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
       <div className="mb-6">
-        <Link href="/equipments" className="text-blue-600 hover:underline">
+        <Link href="/equipments" className="text-accent hover:underline">
           &larr; 목록으로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+      <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold">{equipment.name}</h1>
-            <p className="text-black font-mono">{equipment.serial_number}</p>
+            <h1 className="text-2xl font-semibold text-text">{equipment.name}</h1>
+            <p className="text-text font-mono">{equipment.serial_number}</p>
           </div>
           <div className="flex items-center gap-3">
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
-                STATUS_COLORS[equipment.status] || "bg-gray-100 text-black"
+                STATUS_COLORS[equipment.status] || "bg-surface-sunken text-text"
               }`}
             >
               {STATUS_LABELS[equipment.status] || equipment.status}
             </span>
             <Link
               href={`/equipments/${equipmentId}/edit`}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
             >
               수정
             </Link>
@@ -168,7 +172,7 @@ export default function EquipmentDetailPage() {
               <button
                 onClick={() => setShowRetireConfirm(true)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-red-600 border border-red-300 rounded-md hover:bg-red-50 disabled:opacity-50"
+                className="px-4 py-2 text-danger border border-danger-border rounded-md hover:bg-danger-bg disabled:opacity-50"
               >
                 {isDeleting ? "처리 중..." : "폐기"}
               </button>
@@ -176,7 +180,7 @@ export default function EquipmentDetailPage() {
             {equipment.status === "available" && (
               <button
                 onClick={() => setShowCheckOutModal(true)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                className="px-4 py-2 bg-danger text-white rounded-md hover:opacity-90"
               >
                 반출
               </button>
@@ -184,7 +188,7 @@ export default function EquipmentDetailPage() {
             {equipment.status === "checked_out" && (
               <button
                 onClick={() => setShowCheckInModal(true)}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                className="px-4 py-2 bg-success text-text-on-accent rounded-md hover:bg-success/90"
               >
                 반입
               </button>
@@ -194,29 +198,29 @@ export default function EquipmentDetailPage() {
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">사업</h3>
-            <Link href={`/contracts/${equipment.contract}`} className="text-blue-600 hover:underline">
+            <h3 className="text-sm font-medium text-text mb-1">사업</h3>
+            <Link href={`/contracts/${equipment.contract}`} className="text-accent hover:underline">
               {equipment.contract_name}
             </Link>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">분류</h3>
+            <h3 className="text-sm font-medium text-text mb-1">분류</h3>
             <p>{CATEGORY_LABELS[equipment.category] || equipment.category}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">모델명</h3>
+            <h3 className="text-sm font-medium text-text mb-1">모델명</h3>
             <p>{equipment.model_name || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">제조사</h3>
+            <h3 className="text-sm font-medium text-text mb-1">제조사</h3>
             <p>{equipment.manufacturer || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">보관 위치</h3>
+            <h3 className="text-sm font-medium text-text mb-1">보관 위치</h3>
             <p>{equipment.location || "-"}</p>
           </div>
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">등록일</h3>
+            <h3 className="text-sm font-medium text-text mb-1">등록일</h3>
             <p>{new Date(equipment.created_at).toLocaleString("ko-KR")}</p>
           </div>
         </div>
@@ -226,24 +230,24 @@ export default function EquipmentDetailPage() {
           <h2 className="text-lg font-semibold mb-4">CMDB 정보</h2>
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="text-sm font-medium text-black mb-1">IP 주소</h3>
+              <h3 className="text-sm font-medium text-text mb-1">IP 주소</h3>
               <p className="font-mono">{equipment.ip_address || "-"}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-black mb-1">MAC 주소</h3>
+              <h3 className="text-sm font-medium text-text mb-1">MAC 주소</h3>
               <p className="font-mono">{equipment.mac_address || "-"}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-black mb-1">운영체제</h3>
+              <h3 className="text-sm font-medium text-text mb-1">운영체제</h3>
               <p>{equipment.operating_system || "-"}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-black mb-1">구매일</h3>
+              <h3 className="text-sm font-medium text-text mb-1">구매일</h3>
               <p>{equipment.purchase_date ? new Date(equipment.purchase_date).toLocaleDateString("ko-KR") : "-"}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-black mb-1">보증만료일</h3>
-              <p className={equipment.warranty_expiry_date && new Date(equipment.warranty_expiry_date) < new Date() ? "text-red-600 font-medium" : ""}>
+              <h3 className="text-sm font-medium text-text mb-1">보증만료일</h3>
+              <p className={equipment.warranty_expiry_date && new Date(equipment.warranty_expiry_date) < new Date() ? "text-danger font-medium" : ""}>
                 {equipment.warranty_expiry_date ? new Date(equipment.warranty_expiry_date).toLocaleDateString("ko-KR") : "-"}
                 {equipment.warranty_expiry_date && new Date(equipment.warranty_expiry_date) < new Date() && " (만료)"}
               </p>
@@ -253,17 +257,17 @@ export default function EquipmentDetailPage() {
 
         {equipment.notes && (
           <div>
-            <h3 className="text-sm font-medium text-black mb-1">비고</h3>
-            <p className="text-black whitespace-pre-wrap">{equipment.notes}</p>
+            <h3 className="text-sm font-medium text-text mb-1">비고</h3>
+            <p className="text-text whitespace-pre-wrap">{equipment.notes}</p>
           </div>
         )}
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6">
+      <div className="bg-surface shadow-card rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">반출입 이력</h2>
 
         {transactions.length === 0 ? (
-          <p className="text-black text-center py-8">반출입 이력이 없습니다</p>
+          <p className="text-text text-center py-8">반출입 이력이 없습니다</p>
         ) : (
           <div className="space-y-4">
             {transactions.map((tx) => (
@@ -271,23 +275,23 @@ export default function EquipmentDetailPage() {
                 key={tx.id}
                 className={`border rounded-lg p-4 ${
                   tx.transaction_type === "check_out"
-                    ? "border-red-200 bg-red-50"
-                    : "border-green-200 bg-green-50"
+                    ? "border-danger-border bg-danger-bg"
+                    : "border-success-border bg-success-bg"
                 }`}
               >
                 <div className="flex justify-between items-start mb-2">
                   <span
                     className={`font-medium ${
-                      tx.transaction_type === "check_out" ? "text-red-700" : "text-green-700"
+                      tx.transaction_type === "check_out" ? "text-danger" : "text-success"
                     }`}
                   >
                     {tx.transaction_type_display}
                   </span>
-                  <span className="text-sm text-black">
+                  <span className="text-sm text-text">
                     {new Date(tx.transaction_date).toLocaleString("ko-KR")}
                   </span>
                 </div>
-                <div className="text-black">
+                <div className="text-text">
                   <p>
                     <span className="font-medium">담당자:</span> {tx.handler_name}
                     {tx.handler_affiliation && ` (${tx.handler_affiliation})`}
@@ -326,68 +330,68 @@ export default function EquipmentDetailPage() {
       >
         <form action={handleCheckOut} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">담당자명 *</label>
+            <label className="block text-sm font-medium text-text mb-1">담당자명 *</label>
             <input
               type="text"
               name="handler_name"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">소속</label>
+            <label className="block text-sm font-medium text-text mb-1">소속</label>
             <input
               type="text"
               name="handler_affiliation"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">연락처</label>
+            <label className="block text-sm font-medium text-text mb-1">연락처</label>
             <input
               type="text"
               name="handler_contact"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">반출 사유 *</label>
+            <label className="block text-sm font-medium text-text mb-1">반출 사유 *</label>
             <textarea
               name="rationale"
               rows={2}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">반납 예정일</label>
+            <label className="block text-sm font-medium text-text mb-1">반납 예정일</label>
             <input
               type="date"
               name="expected_return_date"
               min={new Date().toISOString().split("T")[0]}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">비고</label>
+            <label className="block text-sm font-medium text-text mb-1">비고</label>
             <textarea
               name="notes"
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={() => setShowCheckOutModal(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              className="px-4 py-2 bg-danger text-white rounded-md hover:opacity-90 disabled:opacity-50"
             >
               {isSubmitting ? "처리 중..." : "반출"}
             </button>
@@ -402,59 +406,59 @@ export default function EquipmentDetailPage() {
       >
         <form action={handleCheckIn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-black mb-1">담당자명 *</label>
+            <label className="block text-sm font-medium text-text mb-1">담당자명 *</label>
             <input
               type="text"
               name="handler_name"
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">소속</label>
+            <label className="block text-sm font-medium text-text mb-1">소속</label>
             <input
               type="text"
               name="handler_affiliation"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">연락처</label>
+            <label className="block text-sm font-medium text-text mb-1">연락처</label>
             <input
               type="text"
               name="handler_contact"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">반입 사유 *</label>
+            <label className="block text-sm font-medium text-text mb-1">반입 사유 *</label>
             <textarea
               name="rationale"
               rows={2}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-black mb-1">비고</label>
+            <label className="block text-sm font-medium text-text mb-1">비고</label>
             <textarea
               name="notes"
               rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
+              className="w-full px-3 py-2 border border-border rounded-md"
             />
           </div>
           <div className="flex gap-4 pt-4">
             <button
               type="button"
               onClick={() => setShowCheckInModal(false)}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+              className="px-4 py-2 bg-success text-text-on-accent rounded-md hover:bg-success/90 disabled:opacity-50"
             >
               {isSubmitting ? "처리 중..." : "반입"}
             </button>

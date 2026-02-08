@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getAccessToken } from "@/lib/auth";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface SLADefinition {
   id: number;
@@ -41,14 +42,14 @@ const PRIORITY_LABELS: Record<string, string> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  critical: 'bg-red-100 text-red-800',
-  high: 'bg-orange-100 text-orange-800',
-  medium: 'bg-blue-100 text-blue-800',
-  low: 'bg-gray-100 text-gray-800',
+  critical: 'bg-danger-bg text-danger',
+  high: 'bg-warning-bg text-warning',
+  medium: 'bg-info-bg text-info',
+  low: 'bg-surface-sunken text-text',
 };
 
 function PriorityBadge({ priority }: { priority: string }) {
-  const colorClass = PRIORITY_COLORS[priority] || 'bg-gray-100 text-gray-800';
+  const colorClass = PRIORITY_COLORS[priority] || 'bg-surface-sunken text-text';
   const label = PRIORITY_LABELS[priority] || priority;
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
@@ -58,11 +59,11 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 function ComplianceRateBadge({ rate }: { rate: number }) {
-  let colorClass = 'bg-red-100 text-red-800';
+  let colorClass = 'bg-danger-bg text-danger';
   if (rate > 90) {
-    colorClass = 'bg-green-100 text-green-800';
+    colorClass = 'bg-success-bg text-success';
   } else if (rate > 70) {
-    colorClass = 'bg-yellow-100 text-yellow-800';
+    colorClass = 'bg-warning-bg text-warning';
   }
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
@@ -76,8 +77,8 @@ function SLAMetBadge({ met }: { met: boolean }) {
     <span
       className={`px-2 py-1 rounded-full text-xs font-medium ${
         met
-          ? 'bg-green-100 text-green-800'
-          : 'bg-red-100 text-red-800'
+          ? 'bg-success-bg text-success'
+          : 'bg-danger-bg text-danger'
       }`}
     >
       {met ? '준수' : '미준수'}
@@ -162,12 +163,13 @@ export default function SLADetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="bg-white shadow-sm rounded-lg p-6">
+      <div>
+        <Breadcrumb />
+        <div className="bg-surface shadow-card rounded-lg p-6">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className="h-8 bg-surface-sunken rounded w-1/3"></div>
+            <div className="h-4 bg-surface-sunken rounded w-1/2"></div>
+            <div className="h-4 bg-surface-sunken rounded w-2/3"></div>
           </div>
         </div>
       </div>
@@ -176,13 +178,14 @@ export default function SLADetailPage() {
 
   if (error || !sla) {
     return (
-      <div className="p-6">
+      <div>
+        <Breadcrumb />
         <div className="mb-4">
-          <Link href="/sla" className="text-blue-600 hover:underline text-sm">
+          <Link href="/sla" className="text-accent hover:underline text-sm">
             SLA 정의 목록으로
           </Link>
         </div>
-        <div className="bg-red-50 text-red-700 rounded-md p-4">
+        <div className="bg-danger-bg text-danger rounded-md p-4">
           {error || 'SLA 정보를 찾을 수 없습니다'}
         </div>
       </div>
@@ -190,30 +193,31 @@ export default function SLADetailPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
       {/* Back Button */}
       <div className="mb-6">
-        <Link href="/sla" className="text-blue-600 hover:underline text-sm">
+        <Link href="/sla" className="text-accent hover:underline text-sm">
           SLA 정의 목록으로
         </Link>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+      <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
-            <h1 className="text-2xl font-bold mb-2">{sla.service_type}</h1>
-            <p className="text-gray-600">{sla.contract_name}</p>
+            <h1 className="text-2xl font-semibold text-text mb-2">{sla.service_type}</h1>
+            <p className="text-text-muted">{sla.contract_name}</p>
           </div>
           <div className="flex gap-2">
             <PriorityBadge priority={sla.priority} />
             {sla.is_active ? (
-              <span className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-success-bg text-success">
                 활성
               </span>
             ) : (
-              <span className="px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+              <span className="px-3 py-1 rounded-full text-sm font-medium bg-surface-sunken text-text">
                 비활성
               </span>
             )}
@@ -222,30 +226,30 @@ export default function SLADetailPage() {
 
         {/* Description */}
         {sla.description && (
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">설명</h3>
-            <p className="text-gray-600">{sla.description}</p>
+          <div className="mb-6 p-4 bg-surface-sunken rounded-lg border border-border-light">
+            <h3 className="text-sm font-medium text-text-secondary mb-2">설명</h3>
+            <p className="text-text-muted">{sla.description}</p>
           </div>
         )}
 
         {/* SLA Targets Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">응답 목표</h3>
-            <p className="text-2xl font-bold text-blue-600">
+          <div className="p-4 bg-info-bg rounded-lg border border-info-border">
+            <h3 className="text-sm font-medium text-text-secondary mb-2">응답 목표</h3>
+            <p className="text-2xl font-semibold text-text text-accent">
               {formatTime(sla.target_response_time_minutes)}
             </p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">해결 목표</h3>
-            <p className="text-2xl font-bold text-purple-600">
+          <div className="p-4 bg-info-bg rounded-lg border border-info-border">
+            <h3 className="text-sm font-medium text-text-secondary mb-2">해결 목표</h3>
+            <p className="text-2xl font-semibold text-text text-info">
               {formatTime(sla.target_resolution_time_minutes)}
             </p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">준수율</h3>
+          <div className="p-4 bg-surface-sunken rounded-lg border border-border-light">
+            <h3 className="text-sm font-medium text-text-secondary mb-2">준수율</h3>
             <div className="flex items-center gap-2">
-              <p className="text-2xl font-bold text-gray-800">
+              <p className="text-2xl font-semibold text-text text-text">
                 {sla.compliance_rate.toFixed(1)}%
               </p>
               <ComplianceRateBadge rate={sla.compliance_rate} />
@@ -254,57 +258,57 @@ export default function SLADetailPage() {
         </div>
 
         {/* Metadata */}
-        <div className="text-sm text-gray-500 border-t border-gray-200 pt-4">
+        <div className="text-sm text-text-muted border-t border-border-light pt-4">
           <p>등록일: {formatDate(sla.created_at)}</p>
         </div>
       </div>
 
       {/* Metrics Table */}
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-surface shadow-card rounded-lg overflow-hidden">
+        <div className="p-6 border-b border-border-light">
           <h2 className="text-lg font-semibold">SLA 메트릭</h2>
         </div>
 
         {metrics.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
+          <div className="p-6 text-center text-text-muted">
             등록된 메트릭이 없습니다
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border-light">
+              <thead className="bg-surface-sunken">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     대상
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     응답 시간
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     해결 시간
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     응답 준수
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     해결 준수
                   </th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-700 uppercase">
+                  <th className="px-6 py-3 text-left text-sm font-medium text-text-secondary uppercase">
                     기록일
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-surface divide-y divide-border-light">
                 {metrics.map((metric) => (
-                  <tr key={metric.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                  <tr key={metric.id} className="hover:bg-surface-sunken">
+                    <td className="px-6 py-4 text-sm text-text">
                       <div className="font-medium">{metric.object_display}</div>
-                      <div className="text-xs text-gray-500">{metric.content_type_name}</div>
+                      <div className="text-xs text-text-muted">{metric.content_type_name}</div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-text">
                       {formatTime(metric.actual_response_time_minutes)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-4 text-sm text-text">
                       {formatTime(metric.actual_resolution_time_minutes)}
                     </td>
                     <td className="px-6 py-4">
@@ -313,7 +317,7 @@ export default function SLADetailPage() {
                     <td className="px-6 py-4">
                       <SLAMetBadge met={metric.resolution_sla_met} />
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-text-muted">
                       {formatDate(metric.created_at)}
                     </td>
                   </tr>
@@ -328,13 +332,13 @@ export default function SLADetailPage() {
       <div className="flex gap-3 mt-6">
         <Link
           href={`/sla/${sla.id}/edit`}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover transition-colors"
         >
           수정
         </Link>
         <Link
           href="/sla"
-          className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+          className="px-4 py-2 border border-border text-text-secondary rounded-md hover:bg-surface-sunken transition-colors"
         >
           취소
         </Link>

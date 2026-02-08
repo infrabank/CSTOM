@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { TableSkeleton } from "@/components/ui/skeleton";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface SLADefinition {
   id: number;
@@ -29,14 +30,14 @@ const PRIORITY_LABELS: Record<string, string> = {
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  critical: "bg-red-100 text-red-800",
-  high: "bg-orange-100 text-orange-800",
-  medium: "bg-blue-100 text-blue-800",
-  low: "bg-gray-100 text-gray-800",
+  critical: "bg-danger-bg text-danger",
+  high: "bg-warning-bg text-warning",
+  medium: "bg-info-bg text-accent",
+  low: "bg-surface-sunken text-text-muted",
 };
 
 function PriorityBadge({ priority }: { priority: string }) {
-  const colorClass = PRIORITY_COLORS[priority] || "bg-gray-100 text-gray-800";
+  const colorClass = PRIORITY_COLORS[priority] || "bg-surface-sunken text-text-muted";
   const label = PRIORITY_LABELS[priority] || priority;
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
@@ -46,11 +47,11 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 function ComplianceRateBadge({ rate }: { rate: number }) {
-  let colorClass = "bg-red-100 text-red-800";
+  let colorClass = "bg-danger-bg text-danger";
   if (rate > 90) {
-    colorClass = "bg-green-100 text-green-800";
+    colorClass = "bg-success-bg text-success";
   } else if (rate > 70) {
-    colorClass = "bg-yellow-100 text-yellow-800";
+    colorClass = "bg-warning-bg text-warning";
   }
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
@@ -72,8 +73,8 @@ function ActiveStatusBadge({ isActive }: { isActive: boolean }) {
     <span
       className={`px-2 py-1 rounded-full text-xs font-medium ${
         isActive
-          ? "bg-green-100 text-green-800"
-          : "bg-gray-100 text-gray-800"
+          ? "bg-success-bg text-success"
+          : "bg-surface-sunken text-text-muted"
       }`}
     >
       {isActive ? "활성" : "비활성"}
@@ -108,80 +109,82 @@ export default async function SLAPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">SLA 정의</h1>
+        <h1 className="text-2xl font-semibold text-text">SLA 정의</h1>
         <Link
           href="/sla/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
         >
           SLA 정의 등록
         </Link>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
       )}
 
       <Suspense fallback={<TableSkeleton rows={5} columns={7} />}>
         {/* Desktop Table View */}
-        <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
+          <table className="min-w-full divide-y divide-border-light">
+            <thead className="bg-surface-sunken">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   서비스 유형
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   사업
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   우선순위
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   응답 목표
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   해결 목표
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   준수율
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                   활성 상태
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-surface divide-y divide-border-light">
               {slaDefinitions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-black">
+                  <td colSpan={7} className="px-6 py-8 text-center text-text-muted">
                     등록된 SLA 정의가 없습니다
                   </td>
                 </tr>
               ) : (
                 slaDefinitions.map((sla) => (
-                  <tr key={sla.id} className="hover:bg-gray-50">
+                   <tr key={sla.id} className="hover:bg-surface-sunken">
                     <td className="px-6 py-4">
                       <Link
                         href={`/sla/${sla.id}`}
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-accent hover:underline font-medium"
                       >
                         {sla.service_type}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-black text-sm">
-                      {sla.contract_name}
-                    </td>
+                     <td className="px-6 py-4 text-text text-sm">
+                       {sla.contract_name}
+                     </td>
                     <td className="px-6 py-4">
                       <PriorityBadge priority={sla.priority} />
                     </td>
-                    <td className="px-6 py-4 text-black text-sm">
-                      {formatTime(sla.target_response_time_minutes)}
-                    </td>
-                    <td className="px-6 py-4 text-black text-sm">
-                      {formatTime(sla.target_resolution_time_minutes)}
-                    </td>
+                     <td className="px-6 py-4 text-text text-sm">
+                       {formatTime(sla.target_response_time_minutes)}
+                     </td>
+                     <td className="px-6 py-4 text-text text-sm">
+                       {formatTime(sla.target_resolution_time_minutes)}
+                     </td>
                     <td className="px-6 py-4">
                       <ComplianceRateBadge rate={sla.compliance_rate} />
                     </td>
@@ -198,49 +201,49 @@ export default async function SLAPage() {
         {/* Mobile Card View */}
         <div className="md:hidden space-y-4">
           {slaDefinitions.length === 0 ? (
-            <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
-              등록된 SLA 정의가 없습니다
-            </div>
+            <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
+               등록된 SLA 정의가 없습니다
+             </div>
           ) : (
             slaDefinitions.map((sla) => (
               <div
                 key={sla.id}
-                className="bg-white rounded-lg shadow-sm p-4 space-y-3"
+                className="bg-surface rounded-lg shadow-card p-4 space-y-3"
               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1 flex-1">
                     <Link
                       href={`/sla/${sla.id}`}
-                      className="font-medium text-blue-600 block"
+                      className="font-medium text-accent block"
                     >
                       {sla.service_type}
                     </Link>
-                    <div className="text-sm text-black">{sla.contract_name}</div>
+                    <div className="text-sm text-text">{sla.contract_name}</div>
                   </div>
                   <PriorityBadge priority={sla.priority} />
                 </div>
 
-                <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+                <div className="space-y-2 text-sm border-t border-border-light pt-3">
                   <div className="flex justify-between">
-                    <span className="font-medium text-black">응답 목표</span>
-                    <span className="text-black">
-                      {formatTime(sla.target_response_time_minutes)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-black">해결 목표</span>
-                    <span className="text-black">
-                      {formatTime(sla.target_resolution_time_minutes)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-black">준수율</span>
-                    <ComplianceRateBadge rate={sla.compliance_rate} />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium text-black">활성 상태</span>
-                    <ActiveStatusBadge isActive={sla.is_active} />
-                  </div>
+                     <span className="font-medium text-text">응답 목표</span>
+                     <span className="text-text">
+                       {formatTime(sla.target_response_time_minutes)}
+                     </span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span className="font-medium text-text">해결 목표</span>
+                     <span className="text-text">
+                       {formatTime(sla.target_resolution_time_minutes)}
+                     </span>
+                   </div>
+                   <div className="flex justify-between items-center">
+                     <span className="font-medium text-text">준수율</span>
+                     <ComplianceRateBadge rate={sla.compliance_rate} />
+                   </div>
+                   <div className="flex justify-between items-center">
+                     <span className="font-medium text-text">활성 상태</span>
+                     <ActiveStatusBadge isActive={sla.is_active} />
+                   </div>
                 </div>
               </div>
             ))

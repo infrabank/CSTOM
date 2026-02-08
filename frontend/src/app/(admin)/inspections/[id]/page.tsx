@@ -65,9 +65,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  in_progress: "bg-blue-100 text-blue-800",
-  completed: "bg-green-100 text-green-800",
+  pending: "bg-warning-bg text-warning",
+  in_progress: "bg-info-bg text-info",
+  completed: "bg-success-bg text-success",
 };
 
 export default function InspectionScheduleDetailPage() {
@@ -266,42 +266,42 @@ export default function InspectionScheduleDetailPage() {
     return user.username;
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-600">로딩 중...</div>
-      </div>
-    );
-  }
+   if (isLoading) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-text-muted">로딩 중...</div>
+       </div>
+     );
+   }
 
-  if (error && !schedule) {
-    return (
-      <div className="p-6">
-        <div className="mb-6">
-          <Link href="/inspections" className="text-blue-600 hover:underline text-sm">
-            점검 스케줄 목록으로
-          </Link>
-        </div>
-        <div className="bg-red-50 text-red-700 p-4 rounded-md">{error}</div>
-      </div>
-    );
-  }
+   if (error && !schedule) {
+     return (
+       <div className="p-6">
+         <div className="mb-6">
+           <Link href="/inspections" className="text-accent hover:underline text-sm">
+             점검 스케줄 목록으로
+           </Link>
+         </div>
+         <div className="bg-danger-bg text-danger p-4 rounded-md">{error}</div>
+       </div>
+     );
+   }
 
-  if (!schedule) return null;
+   if (!schedule) return null;
 
-  return (
-    <div className="p-6">
-      <div className="mb-6">
-        <Link href="/inspections" className="text-blue-600 hover:underline text-sm">
-          점검 스케줄 목록으로
-        </Link>
-      </div>
+   return (
+     <div className="p-6">
+       <div className="mb-6">
+         <Link href="/inspections" className="text-accent hover:underline text-sm">
+           점검 스케줄 목록으로
+         </Link>
+       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
-      )}
+       {error && (
+         <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
+       )}
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-4xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-4xl">
         <div className="flex justify-between items-start mb-6">
           <h1 className="text-2xl font-bold">점검 스케줄 상세</h1>
           <div className="flex gap-2">
@@ -309,14 +309,14 @@ export default function InspectionScheduleDetailPage() {
               <>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
                   disabled={isDeleting}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-danger text-text-on-accent rounded-md hover:bg-danger/90 disabled:opacity-50"
                 >
                   {isDeleting ? "삭제 중..." : "삭제"}
                 </button>
@@ -326,16 +326,16 @@ export default function InspectionScheduleDetailPage() {
                 <button
                   onClick={handleSave}
                   disabled={isSaving || !contractId || !equipmentType}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 bg-success text-text-on-accent rounded-md hover:bg-success/90 disabled:opacity-50"
                 >
                   {isSaving ? "저장 중..." : "저장"}
                 </button>
-                <button
-                  onClick={cancelEdit}
-                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  취소
-                </button>
+                 <button
+                   onClick={cancelEdit}
+                   className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+                 >
+                   취소
+                 </button>
               </>
             )}
           </div>
@@ -344,15 +344,15 @@ export default function InspectionScheduleDetailPage() {
         {isEditing ? (
           // Edit Form
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                사업 *
-              </label>
-              <select
-                value={contractId}
-                onChange={(e) => setContractId(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 사업 *
+               </label>
+               <select
+                 value={contractId}
+                 onChange={(e) => setContractId(e.target.value)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 <option value="">사업 선택</option>
                 {contracts.map((contract) => (
                   <option key={contract.id} value={contract.id}>
@@ -362,27 +362,27 @@ export default function InspectionScheduleDetailPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                장비 유형 *
-              </label>
-              <input
-                type="text"
-                value={equipmentType}
-                onChange={(e) => setEquipmentType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 장비 유형 *
+               </label>
+               <input
+                 type="text"
+                 value={equipmentType}
+                 onChange={(e) => setEquipmentType(e.target.value)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                점검 주기 *
-              </label>
-              <select
-                value={cycle}
-                onChange={(e) => setCycle(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 점검 주기 *
+               </label>
+               <select
+                 value={cycle}
+                 onChange={(e) => setCycle(e.target.value)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {CYCLE_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -391,15 +391,15 @@ export default function InspectionScheduleDetailPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                담당자
-              </label>
-              <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 담당자
+               </label>
+               <select
+                 value={assignedTo}
+                 onChange={(e) => setAssignedTo(e.target.value)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 <option value="">담당자 선택</option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
@@ -409,177 +409,177 @@ export default function InspectionScheduleDetailPage() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                설명
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 설명
+               </label>
+               <textarea
+                 value={description}
+                 onChange={(e) => setDescription(e.target.value)}
+                 rows={4}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                id="isActive"
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-              />
-              <label htmlFor="isActive" className="text-sm text-black">
-                활성화
-              </label>
-            </div>
+             <div className="flex items-center gap-2">
+               <input
+                 id="isActive"
+                 type="checkbox"
+                 checked={isActive}
+                 onChange={(e) => setIsActive(e.target.checked)}
+                 className="w-4 h-4 text-accent border-border rounded focus:ring-accent"
+               />
+               <label htmlFor="isActive" className="text-sm text-text">
+                 활성화
+               </label>
+             </div>
           </div>
         ) : (
           // View Mode
           <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">장비 유형</div>
-                <div className="text-lg font-semibold">{schedule.equipment_type}</div>
-              </div>
+             <div className="grid md:grid-cols-2 gap-6">
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">장비 유형</div>
+                 <div className="text-lg font-semibold">{schedule.equipment_type}</div>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">사업</div>
-                <Link
-                  href={`/contracts/${schedule.contract}`}
-                  className="text-blue-600 hover:underline"
-                >
-                  {schedule.contract_name}
-                </Link>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">사업</div>
+                 <Link
+                   href={`/contracts/${schedule.contract}`}
+                   className="text-accent hover:underline"
+                 >
+                   {schedule.contract_name}
+                 </Link>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">점검 주기</div>
-                <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                  {CYCLE_LABELS[schedule.cycle] || schedule.cycle}
-                </span>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">점검 주기</div>
+                 <span className="px-2 py-1 bg-info-bg text-info rounded-full text-sm">
+                   {CYCLE_LABELS[schedule.cycle] || schedule.cycle}
+                 </span>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">담당자</div>
-                <div>{schedule.assigned_to_name || "-"}</div>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">담당자</div>
+                 <div>{schedule.assigned_to_name || "-"}</div>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">활성 상태</div>
-                <span
-                  className={`px-2 py-1 rounded-full text-sm ${
-                    schedule.is_active
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {schedule.is_active ? "활성" : "비활성"}
-                </span>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">활성 상태</div>
+                 <span
+                   className={`px-2 py-1 rounded-full text-sm ${
+                     schedule.is_active
+                       ? "bg-success-bg text-success"
+                       : "bg-surface-sunken text-text-muted"
+                   }`}
+                 >
+                   {schedule.is_active ? "활성" : "비활성"}
+                 </span>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">생성된 작업 수</div>
-                <div className="text-lg font-semibold">{schedule.task_count}</div>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">생성된 작업 수</div>
+                 <div className="text-lg font-semibold">{schedule.task_count}</div>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">등록일</div>
-                <div>{new Date(schedule.created_at).toLocaleDateString("ko-KR")}</div>
-              </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">등록일</div>
+                 <div>{new Date(schedule.created_at).toLocaleDateString("ko-KR")}</div>
+               </div>
 
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">수정일</div>
-                <div>{new Date(schedule.updated_at).toLocaleDateString("ko-KR")}</div>
-              </div>
-            </div>
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">수정일</div>
+                 <div>{new Date(schedule.updated_at).toLocaleDateString("ko-KR")}</div>
+               </div>
+             </div>
 
-            {schedule.description && (
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-1">설명</div>
-                <div className="text-gray-700 whitespace-pre-wrap">
-                  {schedule.description}
-                </div>
-              </div>
-            )}
+             {schedule.description && (
+               <div>
+                 <div className="text-sm font-medium text-text-muted mb-1">설명</div>
+                 <div className="text-text-secondary whitespace-pre-wrap">
+                   {schedule.description}
+                 </div>
+               </div>
+             )}
           </div>
         )}
       </div>
 
-      {/* Related Inspection Tasks */}
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-4xl mt-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">점검 작업 목록</h2>
-          <Link
-            href={`/inspections/tasks?schedule=${id}`}
-            className="text-blue-600 text-sm hover:underline"
-          >
-            전체 보기
-          </Link>
-        </div>
+       {/* Related Inspection Tasks */}
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-4xl mt-6">
+         <div className="flex justify-between items-center mb-4">
+           <h2 className="text-lg font-semibold">점검 작업 목록</h2>
+           <Link
+             href={`/inspections/tasks?schedule=${id}`}
+             className="text-accent text-sm hover:underline"
+           >
+             전체 보기
+           </Link>
+         </div>
 
-        {tasks.length === 0 ? (
-          <p className="text-gray-500 text-center py-4">
-            생성된 점검 작업이 없습니다
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-black">
-                    예정일
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-black">
-                    상태
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-black">
-                    완료일
-                  </th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-black">
-                    비고
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {tasks.slice(0, 10).map((task) => (
-                  <tr key={task.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2">
-                      <Link
-                        href={`/inspections/tasks/${task.id}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          STATUS_COLORS[task.status] || "bg-gray-100"
-                        }`}
-                      >
-                        {STATUS_LABELS[task.status] || task.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600">
-                      {task.completed_at
-                        ? new Date(task.completed_at).toLocaleDateString("ko-KR")
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-2 text-sm text-gray-600 truncate max-w-xs">
-                      {task.notes || "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {tasks.length > 10 && (
-              <div className="text-center py-2 text-sm text-gray-500">
-                외 {tasks.length - 10}건 더 있음
-              </div>
-            )}
-          </div>
-        )}
+         {tasks.length === 0 ? (
+           <p className="text-text-muted text-center py-4">
+             생성된 점검 작업이 없습니다
+           </p>
+         ) : (
+           <div className="overflow-x-auto">
+             <table className="min-w-full divide-y divide-border-light">
+               <thead className="bg-surface-sunken">
+                 <tr>
+                   <th className="px-4 py-2 text-left text-sm font-medium text-text">
+                     예정일
+                   </th>
+                   <th className="px-4 py-2 text-left text-sm font-medium text-text">
+                     상태
+                   </th>
+                   <th className="px-4 py-2 text-left text-sm font-medium text-text">
+                     완료일
+                   </th>
+                   <th className="px-4 py-2 text-left text-sm font-medium text-text">
+                     비고
+                   </th>
+                 </tr>
+               </thead>
+               <tbody className="bg-surface divide-y divide-border-light">
+                 {tasks.slice(0, 10).map((task) => (
+                   <tr key={task.id} className="hover:bg-surface-sunken">
+                     <td className="px-4 py-2">
+                       <Link
+                         href={`/inspections/tasks/${task.id}`}
+                         className="text-accent hover:underline"
+                       >
+                         {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
+                       </Link>
+                     </td>
+                     <td className="px-4 py-2">
+                       <span
+                         className={`px-2 py-1 rounded-full text-xs font-medium ${
+                           STATUS_COLORS[task.status] || "bg-surface-sunken"
+                         }`}
+                       >
+                         {STATUS_LABELS[task.status] || task.status}
+                       </span>
+                     </td>
+                     <td className="px-4 py-2 text-sm text-text-muted">
+                       {task.completed_at
+                         ? new Date(task.completed_at).toLocaleDateString("ko-KR")
+                         : "-"}
+                     </td>
+                     <td className="px-4 py-2 text-sm text-text-muted truncate max-w-xs">
+                       {task.notes || "-"}
+                     </td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+             {tasks.length > 10 && (
+               <div className="text-center py-2 text-sm text-text-muted">
+                 외 {tasks.length - 10}건 더 있음
+               </div>
+             )}
+           </div>
+         )}
       </div>
 
       <ConfirmModal

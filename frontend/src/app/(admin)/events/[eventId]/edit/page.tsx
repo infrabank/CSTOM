@@ -93,7 +93,7 @@ export default function EditEventPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-black">불러오는 중...</div>
+        <div className="text-center text-text">불러오는 중...</div>
       </div>
     );
   }
@@ -101,10 +101,10 @@ export default function EditEventPage({ params }: PageProps) {
   if (!event) {
     return (
       <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
           {error || "이벤트를 찾을 수 없습니다"}
         </div>
-        <Link href="/events" className="text-blue-600 hover:underline">
+         <Link href="/events" className="text-accent hover:underline">
           이벤트 목록으로
         </Link>
       </div>
@@ -113,35 +113,35 @@ export default function EditEventPage({ params }: PageProps) {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link
-          href={`/events/${eventId}`}
-          className="text-blue-600 hover:underline text-sm"
-        >
+       <div className="mb-6">
+         <Link
+           href={`/events/${eventId}`}
+           className="text-accent hover:underline text-sm"
+         >
           이벤트 상세로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+      <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">이벤트 수정</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
             {error}
           </div>
         )}
 
         <form action={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              사업 *
-            </label>
-            <select
-              name="contract"
-              required
-              defaultValue={event.contract}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               사업 *
+             </label>
+             <select
+               name="contract"
+               required
+               defaultValue={event.contract}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -151,16 +151,16 @@ export default function EditEventPage({ params }: PageProps) {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              유형 *
-            </label>
-            <select
-              name="record_type"
-              required
-              defaultValue={event.record_type}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               유형 *
+             </label>
+             <select
+               name="record_type"
+               required
+               defaultValue={event.record_type}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               {RECORD_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
@@ -169,105 +169,105 @@ export default function EditEventPage({ params }: PageProps) {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              제목 *
-            </label>
-            <input
-              type="text"
-              name="title"
-              required
-              defaultValue={event.title}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               제목 *
+             </label>
+             <input
+               type="text"
+               name="title"
+               required
+               defaultValue={event.title}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              상세 내용
-            </label>
-            <textarea
-              name="description"
-              rows={4}
-              defaultValue={event.description}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               상세 내용
+             </label>
+             <textarea
+               name="description"
+               rows={4}
+               defaultValue={event.description}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                발생 시각 *
-              </label>
-              <input
-                type="datetime-local"
-                name="occurred_at"
-                required
-                defaultValue={formatDatetimeLocal(event.occurred_at)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                인지 시각
-              </label>
-              <input
-                type="datetime-local"
-                name="detected_at"
-                defaultValue={formatDatetimeLocal(event.detected_at)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+           <div className="grid grid-cols-2 gap-4">
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 발생 시각 *
+               </label>
+               <input
+                 type="datetime-local"
+                 name="occurred_at"
+                 required
+                 defaultValue={formatDatetimeLocal(event.occurred_at)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 인지 시각
+               </label>
+               <input
+                 type="datetime-local"
+                 name="detected_at"
+                 defaultValue={formatDatetimeLocal(event.detected_at)}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              해결 시각
-            </label>
-            <input
-              type="datetime-local"
-              name="resolved_at"
-              defaultValue={formatDatetimeLocal(event.resolved_at)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               해결 시각
+             </label>
+             <input
+               type="datetime-local"
+               name="resolved_at"
+               defaultValue={formatDatetimeLocal(event.resolved_at)}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="customer_notified"
-                defaultChecked={event.customer_notified}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm">고객 통보 완료</span>
-            </label>
-          </div>
+           <div className="space-y-2">
+             <label className="flex items-center gap-2">
+               <input
+                 type="checkbox"
+                 name="customer_notified"
+                 defaultChecked={event.customer_notified}
+                 className="rounded border-border text-accent focus:ring-accent"
+               />
+               <span className="text-sm">고객 통보 완료</span>
+             </label>
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              고객 통보 시각
-            </label>
-            <input
-              type="datetime-local"
-              name="customer_notified_at"
-              defaultValue={formatDatetimeLocal(event.customer_notified_at)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               고객 통보 시각
+             </label>
+             <input
+               type="datetime-local"
+               name="customer_notified_at"
+               defaultValue={formatDatetimeLocal(event.customer_notified_at)}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>
-            <Link
-              href={`/events/${eventId}`}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
+             <Link
+               href={`/events/${eventId}`}
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
               취소
             </Link>
           </div>

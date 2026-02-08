@@ -50,7 +50,7 @@ export default async function KBPage({ searchParams }: PageProps) {
         <h1 className="text-2xl font-bold">지식베이스</h1>
         <Link
           href="/kb/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+           className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
         >
           새 아티클 작성
         </Link>
@@ -64,80 +64,80 @@ export default async function KBPage({ searchParams }: PageProps) {
             name="search"
             defaultValue={searchQuery}
             placeholder="제목, 내용, 태그로 검색..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+             className="w-full px-4 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
           />
         </form>
       </div>
 
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                제목
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                카테고리
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                작성자
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                조회수
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                유용함
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                최종 수정일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {articles.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-black">
-                  {searchQuery ? "검색 결과가 없습니다" : "등록된 아티클이 없습니다"}
-                </td>
-              </tr>
+       <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
+         <table className="min-w-full divide-y divide-border-light">
+           <thead className="bg-surface-sunken">
+             <tr>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 제목
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 카테고리
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 작성자
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 조회수
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 유용함
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 상태
+               </th>
+               <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                 최종 수정일
+               </th>
+             </tr>
+           </thead>
+           <tbody className="bg-surface divide-y divide-border-light">
+             {articles.length === 0 ? (
+               <tr>
+                 <td colSpan={7} className="px-6 py-4 text-center text-text">
+                   {searchQuery ? "검색 결과가 없습니다" : "등록된 아티클이 없습니다"}
+                 </td>
+               </tr>
             ) : (
-              articles.map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50">
+               articles.map((article) => (
+                 <tr key={article.id} className="hover:bg-surface-sunken">
                   <td className="px-6 py-4">
                     <Link
                       href={`/kb/${article.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                       className="text-accent hover:underline font-medium"
                     >
                       {article.title}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {article.category_name || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {article.author_name || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {article.view_count}
-                  </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {article.helpful_count}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      article.is_published 
-                        ? "bg-green-100 text-green-800" 
-                        : "bg-gray-100 text-gray-800"
-                    }`}>
-                      {article.is_published ? "공개" : "비공개"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-black text-sm">
-                    {new Date(article.updated_at).toLocaleDateString("ko-KR")}
-                  </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {article.category_name || "-"}
+                   </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {article.author_name || "-"}
+                   </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {article.view_count}
+                   </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {article.helpful_count}
+                   </td>
+                   <td className="px-6 py-4 text-sm">
+                     <span className={`px-2 py-1 rounded-full text-xs ${
+                       article.is_published 
+                          ? "bg-success-bg text-success" 
+                          : "bg-surface-sunken text-text-muted"
+                     }`}>
+                       {article.is_published ? "공개" : "비공개"}
+                     </span>
+                   </td>
+                   <td className="px-6 py-4 text-text text-sm">
+                     {new Date(article.updated_at).toLocaleDateString("ko-KR")}
+                   </td>
                 </tr>
               ))
             )}
@@ -145,55 +145,55 @@ export default async function KBPage({ searchParams }: PageProps) {
         </table>
       </div>
 
-      <div className="md:hidden space-y-4">
-        {articles.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
-            {searchQuery ? "검색 결과가 없습니다" : "등록된 아티클이 없습니다"}
-          </div>
+       <div className="md:hidden space-y-4">
+         {articles.length === 0 ? (
+           <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
+             {searchQuery ? "검색 결과가 없습니다" : "등록된 아티클이 없습니다"}
+           </div>
         ) : (
-          articles.map((article) => (
-            <div key={article.id} className="bg-white rounded-lg shadow-sm p-4 space-y-3">
+           articles.map((article) => (
+             <div key={article.id} className="bg-surface rounded-lg shadow-card p-4 space-y-3">
               <Link
                 href={`/kb/${article.id}`}
-                className="font-medium text-blue-600 block hover:underline"
+                 className="font-medium text-accent block hover:underline"
               >
                 {article.title}
               </Link>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">카테고리</span>
-                  <span className="text-black">{article.category_name || "-"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">작성자</span>
-                  <span className="text-black">{article.author_name || "-"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">조회수</span>
-                  <span className="text-black">{article.view_count}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">유용함</span>
-                  <span className="text-black">{article.helpful_count}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">상태</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    article.is_published 
-                      ? "bg-green-100 text-green-800" 
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {article.is_published ? "공개" : "비공개"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-black">최종 수정일</span>
-                  <span className="text-black">
-                    {new Date(article.updated_at).toLocaleDateString("ko-KR")}
-                  </span>
-                </div>
-              </div>
+               <div className="space-y-2 text-sm border-t border-border-light pt-3">
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">카테고리</span>
+                   <span className="text-text">{article.category_name || "-"}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">작성자</span>
+                   <span className="text-text">{article.author_name || "-"}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">조회수</span>
+                   <span className="text-text">{article.view_count}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">유용함</span>
+                   <span className="text-text">{article.helpful_count}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">상태</span>
+                   <span className={`px-2 py-1 rounded-full text-xs ${
+                     article.is_published 
+                       ? "bg-success-bg text-success" 
+                        : "bg-surface-sunken text-text-muted"
+                   }`}>
+                     {article.is_published ? "공개" : "비공개"}
+                   </span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="font-medium text-text">최종 수정일</span>
+                   <span className="text-text">
+                     {new Date(article.updated_at).toLocaleDateString("ko-KR")}
+                   </span>
+                 </div>
+               </div>
             </div>
           ))
         )}

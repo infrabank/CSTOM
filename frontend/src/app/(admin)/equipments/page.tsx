@@ -24,11 +24,11 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  available: "bg-green-100 text-green-800",
-  checked_out: "bg-red-100 text-red-800",
-  maintenance: "bg-yellow-100 text-yellow-800",
-  retired: "bg-gray-100 text-black",
-};
+   available: "bg-success-bg text-success",
+   checked_out: "bg-danger-bg text-danger",
+   maintenance: "bg-warning-bg text-warning",
+   retired: "bg-surface-sunken text-text",
+ };
 
 const STATUS_OPTIONS = [
   { value: "available", label: "보관중" },
@@ -49,7 +49,7 @@ const CATEGORY_OPTIONS = [
 const ITEMS_PER_PAGE = 10;
 
 function StatusBadge({ status }: { status: string }) {
-  const colorClass = STATUS_COLORS[status] || "bg-gray-100 text-black";
+   const colorClass = STATUS_COLORS[status] || "bg-surface-sunken text-text";
   const label = STATUS_LABELS[status] || status;
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
@@ -117,7 +117,7 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
         <h1 className="text-2xl font-bold">장비 반출입 관리</h1>
         <Link
           href="/equipments/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+           className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover"
         >
           장비 등록
         </Link>
@@ -125,20 +125,20 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
 
       {/* Search and Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="flex-1 max-w-md">
-          <Suspense fallback={<div className="h-10 bg-gray-100 rounded-md animate-pulse" />}>
+         <div className="flex-1 max-w-md">
+           <Suspense fallback={<div className="h-10 bg-surface-sunken rounded-md animate-pulse" />}>
             <SearchInput placeholder="장비명, 시리얼번호, 사업명 검색..." />
           </Suspense>
         </div>
         <div className="flex gap-2">
-          <Suspense fallback={<div className="h-10 w-28 bg-gray-100 rounded-md animate-pulse" />}>
+           <Suspense fallback={<div className="h-10 w-28 bg-surface-sunken rounded-md animate-pulse" />}>
             <FilterSelect
               options={STATUS_OPTIONS}
               paramName="status"
               placeholder="전체 상태"
             />
           </Suspense>
-          <Suspense fallback={<div className="h-10 w-28 bg-gray-100 rounded-md animate-pulse" />}>
+           <Suspense fallback={<div className="h-10 w-28 bg-surface-sunken rounded-md animate-pulse" />}>
             <FilterSelect
               options={CATEGORY_OPTIONS}
               paramName="category"
@@ -149,59 +149,59 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
       )}
 
-      <Suspense fallback={<TableSkeleton rows={5} columns={6} />}>
-        <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  장비명
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  시리얼번호
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  분류
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  사업
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  상태
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
-                  최근 이력
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+       <Suspense fallback={<TableSkeleton rows={5} columns={6} />}>
+         <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
+           <table className="min-w-full divide-y divide-border-light">
+             <thead className="bg-surface-sunken">
+               <tr>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   장비명
+                 </th>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   시리얼번호
+                 </th>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   분류
+                 </th>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   사업
+                 </th>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   상태
+                 </th>
+                 <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                   최근 이력
+                 </th>
+               </tr>
+             </thead>
+             <tbody className="bg-surface divide-y divide-border-light">
               {equipments.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-black">
-                    {hasFilters ? "검색 결과가 없습니다" : "등록된 장비가 없습니다"}
-                  </td>
-                </tr>
+                 <tr>
+                   <td colSpan={6} className="px-6 py-4 text-center text-text">
+                     {hasFilters ? "검색 결과가 없습니다" : "등록된 장비가 없습니다"}
+                   </td>
+                 </tr>
               ) : (
-                equipments.map((equipment) => (
-                  <tr key={equipment.id} className="hover:bg-gray-50">
+                 equipments.map((equipment) => (
+                   <tr key={equipment.id} className="hover:bg-surface-sunken">
                     <td className="px-6 py-4">
                       <Link
                         href={`/equipments/${equipment.id}`}
-                        className="text-blue-600 hover:underline font-medium"
+                         className="text-accent hover:underline font-medium"
                       >
                         {equipment.name}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-black font-mono text-sm">
-                      {equipment.serial_number}
-                    </td>
-                    <td className="px-6 py-4 text-black">
-                      {CATEGORY_LABELS[equipment.category] || equipment.category}
-                    </td>
-                    <td className="px-6 py-4 text-black">
+                     <td className="px-6 py-4 text-text font-mono text-sm">
+                       {equipment.serial_number}
+                     </td>
+                     <td className="px-6 py-4 text-text">
+                       {CATEGORY_LABELS[equipment.category] || equipment.category}
+                     </td>
+                     <td className="px-6 py-4 text-text">
                       <Link
                         href={`/contracts/${equipment.contract}`}
                         className="hover:underline"
@@ -212,99 +212,99 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
                     <td className="px-6 py-4">
                       <StatusBadge status={equipment.status} />
                     </td>
-                    <td className="px-6 py-4 text-black text-sm">
-                      {equipment.last_transaction ? (
-                        <div>
-                          <span
-                            className={
-                              equipment.last_transaction.type === "check_out"
-                                ? "text-red-600"
-                                : "text-green-600"
-                            }
-                          >
-                            {equipment.last_transaction.type_display}
-                          </span>
-                          <span className="text-black ml-2">
-                            by {equipment.last_transaction.handler_name}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-black">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                     <td className="px-6 py-4 text-text text-sm">
+                       {equipment.last_transaction ? (
+                         <div>
+                           <span
+                             className={
+                               equipment.last_transaction.type === "check_out"
+                                  ? "text-danger"
+                                  : "text-success"
+                              }
+                            >
+                              {equipment.last_transaction.type_display}
+                            </span>
+                            <span className="text-text ml-2">
+                              by {equipment.last_transaction.handler_name}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-text">-</span>
+                        )}
+                      </td>
+                   </tr>
+                 ))
+               )}
+             </tbody>
+           </table>
+         </div>
 
-        <div className="md:hidden space-y-4">
-          {equipments.length === 0 ? (
-            <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
-              {hasFilters ? "검색 결과가 없습니다" : "등록된 장비가 없습니다"}
-            </div>
+         <div className="md:hidden space-y-4">
+           {equipments.length === 0 ? (
+             <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
+               {hasFilters ? "검색 결과가 없습니다" : "등록된 장비가 없습니다"}
+             </div>
           ) : (
-            equipments.map((equipment) => (
-              <div
-                key={equipment.id}
-                className="bg-white rounded-lg shadow-sm p-4 space-y-3"
-              >
+             equipments.map((equipment) => (
+               <div
+                 key={equipment.id}
+                 className="bg-surface rounded-lg shadow-card p-4 space-y-3"
+               >
                 <div className="flex justify-between items-start">
                   <div className="space-y-1">
                     <Link
                       href={`/equipments/${equipment.id}`}
-                      className="font-medium text-blue-600 block"
+                       className="font-medium text-accent block"
                     >
                       {equipment.name}
                     </Link>
-                    <div className="text-sm text-black font-mono">
-                      {equipment.serial_number}
-                    </div>
+                     <div className="text-sm text-text font-mono">
+                       {equipment.serial_number}
+                     </div>
                   </div>
                   <StatusBadge status={equipment.status} />
                 </div>
 
-                <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-black">분류</span>
-                    <span className="text-black">
-                      {CATEGORY_LABELS[equipment.category] || equipment.category}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-black">사업</span>
-                    <Link
-                      href={`/contracts/${equipment.contract}`}
-                      className="text-black underline"
-                    >
-                      {equipment.contract_name}
-                    </Link>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-black">최근 이력</span>
-                    <div className="text-right">
-                      {equipment.last_transaction ? (
-                        <>
-                          <span
-                            className={
-                              equipment.last_transaction.type === "check_out"
-                                ? "text-red-600"
-                                : "text-green-600"
-                            }
-                          >
-                            {equipment.last_transaction.type_display}
-                          </span>
-                          <span className="text-black ml-1">
-                            by {equipment.last_transaction.handler_name}
-                          </span>
-                        </>
-                      ) : (
-                        <span className="text-black">-</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                 <div className="space-y-2 text-sm border-t border-border-light pt-3">
+                   <div className="flex justify-between">
+                     <span className="font-medium text-text">분류</span>
+                     <span className="text-text">
+                       {CATEGORY_LABELS[equipment.category] || equipment.category}
+                     </span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span className="font-medium text-text">사업</span>
+                     <Link
+                       href={`/contracts/${equipment.contract}`}
+                       className="text-text underline"
+                     >
+                       {equipment.contract_name}
+                     </Link>
+                   </div>
+                   <div className="flex justify-between">
+                     <span className="font-medium text-text">최근 이력</span>
+                     <div className="text-right">
+                       {equipment.last_transaction ? (
+                         <>
+                           <span
+                             className={
+                               equipment.last_transaction.type === "check_out"
+                                  ? "text-danger"
+                                  : "text-success"
+                              }
+                            >
+                              {equipment.last_transaction.type_display}
+                            </span>
+                            <span className="text-text ml-1">
+                             by {equipment.last_transaction.handler_name}
+                           </span>
+                         </>
+                       ) : (
+                         <span className="text-text">-</span>
+                       )}
+                     </div>
+                   </div>
+                 </div>
               </div>
             ))
           )}

@@ -160,77 +160,77 @@ export default function EditKBArticlePage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">로딩 중...</div>
-      </div>
-    );
-  }
+   if (loading) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-text-muted">로딩 중...</div>
+       </div>
+     );
+   }
 
-  if (error && !article) {
-    return (
-      <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
-        <Link href="/kb" className="text-blue-600 hover:underline">
-          지식베이스 목록으로
-        </Link>
-      </div>
-    );
-  }
+   if (error && !article) {
+     return (
+       <div className="p-6">
+         <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
+         <Link href="/kb" className="text-accent hover:underline">
+           지식베이스 목록으로
+         </Link>
+       </div>
+     );
+   }
 
-  if (!article) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">아티클을 찾을 수 없습니다</div>
-      </div>
-    );
-  }
+   if (!article) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-text-muted">아티클을 찾을 수 없습니다</div>
+       </div>
+     );
+   }
 
   return (
     <div className="p-6">
       {/* Back Button */}
-      <div className="mb-6">
-        <Link href={`/kb/${articleId}`} className="text-blue-600 hover:underline text-sm">
+       <div className="mb-6">
+         <Link href={`/kb/${articleId}`} className="text-accent hover:underline text-sm">
           ← 아티클 상세로
         </Link>
       </div>
 
       {/* Main Content */}
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-6xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-6xl">
         <h1 className="text-2xl font-bold mb-6">아티클 수정</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
+          <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              제목 *
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-            />
-          </div>
+           {/* Title Field */}
+           <div>
+             <label className="block text-sm font-medium text-text-secondary mb-1">
+               제목 *
+             </label>
+             <input
+               type="text"
+               name="title"
+               value={formData.title}
+               onChange={handleInputChange}
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-text"
+             />
+           </div>
 
-          {/* Category Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              카테고리
-            </label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-            >
+           {/* Category Field */}
+           <div>
+             <label className="block text-sm font-medium text-text-secondary mb-1">
+               카테고리
+             </label>
+             <select
+               name="category"
+               value={formData.category}
+               onChange={handleInputChange}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-text"
+             >
               <option value="">카테고리를 선택하세요</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
@@ -240,63 +240,63 @@ export default function EditKBArticlePage() {
             </select>
           </div>
 
-          {/* Tags Field */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              태그 (쉼표로 구분)
-            </label>
-            <input
-              type="text"
-              name="tags"
-              value={formData.tags}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-              placeholder="예: 네트워크, 장애, 해결방법"
-            />
-          </div>
+           {/* Tags Field */}
+           <div>
+             <label className="block text-sm font-medium text-text-secondary mb-1">
+               태그 (쉼표로 구분)
+             </label>
+             <input
+               type="text"
+               name="tags"
+               value={formData.tags}
+               onChange={handleInputChange}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent text-text"
+               placeholder="예: 네트워크, 장애, 해결방법"
+             />
+           </div>
 
-          {/* Published Status */}
-          <div className="flex items-center">
-            <input
-              id="is_published"
-              type="checkbox"
-              name="is_published"
-              checked={formData.is_published}
-              onChange={handleInputChange}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="is_published" className="ml-2 text-sm font-medium text-gray-700">
-              공개
-            </label>
-          </div>
+           {/* Published Status */}
+           <div className="flex items-center">
+             <input
+               id="is_published"
+               type="checkbox"
+               name="is_published"
+               checked={formData.is_published}
+               onChange={handleInputChange}
+               className="w-4 h-4 text-accent border-border rounded focus:ring-accent"
+             />
+             <label htmlFor="is_published" className="ml-2 text-sm font-medium text-text-secondary">
+               공개
+             </label>
+           </div>
 
-          {/* Content Field with Preview */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
-                내용 *
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowPreview(!showPreview)}
-                className="text-sm text-blue-600 hover:underline"
-              >
+           {/* Content Field with Preview */}
+           <div>
+             <div className="flex items-center justify-between mb-2">
+               <label className="block text-sm font-medium text-text-secondary">
+                 내용 *
+               </label>
+               <button
+                 type="button"
+                 onClick={() => setShowPreview(!showPreview)}
+                 className="text-sm text-accent hover:underline"
+               >
                 {showPreview ? '편집' : '미리보기'}
               </button>
             </div>
 
-            {!showPreview ? (
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                required
-                rows={15}
-                placeholder="마크다운 형식으로 내용을 입력하세요"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm text-gray-900"
-              />
-            ) : (
-              <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 min-h-96">
+             {!showPreview ? (
+               <textarea
+                 name="content"
+                 value={formData.content}
+                 onChange={handleInputChange}
+                 required
+                 rows={15}
+                 placeholder="마크다운 형식으로 내용을 입력하세요"
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent font-mono text-sm text-text"
+               />
+             ) : (
+               <div className="w-full px-3 py-2 border border-border rounded-md bg-surface-sunken min-h-96">
                 <div className="prose prose-sm max-w-none">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {formData.content}
@@ -311,14 +311,14 @@ export default function EditKBArticlePage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? '저장 중...' : '저장'}
             </button>
-            <Link
-              href={`/kb/${articleId}`}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-            >
+             <Link
+               href={`/kb/${articleId}`}
+               className="px-4 py-2 border border-border text-text-secondary rounded-md hover:bg-surface-sunken transition-colors"
+             >
               취소
             </Link>
           </div>

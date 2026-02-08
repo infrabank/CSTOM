@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getAccessToken } from "@/lib/auth";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -56,8 +57,6 @@ interface TaskListItem {
   contract_name: string;
 }
 
-// Removed unused fetchData function
-
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
   handover: "인수",
@@ -67,21 +66,21 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "pre-handover": "bg-yellow-100 text-yellow-800",
-  handover: "bg-blue-100 text-blue-800",
-  stabilization: "bg-purple-100 text-purple-800",
-  steady: "bg-green-100 text-green-800",
-  closed: "bg-gray-100 text-black",
+  "pre-handover": "bg-warning-bg text-warning border border-warning-border",
+  handover: "bg-info-bg text-info border border-info-border",
+  stabilization: "bg-accent-light text-accent",
+  steady: "bg-success-bg text-success border border-success-border",
+  closed: "bg-surface-sunken text-text-muted",
 };
 
 const EQUIPMENT_STATUS_COLORS: Record<string, string> = {
-  available: "bg-green-100 text-green-800",
-  checked_out: "bg-yellow-100 text-yellow-800",
-  maintenance: "bg-orange-100 text-orange-800",
-  retired: "bg-gray-100 text-black",
+  available: "bg-success-bg text-success",
+  checked_out: "bg-warning-bg text-warning",
+  maintenance: "bg-danger-bg text-danger",
+  retired: "bg-surface-sunken text-text-muted",
 };
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const CHART_COLORS = ['#0369A1', '#15803D', '#A16207', '#B91C1C'];
 
 export default function DashboardPage() {
   const [kpiData, setKpiData] = useState<DashboardSummary | null>(null);
@@ -120,22 +119,18 @@ export default function DashboardPage() {
           const kpiJson = await kpiRes.json();
           setKpiData(kpiJson);
         }
-
         if (contractsRes.ok) {
           const contractsJson = await contractsRes.json();
           setContracts(contractsJson.results || []);
         }
-
         if (equipmentsRes.ok) {
           const equipmentsJson = await equipmentsRes.json();
           setEquipments(equipmentsJson.results || []);
         }
-
         if (eventsRes.ok) {
           const eventsJson = await eventsRes.json();
           setEvents(eventsJson.results || []);
         }
-
         if (tasksRes.ok) {
           const tasksJson = await tasksRes.json();
           setTasks(tasksJson.results || []);
@@ -150,7 +145,6 @@ export default function DashboardPage() {
     loadData();
   }, [period]);
 
-  // Calculate stats
   const activeContracts = contracts.filter((c) => c.status !== "closed").length;
   const contractsWithRisks = contracts.filter(
     (c) =>
@@ -158,10 +152,8 @@ export default function DashboardPage() {
       c.risk_flags?.prior_vendor_coordination ||
       c.risk_flags?.docs_incomplete
   ).length;
-
   const availableEquipments = equipments.filter((e) => e.status === "available").length;
   const checkedOutEquipments = equipments.filter((e) => e.status === "checked_out").length;
-
   const recentIncidents = events.filter((e) => e.record_type === "incident").slice(0, 5);
   const highImpactTasks = tasks.filter((t) => t.impact_level === "full").length;
   const pendingApprovals = tasks.filter((t) => t.approval_status === "pending");
@@ -174,27 +166,30 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">로딩 중...</div>
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-surface-sunken rounded w-32" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <div key={i} className="h-28 bg-surface rounded-lg shadow-card" />)}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">대시보드</h1>
-        
-        {/* Period Selector */}
-        <div className="flex gap-2">
+    <div>
+      <Breadcrumb />
+
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl font-semibold text-text">대시보드</h1>
+        <div className="flex gap-1.5 bg-surface-sunken rounded-lg p-1">
           {(['today', 'week', 'month', 'quarter'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
                 period === p
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-accent text-text-on-accent shadow-card'
+                  : 'text-text-secondary hover:text-text hover:bg-surface-hover'
               }`}
             >
               {p === 'today' ? '오늘' : p === 'week' ? '주간' : p === 'month' ? '월간' : '분기'}
@@ -205,37 +200,37 @@ export default function DashboardPage() {
 
       {/* KPI Cards */}
       {kpiData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">SLA 준수율</div>
-            <div className={`text-3xl font-bold ${kpiData.sla_compliance_rate >= 90 ? 'text-green-600' : kpiData.sla_compliance_rate >= 70 ? 'text-yellow-600' : 'text-red-600'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-success">
+            <div className="text-sm font-medium text-text-muted mb-1">SLA 준수율</div>
+            <div className={`text-3xl font-bold ${kpiData.sla_compliance_rate >= 90 ? 'text-success' : kpiData.sla_compliance_rate >= 70 ? 'text-warning' : 'text-danger'}`}>
               {kpiData.sla_compliance_rate.toFixed(1)}%
             </div>
-            <div className="text-xs text-gray-500 mt-1">목표: 90% 이상</div>
+            <div className="text-xs text-text-muted mt-1">목표: 90% 이상</div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">평균 복구 시간 (MTTR)</div>
-            <div className="text-3xl font-bold text-blue-600">
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-info">
+            <div className="text-sm font-medium text-text-muted mb-1">평균 복구 시간 (MTTR)</div>
+            <div className="text-3xl font-bold text-info">
               {kpiData.mttr_hours.toFixed(1)}h
             </div>
-            <div className="text-xs text-gray-500 mt-1">시간 단위</div>
+            <div className="text-xs text-text-muted mt-1">시간 단위</div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">예방점검 완료율</div>
-            <div className={`text-3xl font-bold ${kpiData.inspection_completion_rate >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-accent">
+            <div className="text-sm font-medium text-text-muted mb-1">예방점검 완료율</div>
+            <div className={`text-3xl font-bold ${kpiData.inspection_completion_rate >= 80 ? 'text-success' : 'text-warning'}`}>
               {kpiData.inspection_completion_rate.toFixed(1)}%
             </div>
-            <div className="text-xs text-gray-500 mt-1">목표: 80% 이상</div>
+            <div className="text-xs text-text-muted mt-1">목표: 80% 이상</div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="text-sm font-medium text-gray-600 mb-1">총 작업</div>
-            <div className="text-3xl font-bold text-purple-600">
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-secondary">
+            <div className="text-sm font-medium text-text-muted mb-1">총 작업</div>
+            <div className="text-3xl font-bold text-secondary">
               {kpiData.task_summary.total}
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-text-muted mt-1">
               완료 {kpiData.task_summary.completed} / 진행 {kpiData.task_summary.in_progress}
             </div>
           </div>
@@ -244,10 +239,10 @@ export default function DashboardPage() {
 
       {/* Charts */}
       {kpiData && (
-        <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">작업 현황</h2>
-            <ResponsiveContainer width="100%" height={300}>
+        <div className="grid lg:grid-cols-2 gap-4 mb-6">
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+            <h2 className="text-base font-semibold text-text mb-4">작업 현황</h2>
+            <ResponsiveContainer width="100%" height={280}>
               <PieChart>
                 <Pie
                   data={taskChartData}
@@ -259,8 +254,8 @@ export default function DashboardPage() {
                   fill="#8884d8"
                   dataKey="value"
                 >
-                  {taskChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  {taskChartData.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -268,21 +263,21 @@ export default function DashboardPage() {
             </ResponsiveContainer>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4">KPI 요약</h2>
-            <ResponsiveContainer width="100%" height={300}>
+          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+            <h2 className="text-base font-semibold text-text mb-4">KPI 요약</h2>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart
                 data={[
                   { name: 'SLA 준수율', value: kpiData.sla_compliance_rate },
                   { name: '점검 완료율', value: kpiData.inspection_completion_rate },
                 ]}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis domain={[0, 100]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="name" tick={{ fill: '#64748B', fontSize: 12 }} />
+                <YAxis domain={[0, 100]} tick={{ fill: '#64748B', fontSize: 12 }} />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="value" fill="#3b82f6" name="비율 (%)" />
+                <Bar dataKey="value" fill="#0369A1" name="비율 (%)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -290,70 +285,55 @@ export default function DashboardPage() {
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-black mb-1">활성 사업</div>
-          <div className="text-3xl font-bold text-blue-600">{activeContracts}</div>
-          <div className="text-xs text-black mt-1">총 {contracts.length}개 사업</div>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+          <div className="text-sm font-medium text-text-muted mb-1">활성 사업</div>
+          <div className="text-3xl font-bold text-accent">{activeContracts}</div>
+          <div className="text-xs text-text-muted mt-1">총 {contracts.length}개 사업</div>
         </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-black mb-1">리스크 사업</div>
-          <div className="text-3xl font-bold text-red-600">{contractsWithRisks}</div>
-          <div className="text-xs text-black mt-1">주의 필요</div>
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+          <div className="text-sm font-medium text-text-muted mb-1">리스크 사업</div>
+          <div className="text-3xl font-bold text-danger">{contractsWithRisks}</div>
+          <div className="text-xs text-text-muted mt-1">주의 필요</div>
         </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-black mb-1">반출 장비</div>
-          <div className="text-3xl font-bold text-yellow-600">{checkedOutEquipments}</div>
-          <div className="text-xs text-black mt-1">
-            가용 {availableEquipments}개 / 총 {equipments.length}개
-          </div>
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+          <div className="text-sm font-medium text-text-muted mb-1">반출 장비</div>
+          <div className="text-3xl font-bold text-warning">{checkedOutEquipments}</div>
+          <div className="text-xs text-text-muted mt-1">가용 {availableEquipments}개 / 총 {equipments.length}개</div>
         </div>
-
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="text-sm font-medium text-black mb-1">고영향 작업</div>
-          <div className="text-3xl font-bold text-orange-600">{highImpactTasks}</div>
-          <div className="text-xs text-black mt-1">총 {tasks.length}개 작업</div>
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+          <div className="text-sm font-medium text-text-muted mb-1">고영향 작업</div>
+          <div className="text-3xl font-bold text-danger">{highImpactTasks}</div>
+          <div className="text-xs text-text-muted mt-1">총 {tasks.length}개 작업</div>
         </div>
-
-        <Link href="/tasks?filter=pending" className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
-          <div className="text-sm font-medium text-black mb-1">승인 대기</div>
-          <div className={`text-3xl font-bold ${pendingApprovals.length > 0 ? "text-orange-600" : "text-gray-400"}`}>
+        <Link href="/tasks?filter=pending" className="bg-surface rounded-lg shadow-card border border-border-light p-5 hover:shadow-dropdown transition-shadow cursor-pointer">
+          <div className="text-sm font-medium text-text-muted mb-1">승인 대기</div>
+          <div className={`text-3xl font-bold ${pendingApprovals.length > 0 ? "text-warning" : "text-text-muted"}`}>
             {pendingApprovals.length}
           </div>
-          <div className="text-xs text-black mt-1">클릭하여 확인</div>
+          <div className="text-xs text-accent mt-1">클릭하여 확인</div>
         </Link>
       </div>
 
       {/* Pending Approvals Alert */}
       {pendingApprovals.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+        <div className="bg-warning-bg border border-warning-border rounded-lg p-4 mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-orange-800">승인 대기 작업</h2>
-            <Link href="/tasks?filter=pending" className="text-orange-600 text-sm hover:underline">
+            <h2 className="text-base font-semibold text-warning">승인 대기 작업</h2>
+            <Link href="/tasks?filter=pending" className="text-accent text-sm hover:underline">
               전체 보기
             </Link>
           </div>
           <div className="space-y-2">
             {pendingApprovals.slice(0, 3).map((task) => (
-              <div
-                key={task.id}
-                className="flex items-center justify-between bg-white rounded-md p-3"
-              >
+              <div key={task.id} className="flex items-center justify-between bg-surface rounded-md p-3 border border-border-light">
                 <div>
-                  <Link
-                    href={`/tasks/${task.id}`}
-                    className="font-medium text-blue-600 hover:underline"
-                  >
+                  <Link href={`/tasks/${task.id}`} className="font-medium text-accent hover:underline">
                     {task.title}
                   </Link>
-                  <div className="text-xs text-gray-500">{task.contract_name}</div>
+                  <div className="text-xs text-text-muted">{task.contract_name}</div>
                 </div>
-                <Link
-                  href={`/tasks/${task.id}`}
-                  className="px-3 py-1 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700"
-                >
+                <Link href={`/tasks/${task.id}`} className="px-3 py-1.5 bg-accent text-text-on-accent text-sm rounded-md hover:bg-accent-hover transition-colors cursor-pointer">
                   승인하기
                 </Link>
               </div>
@@ -361,46 +341,30 @@ export default function DashboardPage() {
           </div>
           {pendingApprovals.length > 3 && (
             <div className="text-center mt-3">
-              <span className="text-sm text-orange-600">
-                외 {pendingApprovals.length - 3}건 더 있음
-              </span>
+              <span className="text-sm text-warning">외 {pendingApprovals.length - 3}건 더 있음</span>
             </div>
           )}
         </div>
       )}
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         {/* Contract Status Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">사업 현황</h2>
-            <Link href="/contracts" className="text-blue-600 text-sm hover:underline">
-              전체 보기
-            </Link>
+            <h2 className="text-base font-semibold text-text">사업 현황</h2>
+            <Link href="/contracts" className="text-accent text-sm hover:underline">전체 보기</Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {contracts.length === 0 ? (
-              <p className="text-black text-center py-4">등록된 사업이 없습니다</p>
+              <p className="text-text-muted text-center py-4">등록된 사업이 없습니다</p>
             ) : (
               contracts.slice(0, 5).map((contract) => (
-                <div
-                  key={contract.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
+                <div key={contract.id} className="flex items-center justify-between py-2.5 border-b border-border-light last:border-0">
                   <div>
-                    <Link
-                      href={`/contracts/${contract.id}`}
-                      className="font-medium text-blue-600 hover:underline"
-                    >
-                      {contract.name}
-                    </Link>
-                    <div className="text-xs text-black">{contract.client_org}</div>
+                    <Link href={`/contracts/${contract.id}`} className="font-medium text-accent hover:underline text-sm">{contract.name}</Link>
+                    <div className="text-xs text-text-muted">{contract.client_org}</div>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      STATUS_COLORS[contract.status] || "bg-gray-100"
-                    }`}
-                  >
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[contract.status] || "bg-surface-sunken text-text-muted"}`}>
                     {STATUS_LABELS[contract.status] || contract.status}
                   </span>
                 </div>
@@ -410,34 +374,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Incidents */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">최근 장애</h2>
-            <Link href="/events" className="text-blue-600 text-sm hover:underline">
-              전체 보기
-            </Link>
+            <h2 className="text-base font-semibold text-text">최근 장애</h2>
+            <Link href="/events" className="text-accent text-sm hover:underline">전체 보기</Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {recentIncidents.length === 0 ? (
-              <p className="text-black text-center py-4">최근 장애가 없습니다</p>
+              <p className="text-text-muted text-center py-4">최근 장애가 없습니다</p>
             ) : (
               recentIncidents.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
+                <div key={event.id} className="flex items-center justify-between py-2.5 border-b border-border-light last:border-0">
                   <div>
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="font-medium text-blue-600 hover:underline"
-                    >
-                      {event.title}
-                    </Link>
-                    <div className="text-xs text-black">{event.contract_name}</div>
+                    <Link href={`/events/${event.id}`} className="font-medium text-accent hover:underline text-sm">{event.title}</Link>
+                    <div className="text-xs text-text-muted">{event.contract_name}</div>
                   </div>
-                  <span className="text-xs text-black">
-                    {new Date(event.occurred_at).toLocaleDateString("ko-KR")}
-                  </span>
+                  <span className="text-xs text-text-muted">{new Date(event.occurred_at).toLocaleDateString("ko-KR")}</span>
                 </div>
               ))
             )}
@@ -445,41 +397,23 @@ export default function DashboardPage() {
         </div>
 
         {/* Equipment Status */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">장비 현황</h2>
-            <Link href="/equipments" className="text-blue-600 text-sm hover:underline">
-              전체 보기
-            </Link>
+            <h2 className="text-base font-semibold text-text">장비 현황</h2>
+            <Link href="/equipments" className="text-accent text-sm hover:underline">전체 보기</Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {equipments.length === 0 ? (
-              <p className="text-black text-center py-4">등록된 장비가 없습니다</p>
+              <p className="text-text-muted text-center py-4">등록된 장비가 없습니다</p>
             ) : (
               equipments.slice(0, 5).map((equipment) => (
-                <div
-                  key={equipment.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
+                <div key={equipment.id} className="flex items-center justify-between py-2.5 border-b border-border-light last:border-0">
                   <div>
-                    <Link
-                      href={`/equipments/${equipment.id}`}
-                      className="font-medium text-blue-600 hover:underline"
-                    >
-                      {equipment.name}
-                    </Link>
-                    <div className="text-xs text-black">{equipment.contract_name}</div>
+                    <Link href={`/equipments/${equipment.id}`} className="font-medium text-accent hover:underline text-sm">{equipment.name}</Link>
+                    <div className="text-xs text-text-muted">{equipment.contract_name}</div>
                   </div>
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      EQUIPMENT_STATUS_COLORS[equipment.status] || "bg-gray-100"
-                    }`}
-                  >
-                    {equipment.status === "available"
-                      ? "가용"
-                      : equipment.status === "checked_out"
-                      ? "반출"
-                      : equipment.status}
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${EQUIPMENT_STATUS_COLORS[equipment.status] || "bg-surface-sunken text-text-muted"}`}>
+                    {equipment.status === "available" ? "가용" : equipment.status === "checked_out" ? "반출" : equipment.status}
                   </span>
                 </div>
               ))
@@ -488,33 +422,23 @@ export default function DashboardPage() {
         </div>
 
         {/* Recent Tasks */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">최근 작업</h2>
-            <Link href="/tasks" className="text-blue-600 text-sm hover:underline">
-              전체 보기
-            </Link>
+            <h2 className="text-base font-semibold text-text">최근 작업</h2>
+            <Link href="/tasks" className="text-accent text-sm hover:underline">전체 보기</Link>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {tasks.length === 0 ? (
-              <p className="text-black text-center py-4">등록된 작업이 없습니다</p>
+              <p className="text-text-muted text-center py-4">등록된 작업이 없습니다</p>
             ) : (
               tasks.slice(0, 5).map((task) => (
-                <div
-                  key={task.id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                >
+                <div key={task.id} className="flex items-center justify-between py-2.5 border-b border-border-light last:border-0">
                   <div>
-                    <Link
-                      href={`/tasks/${task.id}`}
-                      className="font-medium text-blue-600 hover:underline"
-                    >
-                      {task.title}
-                    </Link>
-                    <div className="text-xs text-black">{task.contract_name}</div>
+                    <Link href={`/tasks/${task.id}`} className="font-medium text-accent hover:underline text-sm">{task.title}</Link>
+                    <div className="text-xs text-text-muted">{task.contract_name}</div>
                   </div>
                   {task.impact_level === "full" && (
-                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-danger-bg text-danger border border-danger-border">
                       고영향
                     </span>
                   )}

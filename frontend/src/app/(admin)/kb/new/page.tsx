@@ -128,43 +128,43 @@ export default function NewKBArticlePage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-600">로딩 중...</div>
-      </div>
-    );
-  }
+   if (isLoading) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-text-muted">로딩 중...</div>
+       </div>
+     );
+   }
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link href="/kb" className="text-blue-600 hover:underline text-sm">
-          지식베이스 목록으로
-        </Link>
-      </div>
+       <div className="mb-6">
+         <Link href="/kb" className="text-accent hover:underline text-sm">
+           지식베이스 목록으로
+         </Link>
+       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-6xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-6xl">
         <h1 className="text-2xl font-bold mb-6">새 아티클 작성</h1>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+         {error && (
+           <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
+             {error}
+           </div>
+         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Template Selector */}
           <div>
-            <label htmlFor="template" className="block text-sm font-medium text-black mb-1">
-              템플릿 선택 (선택사항)
-            </label>
-            <select
-              id="template"
-              value={selectedTemplate}
-              onChange={handleTemplateSelect}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label htmlFor="template" className="block text-sm font-medium text-text mb-1">
+               템플릿 선택 (선택사항)
+             </label>
+             <select
+               id="template"
+               value={selectedTemplate}
+               onChange={handleTemplateSelect}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">템플릿 없이 작성</option>
               {templates.map((template) => (
                 <option key={template.id} value={template.id}>
@@ -176,31 +176,31 @@ export default function NewKBArticlePage() {
 
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
-              제목 *
-            </label>
-            <input
-              id="title"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="아티클 제목을 입력하세요"
-            />
+             <label htmlFor="title" className="block text-sm font-medium text-text mb-1">
+               제목 *
+             </label>
+             <input
+               id="title"
+               type="text"
+               value={title}
+               onChange={(e) => setTitle(e.target.value)}
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               placeholder="아티클 제목을 입력하세요"
+             />
           </div>
 
           {/* Category */}
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-black mb-1">
-              카테고리
-            </label>
-            <select
-              id="category"
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label htmlFor="category" className="block text-sm font-medium text-text mb-1">
+               카테고리
+             </label>
+             <select
+               id="category"
+               value={categoryId}
+               onChange={(e) => setCategoryId(e.target.value)}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">카테고리 선택</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
@@ -212,60 +212,60 @@ export default function NewKBArticlePage() {
 
           {/* Tags */}
           <div>
-            <label htmlFor="tags" className="block text-sm font-medium text-black mb-1">
-              태그 (쉼표로 구분)
-            </label>
-            <input
-              id="tags"
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="예: 네트워크, 장애, 해결방법"
-            />
+             <label htmlFor="tags" className="block text-sm font-medium text-text mb-1">
+               태그 (쉼표로 구분)
+             </label>
+             <input
+               id="tags"
+               type="text"
+               value={tags}
+               onChange={(e) => setTags(e.target.value)}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               placeholder="예: 네트워크, 장애, 해결방법"
+             />
           </div>
 
           {/* Published Status */}
           <div className="flex items-center">
-            <input
-              id="is_published"
-              type="checkbox"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-            />
-            <label htmlFor="is_published" className="ml-2 text-sm font-medium text-black">
-              공개
-            </label>
+             <input
+               id="is_published"
+               type="checkbox"
+               checked={isPublished}
+               onChange={(e) => setIsPublished(e.target.checked)}
+               className="w-4 h-4 text-accent border-border rounded focus:ring-accent"
+             />
+             <label htmlFor="is_published" className="ml-2 text-sm font-medium text-text">
+               공개
+             </label>
           </div>
 
           {/* Content Editor with Preview */}
           <div>
-            <label className="block text-sm font-medium text-black mb-2">
-              내용 *
-            </label>
+             <label className="block text-sm font-medium text-text mb-2">
+               내용 *
+             </label>
 
-            {/* Tabs */}
-            <div className="flex gap-2 mb-3 border-b border-gray-200">
+             {/* Tabs */}
+             <div className="flex gap-2 mb-3 border-b border-border-light">
               <button
                 type="button"
                 onClick={() => setActiveTab("edit")}
-                className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-                  activeTab === "edit"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-600 hover:text-gray-900"
-                }`}
+                 className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                   activeTab === "edit"
+                     ? "border-accent text-accent"
+                     : "border-transparent text-text-muted hover:text-text"
+                 }`}
               >
                 편집
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab("preview")}
-                className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-                  activeTab === "preview"
-                    ? "border-blue-600 text-blue-600"
-                    : "border-transparent text-gray-600 hover:text-gray-900"
-                }`}
+                 className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+                   activeTab === "preview"
+                     ? "border-accent text-accent"
+                     : "border-transparent text-text-muted hover:text-text"
+                 }`}
               >
                 미리보기
               </button>
@@ -277,15 +277,15 @@ export default function NewKBArticlePage() {
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
-                rows={15}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
-                placeholder="마크다운 형식으로 내용을 입력하세요"
-              />
+                 rows={15}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent font-mono text-sm"
+                 placeholder="마크다운 형식으로 내용을 입력하세요"
+               />
             )}
 
             {/* Preview Tab */}
             {activeTab === "preview" && (
-              <div className="min-h-96 p-4 border border-gray-300 rounded-md bg-gray-50 prose prose-sm max-w-none">
+               <div className="min-h-96 p-4 border border-border rounded-md bg-surface-sunken prose prose-sm max-w-none">
                 <ReactMarkdown>
                   {content || "내용을 입력하면 여기에 미리보기가 표시됩니다"}
                 </ReactMarkdown>
@@ -298,16 +298,16 @@ export default function NewKBArticlePage() {
             <button
               type="submit"
               disabled={isSubmitting || !title || !content}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>
-            <Link
-              href="/kb"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700"
-            >
-              취소
-            </Link>
+             <Link
+               href="/kb"
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken text-text-secondary"
+             >
+               취소
+             </Link>
           </div>
         </form>
       </div>

@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push)",
+      "Bash(python manage.py makemigrations:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Skill(oh-my-claudecode:hud)",
+      "Bash(node -e:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run lint)",
+      "mcp__plugin_oh-my-claudecode_omc-tools__lsp_diagnostics_directory",
+      "mcp__plugin_oh-my-claudecode_omc-tools__ast_grep_search",
+      "Edit",
+      "Write",
+      "Task",
+      "Bash(py:*)",
+      "Bash(python:*)",
+      "Bash(cmd /c \"for %I in \\(\"\"G:\\\\내 드라이브\\\\오프라인용\\\\myloket의 팀 폴더\\\\IT프로젝트\\\\SI.클라우드시스템\\\\EU.국토연구원\\\\CSTOM\"\"\\) do @echo %~sI\")"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}

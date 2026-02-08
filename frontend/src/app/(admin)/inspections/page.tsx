@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface InspectionSchedule {
   id: number;
@@ -38,10 +39,10 @@ const CYCLE_LABELS: Record<string, string> = {
 };
 
 const CYCLE_COLORS: Record<string, string> = {
-  monthly: "bg-blue-100 text-blue-800",
-  quarterly: "bg-purple-100 text-purple-800",
-  biannual: "bg-green-100 text-green-800",
-  annual: "bg-orange-100 text-orange-800",
+  monthly: "bg-info-bg text-accent",
+  quarterly: "bg-accent-light text-accent",
+  biannual: "bg-success-bg text-success",
+  annual: "bg-warning-bg text-warning",
 };
 
 function ActiveBadge({ isActive }: { isActive: boolean }) {
@@ -49,8 +50,8 @@ function ActiveBadge({ isActive }: { isActive: boolean }) {
     <span
       className={`px-2 py-1 rounded-full text-xs font-medium ${
         isActive
-          ? "bg-green-100 text-green-800"
-          : "bg-gray-100 text-gray-800"
+          ? "bg-success-bg text-success"
+          : "bg-surface-sunken text-text-muted"
       }`}
     >
       {isActive ? "활성" : "비활성"}
@@ -59,7 +60,7 @@ function ActiveBadge({ isActive }: { isActive: boolean }) {
 }
 
 function CycleBadge({ cycle }: { cycle: string }) {
-  const colorClass = CYCLE_COLORS[cycle] || "bg-gray-100 text-gray-800";
+  const colorClass = CYCLE_COLORS[cycle] || "bg-surface-sunken text-text-muted";
   const label = CYCLE_LABELS[cycle] || cycle;
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
@@ -82,68 +83,70 @@ export default async function InspectionsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div>
+      <Breadcrumb />
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">점검 스케줄 관리</h1>
+        <h1 className="text-2xl font-semibold text-text">점검 스케줄 관리</h1>
         <Link
           href="/inspections/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
         >
           점검 스케줄 등록
         </Link>
       </div>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
       )}
 
       {/* Desktop Table */}
-      <div className="hidden md:block bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
+        <table className="min-w-full divide-y divide-border-light">
+          <thead className="bg-surface-sunken">
             <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 장비 유형
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 사업
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 주기
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 담당자
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 활성 상태
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 작업 수
               </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-black uppercase">
+              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
                 등록일
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-surface divide-y divide-border-light">
             {inspections.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-black">
+                <td colSpan={7} className="px-6 py-8 text-center text-text-muted">
                   {error ? "점검 스케줄을 불러올 수 없습니다" : "등록된 점검 스케줄이 없습니다"}
                 </td>
               </tr>
             ) : (
               inspections.map((inspection) => (
-                <tr key={inspection.id} className="hover:bg-gray-50">
+                <tr key={inspection.id} className="hover:bg-surface-sunken transition-colors">
                   <td className="px-6 py-4">
                     <Link
                       href={`/inspections/${inspection.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-accent hover:underline font-medium text-sm"
                     >
                       {inspection.equipment_type}
                     </Link>
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     <Link
                       href={`/contracts/${inspection.contract}`}
                       className="hover:underline"
@@ -154,16 +157,16 @@ export default async function InspectionsPage() {
                   <td className="px-6 py-4">
                     <CycleBadge cycle={inspection.cycle} />
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {inspection.assigned_to_name}
                   </td>
                   <td className="px-6 py-4">
                     <ActiveBadge isActive={inspection.is_active} />
                   </td>
-                  <td className="px-6 py-4 text-black text-sm text-center">
+                  <td className="px-6 py-4 text-text-secondary text-sm text-center">
                     {inspection.task_count}
                   </td>
-                  <td className="px-6 py-4 text-black text-sm">
+                  <td className="px-6 py-4 text-text-secondary text-sm">
                     {new Date(inspection.created_at).toLocaleDateString("ko-KR")}
                   </td>
                 </tr>
@@ -176,24 +179,24 @@ export default async function InspectionsPage() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-4">
         {inspections.length === 0 ? (
-          <div className="bg-white p-4 rounded-lg shadow-sm text-center text-black">
+          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
             {error ? "점검 스케줄을 불러올 수 없습니다" : "등록된 점검 스케줄이 없습니다"}
           </div>
         ) : (
           inspections.map((inspection) => (
             <div
               key={inspection.id}
-              className="bg-white rounded-lg shadow-sm p-4 space-y-3"
+              className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3"
             >
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <Link
                     href={`/inspections/${inspection.id}`}
-                    className="font-medium text-blue-600 block"
+                    className="font-medium text-accent block text-sm"
                   >
                     {inspection.equipment_type}
                   </Link>
-                  <div className="text-sm text-black">
+                  <div className="text-sm text-text-muted">
                     <Link
                       href={`/contracts/${inspection.contract}`}
                       className="hover:underline"
@@ -205,22 +208,22 @@ export default async function InspectionsPage() {
                 <ActiveBadge isActive={inspection.is_active} />
               </div>
 
-              <div className="space-y-2 text-sm border-t border-gray-100 pt-3">
+              <div className="space-y-2 text-sm border-t border-border-light pt-3">
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">주기</span>
+                  <span className="font-medium text-text-secondary">주기</span>
                   <CycleBadge cycle={inspection.cycle} />
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">담당자</span>
-                  <span className="text-black">{inspection.assigned_to_name}</span>
+                  <span className="font-medium text-text-secondary">담당자</span>
+                  <span className="text-text-muted">{inspection.assigned_to_name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">작업 수</span>
-                  <span className="text-black">{inspection.task_count}</span>
+                  <span className="font-medium text-text-secondary">작업 수</span>
+                  <span className="text-text-muted">{inspection.task_count}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="font-medium text-black">등록일</span>
-                  <span className="text-black">
+                  <span className="font-medium text-text-secondary">등록일</span>
+                  <span className="text-text-muted">
                     {new Date(inspection.created_at).toLocaleDateString("ko-KR")}
                   </span>
                 </div>

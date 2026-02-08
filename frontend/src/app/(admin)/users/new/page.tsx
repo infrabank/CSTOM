@@ -48,94 +48,94 @@ export default function NewUserPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link href="/users" className="text-blue-600 hover:underline text-sm">
-          사용자 목록으로
-        </Link>
-      </div>
+       <div className="mb-6">
+         <Link href="/users" className="text-accent hover:underline text-sm">
+           사용자 목록으로
+         </Link>
+       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">사용자 등록</h1>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+         {error && (
+           <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
+             {error}
+           </div>
+         )}
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-black mb-1">
-              아이디 *
-            </label>
-            <input
-              id="username"
-              type="text"
-              name="username"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="username" className="block text-sm font-medium text-text mb-1">
+               아이디 *
+             </label>
+             <input
+               id="username"
+               type="text"
+               name="username"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-black mb-1">
-              이메일 *
-            </label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="email" className="block text-sm font-medium text-text mb-1">
+               이메일 *
+             </label>
+             <input
+               id="email"
+               type="email"
+               name="email"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-black mb-1">
-              비밀번호 *
-            </label>
-            <input
-              id="password"
-              type="password"
-              name="password"
-              required
-              minLength={8}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="mt-1 text-xs text-black">최소 8자 이상</p>
+             <label htmlFor="password" className="block text-sm font-medium text-text mb-1">
+               비밀번호 *
+             </label>
+             <input
+               id="password"
+               type="password"
+               name="password"
+               required
+               minLength={8}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+             <p className="mt-1 text-xs text-text">최소 8자 이상</p>
           </div>
 
           <div>
-            <label htmlFor="display_name" className="block text-sm font-medium text-black mb-1">
-              이름
-            </label>
-            <input
-              id="display_name"
-              type="text"
-              name="display_name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="display_name" className="block text-sm font-medium text-text mb-1">
+               이름
+             </label>
+             <input
+               id="display_name"
+               type="text"
+               name="display_name"
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div>
-            <span className="block text-sm font-medium text-black mb-2">
-              역할
-            </span>
+             <span className="block text-sm font-medium text-text mb-2">
+               역할
+             </span>
             <div className="space-y-2">
               {roles.map((role) => (
                 <label key={role.id} className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    name="role_ids"
-                    value={role.id}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm">{ROLE_LABELS[role.name] || role.name}</span>
-                  {role.description && (
-                    <span className="text-xs text-black">
-                      - {role.description}
-                    </span>
-                  )}
+                   <input
+                     type="checkbox"
+                     name="role_ids"
+                     value={role.id}
+                     className="rounded border-border text-accent focus:ring-accent"
+                   />
+                   <span className="text-sm">{ROLE_LABELS[role.name] || role.name}</span>
+                   {role.description && (
+                     <span className="text-xs text-text">
+                       - {role.description}
+                     </span>
+                   )}
                 </label>
               ))}
             </div>
@@ -145,16 +145,16 @@ export default function NewUserPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "등록 중..." : "등록"}
             </button>
-            <Link
-              href="/users"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              취소
-            </Link>
+             <Link
+               href="/users"
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
+               취소
+             </Link>
           </div>
         </form>
       </div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface KBArticle {
   id: number;
@@ -100,17 +101,19 @@ export default function KBArticleDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">로딩 중...</div>
+      <div>
+        <Breadcrumb />
+        <div className="text-center text-text-muted">로딩 중...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">{error}</div>
-        <Link href="/kb" className="text-blue-600 hover:underline">
+      <div>
+        <Breadcrumb />
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
+        <Link href="/kb" className="text-accent hover:underline">
           지식베이스 목록으로
         </Link>
       </div>
@@ -119,8 +122,9 @@ export default function KBArticleDetailPage() {
 
   if (!article) {
     return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">아티클을 찾을 수 없습니다</div>
+      <div>
+        <Breadcrumb />
+        <div className="text-center text-text-muted">아티클을 찾을 수 없습니다</div>
       </div>
     );
   }
@@ -129,48 +133,48 @@ export default function KBArticleDetailPage() {
 
   return (
     <div className="p-6">
-      {/* Back Button */}
-      <div className="mb-6">
-        <Link href="/kb" className="text-blue-600 hover:underline text-sm">
-          ← 지식베이스 목록으로
-        </Link>
-      </div>
+       {/* Back Button */}
+       <div className="mb-6">
+         <Link href="/kb" className="text-accent hover:underline text-sm">
+           ← 지식베이스 목록으로
+         </Link>
+       </div>
 
-      {/* Main Content */}
-      <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+       {/* Main Content */}
+       <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
         {/* Header */}
         <div className="mb-6 pb-6 border-b">
           <h1 className="text-3xl font-bold mb-4">{article.title}</h1>
 
-          {/* Metadata Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-1">카테고리</h3>
-              <p className="text-gray-900">{article.category_name || "-"}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-1">작성자</h3>
-              <p className="text-gray-900">{article.author_name || "-"}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-1">조회수</h3>
-              <p className="text-gray-900">{article.view_count}</p>
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-600 mb-1">유용함</h3>
-              <p className="text-gray-900">{article.helpful_count}</p>
-            </div>
-          </div>
+           {/* Metadata Grid */}
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+             <div>
+               <h3 className="text-sm font-medium text-text-muted mb-1">카테고리</h3>
+               <p className="text-text">{article.category_name || "-"}</p>
+             </div>
+             <div>
+               <h3 className="text-sm font-medium text-text-muted mb-1">작성자</h3>
+               <p className="text-text">{article.author_name || "-"}</p>
+             </div>
+             <div>
+               <h3 className="text-sm font-medium text-text-muted mb-1">조회수</h3>
+               <p className="text-text">{article.view_count}</p>
+             </div>
+             <div>
+               <h3 className="text-sm font-medium text-text-muted mb-1">유용함</h3>
+               <p className="text-text">{article.helpful_count}</p>
+             </div>
+           </div>
 
-          {/* Tags */}
-          {tags.length > 0 && (
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-gray-600 mb-2">태그</h3>
+           {/* Tags */}
+           {tags.length > 0 && (
+             <div className="mt-4">
+               <h3 className="text-sm font-medium text-text-muted mb-2">태그</h3>
               <div className="flex flex-wrap gap-2">
                 {tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="px-3 py-1 bg-info-bg text-info rounded-full text-sm"
                   >
                     {tag}
                   </span>
@@ -180,10 +184,10 @@ export default function KBArticleDetailPage() {
           )}
         </div>
 
-        {/* Markdown Content */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">내용</h2>
-          <div className="prose prose-sm max-w-none bg-gray-50 rounded-lg p-6">
+         {/* Markdown Content */}
+         <div className="mb-8">
+           <h2 className="text-lg font-semibold mb-4">내용</h2>
+           <div className="prose prose-sm max-w-none bg-surface-sunken rounded-lg p-6">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>
               {article.content}
             </ReactMarkdown>
@@ -193,37 +197,37 @@ export default function KBArticleDetailPage() {
         {/* Helpful Button */}
         <div className="mb-6 pb-6 border-b">
           <h2 className="text-lg font-semibold mb-3">이 아티클이 도움이 되었나요?</h2>
-          <button
-            onClick={handleHelpfulVote}
-            disabled={hasVoted}
-            className={`px-6 py-3 rounded-md font-medium transition-colors ${
-              hasVoted
-                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                : 'bg-green-600 text-white hover:bg-green-700'
-            }`}
-          >
-            {hasVoted ? '투표 완료' : '👍 유용함'}
-          </button>
-          {hasVoted && (
-            <p className="mt-2 text-sm text-gray-600">피드백 감사합니다!</p>
-          )}
+           <button
+             onClick={handleHelpfulVote}
+             disabled={hasVoted}
+             className={`px-6 py-3 rounded-md font-medium transition-colors ${
+               hasVoted
+                 ? 'bg-surface-sunken text-text-muted cursor-not-allowed'
+                 : 'bg-success text-text-on-accent hover:bg-success/90'
+             }`}
+           >
+             {hasVoted ? '투표 완료' : '👍 유용함'}
+           </button>
+           {hasVoted && (
+             <p className="mt-2 text-sm text-text-muted">피드백 감사합니다!</p>
+           )}
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 pt-6 border-t">
-          <Link
-            href={`/kb/${article.id}/edit`}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            수정
-          </Link>
-          <Link
-            href="/kb"
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            목록
-          </Link>
-        </div>
+         {/* Action Buttons */}
+         <div className="flex gap-3 pt-6 border-t">
+           <Link
+             href={`/kb/${article.id}/edit`}
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors"
+           >
+             수정
+           </Link>
+           <Link
+             href="/kb"
+             className="px-4 py-2 border border-border text-text-secondary rounded-md hover:bg-surface-sunken transition-colors"
+           >
+             목록
+           </Link>
+         </div>
       </div>
     </div>
   );

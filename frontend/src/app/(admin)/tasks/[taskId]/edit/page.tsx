@@ -92,7 +92,7 @@ export default function EditTaskPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-black">불러오는 중...</div>
+        <div className="text-center text-text">불러오는 중...</div>
       </div>
     );
   }
@@ -100,10 +100,10 @@ export default function EditTaskPage({ params }: PageProps) {
   if (!task) {
     return (
       <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
           {error || "작업을 찾을 수 없습니다"}
         </div>
-        <Link href="/tasks" className="text-blue-600 hover:underline">
+         <Link href="/tasks" className="text-accent hover:underline">
           작업 목록으로
         </Link>
       </div>
@@ -112,36 +112,36 @@ export default function EditTaskPage({ params }: PageProps) {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link
-          href={`/tasks/${taskId}`}
-          className="text-blue-600 hover:underline text-sm"
-        >
+       <div className="mb-6">
+         <Link
+           href={`/tasks/${taskId}`}
+           className="text-accent hover:underline text-sm"
+         >
           작업 상세로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+      <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">작업 수정</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
             {error}
           </div>
         )}
 
         <form action={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
-              사업 *
-            </label>
-            <select
-              id="contract"
-              name="contract"
-              required
-              defaultValue={task.contract}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+           <div>
+             <label htmlFor="contract" className="block text-sm font-medium text-text mb-1">
+               사업 *
+             </label>
+             <select
+               id="contract"
+               name="contract"
+               required
+               defaultValue={task.contract}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -151,32 +151,32 @@ export default function EditTaskPage({ params }: PageProps) {
             </select>
           </div>
 
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
-              제목 *
-            </label>
-            <input
-              id="title"
-              type="text"
-              name="title"
-              required
-              defaultValue={task.title}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label htmlFor="title" className="block text-sm font-medium text-text mb-1">
+               제목 *
+             </label>
+             <input
+               id="title"
+               type="text"
+               name="title"
+               required
+               defaultValue={task.title}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="task_type" className="block text-sm font-medium text-black mb-1">
-                작업 유형 *
-              </label>
-              <select
-                id="task_type"
-                name="task_type"
-                required
-                defaultValue={task.task_type}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+           <div className="grid grid-cols-2 gap-4">
+             <div>
+               <label htmlFor="task_type" className="block text-sm font-medium text-text mb-1">
+                 작업 유형 *
+               </label>
+               <select
+                 id="task_type"
+                 name="task_type"
+                 required
+                 defaultValue={task.task_type}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {TASK_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
                     {type.label}
@@ -184,17 +184,17 @@ export default function EditTaskPage({ params }: PageProps) {
                 ))}
               </select>
             </div>
-            <div>
-              <label htmlFor="impact_level" className="block text-sm font-medium text-black mb-1">
-                영향도 *
-              </label>
-              <select
-                id="impact_level"
-                name="impact_level"
-                required
-                defaultValue={task.impact_level}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+             <div>
+               <label htmlFor="impact_level" className="block text-sm font-medium text-text mb-1">
+                 영향도 *
+               </label>
+               <select
+                 id="impact_level"
+                 name="impact_level"
+                 required
+                 defaultValue={task.impact_level}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {IMPACT_LEVELS.map((level) => (
                   <option key={level.value} value={level.value}>
                     {level.label}
@@ -204,21 +204,21 @@ export default function EditTaskPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
-              상세 내용
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              rows={4}
-              defaultValue={task.description}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label htmlFor="description" className="block text-sm font-medium text-text mb-1">
+               상세 내용
+             </label>
+             <textarea
+               id="description"
+               name="description"
+               rows={4}
+               defaultValue={task.description}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
           {task.approval_required && (
-            <p className="text-sm text-orange-600">
+            <p className="text-sm text-warning">
               이 작업은 승인이 필요합니다.
             </p>
           )}
@@ -227,14 +227,14 @@ export default function EditTaskPage({ params }: PageProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>
-            <Link
-              href={`/tasks/${taskId}`}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
+             <Link
+               href={`/tasks/${taskId}`}
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
               취소
             </Link>
           </div>

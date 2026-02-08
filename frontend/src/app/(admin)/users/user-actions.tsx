@@ -134,78 +134,78 @@ export default function UserActions({
 
   return (
     <>
-      <button
-        onClick={() => setShowRoleModal(true)}
-        className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-      >
-        역할 관리
-      </button>
-      <button
-        onClick={() => setShowDeleteModal(true)}
-        className="px-4 py-2 text-red-600 border border-red-200 rounded-md hover:bg-red-50"
-      >
-        삭제
-      </button>
+       <button
+         onClick={() => setShowRoleModal(true)}
+         className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+       >
+         역할 관리
+       </button>
+       <button
+         onClick={() => setShowDeleteModal(true)}
+         className="px-4 py-2 text-danger border border-danger-border rounded-md hover:bg-danger-bg"
+       >
+         삭제
+       </button>
 
-      {/* Role Management Modal */}
-      <Modal
-        isOpen={showRoleModal}
-        onClose={() => !isSubmitting && setShowRoleModal(false)}
-        title="역할 관리"
-      >
-        <form onSubmit={handleRoleSubmit} className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+       {/* Role Management Modal */}
+       <Modal
+         isOpen={showRoleModal}
+         onClose={() => !isSubmitting && setShowRoleModal(false)}
+         title="역할 관리"
+       >
+         <form onSubmit={handleRoleSubmit} className="space-y-4">
+           {error && (
+             <div className="p-3 bg-danger-bg text-danger rounded-md text-sm">
+               {error}
+             </div>
+           )}
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-2">
-              역할 선택
-            </label>
+           <div>
+             <label className="block text-sm font-medium text-text mb-2">
+               역할 선택
+             </label>
             <div className="space-y-2">
               {allRoles.map((role) => (
-                <label
-                  key={role.id}
-                  className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                    selectedRoleIds.includes(role.id)
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
+                 <label
+                   key={role.id}
+                   className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                     selectedRoleIds.includes(role.id)
+                       ? "border-accent bg-info-bg"
+                       : "border-border-light hover:bg-surface-sunken"
+                   }`}
+                 >
                   <input
                     type="checkbox"
                     checked={selectedRoleIds.includes(role.id)}
                     onChange={() => toggleRole(role.id)}
                     className="mr-3"
                   />
-                  <div>
-                    <span className="text-black font-medium">
-                      {ROLE_LABELS[role.name] || role.name}
-                    </span>
-                    {role.description && (
-                      <p className="text-sm text-gray-500">{role.description}</p>
-                    )}
-                  </div>
+                   <div>
+                     <span className="text-text font-medium">
+                       {ROLE_LABELS[role.name] || role.name}
+                     </span>
+                     {role.description && (
+                       <p className="text-sm text-text-muted">{role.description}</p>
+                     )}
+                   </div>
                 </label>
               ))}
             </div>
           </div>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowRoleModal(false)}
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
-              취소
-            </button>
+             <button
+               type="button"
+               onClick={() => setShowRoleModal(false)}
+               disabled={isSubmitting}
+               className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-surface-sunken disabled:opacity-50"
+             >
+               취소
+             </button>
             <button
               type="submit"
               disabled={isSubmitting || selectedRoleIds.length === 0}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>
@@ -220,36 +220,36 @@ export default function UserActions({
         title="사용자 삭제"
       >
         <div className="space-y-4">
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
+           {error && (
+             <div className="p-3 bg-danger-bg text-danger rounded-md text-sm">
+               {error}
+             </div>
+           )}
 
-          <p className="text-black">
-            정말로 <span className="font-semibold">{userName}</span> 사용자를
-            삭제하시겠습니까?
-          </p>
-          <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-100">
-            이 작업은 되돌릴 수 없습니다.
-          </p>
+           <p className="text-text">
+             정말로 <span className="font-semibold">{userName}</span> 사용자를
+             삭제하시겠습니까?
+           </p>
+           <p className="text-sm text-danger bg-danger-bg p-3 rounded-md border border-danger-border">
+             이 작업은 되돌릴 수 없습니다.
+           </p>
 
           <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={() => setShowDeleteModal(false)}
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleDelete}
-              disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
-            >
-              {isSubmitting ? "삭제 중..." : "삭제"}
-            </button>
+             <button
+               type="button"
+               onClick={() => setShowDeleteModal(false)}
+               disabled={isSubmitting}
+               className="flex-1 px-4 py-2 border border-border rounded-md hover:bg-surface-sunken disabled:opacity-50"
+             >
+               취소
+             </button>
+             <button
+               onClick={handleDelete}
+               disabled={isSubmitting}
+               className="flex-1 px-4 py-2 bg-danger text-text-on-accent rounded-md hover:bg-danger/90 disabled:opacity-50"
+             >
+               {isSubmitting ? "삭제 중..." : "삭제"}
+             </button>
           </div>
         </div>
       </Modal>

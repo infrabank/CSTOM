@@ -58,24 +58,24 @@ export default function NewEquipmentPage() {
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">장비 등록</h1>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+       {error && (
+         <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
+           {error}
+         </div>
+       )}
 
-      <div className="bg-white shadow-sm rounded-lg p-6">
+       <div className="bg-surface shadow-card rounded-lg p-6">
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
-              사업 *
-            </label>
-            <select
-              id="contract"
-              name="contract"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label htmlFor="contract" className="block text-sm font-medium text-text mb-1">
+               사업 *
+             </label>
+             <select
+               id="contract"
+               name="contract"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -86,29 +86,29 @@ export default function NewEquipmentPage() {
           </div>
 
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-black mb-1">
-              장비명 *
-            </label>
-            <input
-              id="name"
-              type="text"
-              name="name"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="name" className="block text-sm font-medium text-text mb-1">
+               장비명 *
+             </label>
+             <input
+               id="name"
+               type="text"
+               name="name"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-black mb-1">
-                분류 *
-              </label>
-              <select
-                id="category"
-                name="category"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+               <label htmlFor="category" className="block text-sm font-medium text-text mb-1">
+                 분류 *
+               </label>
+               <select
+                 id="category"
+                 name="category"
+                 required
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -117,79 +117,79 @@ export default function NewEquipmentPage() {
               </select>
             </div>
             <div>
-              <label htmlFor="serial_number" className="block text-sm font-medium text-black mb-1">
-                시리얼번호 *
-              </label>
-              <input
-                id="serial_number"
-                type="text"
-                name="serial_number"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+               <label htmlFor="serial_number" className="block text-sm font-medium text-text mb-1">
+                 시리얼번호 *
+               </label>
+               <input
+                 id="serial_number"
+                 type="text"
+                 name="serial_number"
+                 required
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="model_name" className="block text-sm font-medium text-black mb-1">
-                모델명
-              </label>
-              <input
-                id="model_name"
-                type="text"
-                name="model_name"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+               <label htmlFor="model_name" className="block text-sm font-medium text-text mb-1">
+                 모델명
+               </label>
+               <input
+                 id="model_name"
+                 type="text"
+                 name="model_name"
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
             </div>
             <div>
-              <label htmlFor="manufacturer" className="block text-sm font-medium text-black mb-1">
-                제조사
-              </label>
-              <input
-                id="manufacturer"
-                type="text"
-                name="manufacturer"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+               <label htmlFor="manufacturer" className="block text-sm font-medium text-text mb-1">
+                 제조사
+               </label>
+               <input
+                 id="manufacturer"
+                 type="text"
+                 name="manufacturer"
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="location" className="block text-sm font-medium text-black mb-1">
-              보관 위치
-            </label>
-            <input
-              id="location"
-              type="text"
-              name="location"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="location" className="block text-sm font-medium text-text mb-1">
+               보관 위치
+             </label>
+             <input
+               id="location"
+               type="text"
+               name="location"
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-black mb-1">
-              비고
-            </label>
-            <textarea
-              id="notes"
-              name="notes"
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+             <label htmlFor="notes" className="block text-sm font-medium text-text mb-1">
+               비고
+             </label>
+             <textarea
+               id="notes"
+               name="notes"
+               rows={3}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
           </div>
 
           <div className="flex gap-4">
-            <Link
-              href="/equipments"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              취소
-            </Link>
+             <Link
+               href="/equipments"
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
+               취소
+             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50"
             >
               {isSubmitting ? "등록 중..." : "등록"}
             </button>

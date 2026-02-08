@@ -54,32 +54,32 @@ export default function NewReportPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link href="/reports" className="text-blue-600 hover:underline text-sm">
-          보고서 목록으로
-        </Link>
-      </div>
+       <div className="mb-6">
+         <Link href="/reports" className="text-accent hover:underline text-sm">
+           보고서 목록으로
+         </Link>
+       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+       <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">보고서 생성</h1>
 
-        {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
-            {error}
-          </div>
-        )}
+         {error && (
+           <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
+             {error}
+           </div>
+         )}
 
         <form action={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="contract" className="block text-sm font-medium text-black mb-1">
-              사업 *
-            </label>
-            <select
-              id="contract"
-              name="contract"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label htmlFor="contract" className="block text-sm font-medium text-text mb-1">
+               사업 *
+             </label>
+             <select
+               id="contract"
+               name="contract"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -90,15 +90,15 @@ export default function NewReportPage() {
           </div>
 
           <div>
-            <label htmlFor="report_type" className="block text-sm font-medium text-black mb-1">
-              보고서 유형 *
-            </label>
-            <select
-              id="report_type"
-              name="report_type"
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+             <label htmlFor="report_type" className="block text-sm font-medium text-text mb-1">
+               보고서 유형 *
+             </label>
+             <select
+               id="report_type"
+               name="report_type"
+               required
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               {REPORT_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
@@ -109,28 +109,28 @@ export default function NewReportPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="period_start" className="block text-sm font-medium text-black mb-1">
-                시작일 *
-              </label>
-              <input
-                id="period_start"
-                type="date"
-                name="period_start"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+               <label htmlFor="period_start" className="block text-sm font-medium text-text mb-1">
+                 시작일 *
+               </label>
+               <input
+                 id="period_start"
+                 type="date"
+                 name="period_start"
+                 required
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
             </div>
             <div>
-              <label htmlFor="period_end" className="block text-sm font-medium text-black mb-1">
-                종료일 *
-              </label>
-              <input
-                id="period_end"
-                type="date"
-                name="period_end"
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+               <label htmlFor="period_end" className="block text-sm font-medium text-text mb-1">
+                 종료일 *
+               </label>
+               <input
+                 id="period_end"
+                 type="date"
+                 name="period_end"
+                 required
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
             </div>
           </div>
 
@@ -138,16 +138,16 @@ export default function NewReportPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "생성 중..." : "생성"}
             </button>
-            <Link
-              href="/reports"
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              취소
-            </Link>
+             <Link
+               href="/reports"
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
+               취소
+             </Link>
           </div>
         </form>
       </div>

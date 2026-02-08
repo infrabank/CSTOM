@@ -26,7 +26,7 @@ export default function SearchInput({
       } else {
         params.delete(paramName);
       }
-      params.delete("page"); // Reset to first page on search
+      params.delete("page");
       startTransition(() => {
         router.push(`${pathname}?${params.toString()}`);
       });
@@ -44,11 +44,11 @@ export default function SearchInput({
           updateSearch(e.target.value);
         }}
         placeholder={placeholder}
-        className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-4 py-2 pl-10 border border-border rounded-md bg-surface text-text placeholder:text-text-muted focus:outline-none focus:ring-3 focus:ring-accent/30 focus:border-accent transition-colors"
       />
       <svg
         className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${
-          isPending ? "text-blue-500 animate-pulse" : "text-gray-400"
+          isPending ? "text-accent animate-pulse" : "text-text-muted"
         }`}
         fill="none"
         stroke="currentColor"

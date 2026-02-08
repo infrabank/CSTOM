@@ -158,5 +158,8 @@
     "type": "command",
     "command": "bash ~/.claude/statusline.sh"
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "enabledPlugins": {
+    "oh-my-claudecode@omc": true
+  }
 }

@@ -14,10 +14,10 @@ const APPROVAL_STATUS_LABELS: Record<string, string> = {
 };
 
 const APPROVAL_STATUS_COLORS: Record<string, string> = {
-  not_required: "bg-gray-100 text-gray-700",
-  pending: "bg-orange-100 text-orange-700",
-  approved: "bg-green-100 text-green-700",
-  rejected: "bg-red-100 text-red-700",
+  not_required: "bg-surface-sunken text-text-secondary",
+  pending: "bg-warning-bg text-warning",
+  approved: "bg-success-bg text-success",
+  rejected: "bg-danger-bg text-danger",
 };
 
 interface TaskApprovalSectionProps {
@@ -68,7 +68,7 @@ export default function TaskApprovalSection({ task }: TaskApprovalSectionProps) 
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg p-6 mb-6">
+     <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
       <h2 className="text-lg font-semibold mb-4">승인 상태</h2>
 
       <div className="flex items-center gap-4 mb-4">
@@ -80,49 +80,49 @@ export default function TaskApprovalSection({ task }: TaskApprovalSectionProps) 
           {APPROVAL_STATUS_LABELS[task.approval_status] || task.approval_status}
         </span>
 
-        {task.approval_status === "approved" && task.approved_by && (
-          <span className="text-sm text-gray-600">
-            {task.approved_by}님이{" "}
-            {task.approved_at
-              ? new Date(task.approved_at).toLocaleString("ko-KR")
-              : ""}
-            에 승인
-          </span>
-        )}
+         {task.approval_status === "approved" && task.approved_by && (
+           <span className="text-sm text-text-muted">
+             {task.approved_by}님이{" "}
+             {task.approved_at
+               ? new Date(task.approved_at).toLocaleString("ko-KR")
+               : ""}
+             에 승인
+           </span>
+         )}
 
-        {task.approval_status === "rejected" && task.approved_by && (
-          <span className="text-sm text-gray-600">
-            {task.approved_by}님이{" "}
-            {task.approved_at
-              ? new Date(task.approved_at).toLocaleString("ko-KR")
-              : ""}
-            에 반려
-          </span>
-        )}
+         {task.approval_status === "rejected" && task.approved_by && (
+           <span className="text-sm text-text-muted">
+             {task.approved_by}님이{" "}
+             {task.approved_at
+               ? new Date(task.approved_at).toLocaleString("ko-KR")
+               : ""}
+             에 반려
+           </span>
+         )}
       </div>
 
-      {isPending && canApprove && (
-        <div className="flex gap-3">
-          <button
-            onClick={() => handleOpenModal("approve")}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-          >
-            승인
-          </button>
-          <button
-            onClick={() => handleOpenModal("reject")}
-            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-          >
-            반려
-          </button>
-        </div>
-      )}
+       {isPending && canApprove && (
+         <div className="flex gap-3">
+           <button
+             onClick={() => handleOpenModal("approve")}
+             className="px-4 py-2 bg-success text-text-on-accent rounded-md hover:bg-success/90 text-sm"
+           >
+             승인
+           </button>
+           <button
+             onClick={() => handleOpenModal("reject")}
+             className="px-4 py-2 bg-danger text-text-on-accent rounded-md hover:bg-danger/90 text-sm"
+           >
+             반려
+           </button>
+         </div>
+       )}
 
-      {isPending && !canApprove && (
-        <p className="text-sm text-gray-500">
-          PM 또는 관리자만 승인할 수 있습니다.
-        </p>
-      )}
+       {isPending && !canApprove && (
+         <p className="text-sm text-text-muted">
+           PM 또는 관리자만 승인할 수 있습니다.
+         </p>
+       )}
 
       <Modal
         isOpen={isModalOpen}
@@ -130,22 +130,22 @@ export default function TaskApprovalSection({ task }: TaskApprovalSectionProps) 
         title={actionType === "approve" ? "작업 승인" : "작업 반려"}
         footer={
           <>
-            <button
-              onClick={handleCloseModal}
-              disabled={isSubmitting}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              취소
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting}
-              className={`px-4 py-2 text-white rounded-md disabled:opacity-50 ${
-                actionType === "approve"
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-red-600 hover:bg-red-700"
-              }`}
-            >
+             <button
+               onClick={handleCloseModal}
+               disabled={isSubmitting}
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
+               취소
+             </button>
+             <button
+               onClick={handleSubmit}
+               disabled={isSubmitting}
+               className={`px-4 py-2 text-text-on-accent rounded-md disabled:opacity-50 ${
+                 actionType === "approve"
+                   ? "bg-success hover:bg-success/90"
+                   : "bg-danger hover:bg-danger/90"
+               }`}
+             >
               {isSubmitting
                 ? "처리 중..."
                 : actionType === "approve"
@@ -155,17 +155,17 @@ export default function TaskApprovalSection({ task }: TaskApprovalSectionProps) 
           </>
         }
       >
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
-            {error}
-          </div>
-        )}
-        <p>
-          이 작업을 {actionType === "approve" ? "승인" : "반려"}하시겠습니까?
-        </p>
-        <p className="text-sm text-gray-500 mt-2">
-          작업: {task.title}
-        </p>
+         {error && (
+           <div className="mb-4 p-3 bg-danger-bg text-danger rounded-md text-sm">
+             {error}
+           </div>
+         )}
+         <p>
+           이 작업을 {actionType === "approve" ? "승인" : "반려"}하시겠습니까?
+         </p>
+         <p className="text-sm text-text-muted mt-2">
+           작업: {task.title}
+         </p>
       </Modal>
     </div>
   );

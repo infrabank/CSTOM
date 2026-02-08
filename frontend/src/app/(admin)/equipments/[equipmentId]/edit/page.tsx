@@ -74,34 +74,34 @@ export default function EditEquipmentPage() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-black">불러오는 중...</div>
+        <div className="text-center text-text">불러오는 중...</div>
       </div>
     );
   }
 
   if (error && !equipment) {
     return (
-      <div className="p-6">
-        <div className="text-center text-red-600">{error}</div>
-      </div>
-    );
-  }
+       <div className="p-6">
+         <div className="text-center text-danger">{error}</div>
+       </div>
+     );
+   }
 
-  if (!equipment) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-red-600">장비를 찾을 수 없습니다</div>
-      </div>
-    );
-  }
+   if (!equipment) {
+     return (
+       <div className="p-6">
+         <div className="text-center text-danger">장비를 찾을 수 없습니다</div>
+       </div>
+     );
+   }
 
   // Equipment status can only be edited if not checked_out
   const canEditStatus = equipment.status !== "checked_out";
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
-      <div className="mb-6">
-        <Link href={`/equipments/${equipmentId}`} className="text-blue-600 hover:underline">
+       <div className="mb-6">
+         <Link href={`/equipments/${equipmentId}`} className="text-accent hover:underline">
           &larr; 상세보기로
         </Link>
       </div>
@@ -109,23 +109,23 @@ export default function EditEquipmentPage() {
       <h1 className="text-2xl font-bold mb-6">장비 수정</h1>
 
       {error && (
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
           {error}
         </div>
       )}
 
-      <div className="bg-white shadow-sm rounded-lg p-6">
+      <div className="bg-surface shadow-card rounded-lg p-6">
         <form action={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              사업 *
-            </label>
-            <select
-              name="contract"
-              required
-              defaultValue={equipment.contract}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               사업 *
+             </label>
+             <select
+               name="contract"
+               required
+               defaultValue={equipment.contract}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               <option value="">사업 선택</option>
               {contracts.map((contract) => (
                 <option key={contract.id} value={contract.id}>
@@ -135,30 +135,30 @@ export default function EditEquipmentPage() {
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              장비명 *
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              defaultValue={equipment.name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               장비명 *
+             </label>
+             <input
+               type="text"
+               name="name"
+               required
+               defaultValue={equipment.name}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                분류 *
-              </label>
-              <select
-                name="category"
-                required
-                defaultValue={equipment.category}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+           <div className="grid grid-cols-2 gap-4">
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 분류 *
+               </label>
+               <select
+                 name="category"
+                 required
+                 defaultValue={equipment.category}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {CATEGORY_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -166,110 +166,110 @@ export default function EditEquipmentPage() {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                시리얼번호 *
-              </label>
-              <input
-                type="text"
-                name="serial_number"
-                required
-                defaultValue={equipment.serial_number}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 시리얼번호 *
+               </label>
+               <input
+                 type="text"
+                 name="serial_number"
+                 required
+                 defaultValue={equipment.serial_number}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                모델명
-              </label>
-              <input
-                type="text"
-                name="model_name"
-                defaultValue={equipment.model_name}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                제조사
-              </label>
-              <input
-                type="text"
-                name="manufacturer"
-                defaultValue={equipment.manufacturer}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+           <div className="grid grid-cols-2 gap-4">
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 모델명
+               </label>
+               <input
+                 type="text"
+                 name="model_name"
+                 defaultValue={equipment.model_name}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 제조사
+               </label>
+               <input
+                 type="text"
+                 name="manufacturer"
+                 defaultValue={equipment.manufacturer}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               />
+             </div>
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              보관 위치
-            </label>
-            <input
-              type="text"
-              name="location"
-              defaultValue={equipment.location}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               보관 위치
+             </label>
+             <input
+               type="text"
+               name="location"
+               defaultValue={equipment.location}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          {canEditStatus && (
-            <div>
-              <label className="block text-sm font-medium text-black mb-1">
-                상태
-              </label>
-              <select
-                name="status"
-                defaultValue={equipment.status}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+           {canEditStatus && (
+             <div>
+               <label className="block text-sm font-medium text-text mb-1">
+                 상태
+               </label>
+               <select
+                 name="status"
+                 defaultValue={equipment.status}
+                 className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+               >
                 {STATUS_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>
                 ))}
               </select>
-              <p className="mt-1 text-sm text-black">
-                * 반출중인 장비는 반입 처리 후 상태 변경이 가능합니다.
-              </p>
+               <p className="mt-1 text-sm text-text">
+                 * 반출중인 장비는 반입 처리 후 상태 변경이 가능합니다.
+               </p>
             </div>
           )}
 
           {!canEditStatus && (
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-              <p className="text-sm text-yellow-800">
+            <div className="p-3 bg-warning-bg border border-warning-border rounded-md">
+              <p className="text-sm text-warning">
                 현재 반출중인 장비입니다. 반입 처리 후 상태 변경이 가능합니다.
               </p>
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              비고
-            </label>
-            <textarea
-              name="notes"
-              rows={3}
-              defaultValue={equipment.notes}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               비고
+             </label>
+             <textarea
+               name="notes"
+               rows={3}
+               defaultValue={equipment.notes}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div className="flex gap-4">
-            <Link
-              href={`/equipments/${equipmentId}`}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
+           <div className="flex gap-4">
+             <Link
+               href={`/equipments/${equipmentId}`}
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
               취소
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>

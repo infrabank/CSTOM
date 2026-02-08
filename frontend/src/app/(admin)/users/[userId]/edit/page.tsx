@@ -74,7 +74,7 @@ export default function EditUserPage({ params }: PageProps) {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="text-center text-black">불러오는 중...</div>
+        <div className="text-center text-text">불러오는 중...</div>
       </div>
     );
   }
@@ -82,10 +82,10 @@ export default function EditUserPage({ params }: PageProps) {
   if (!user) {
     return (
       <div className="p-6">
-        <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
           {error || "사용자를 찾을 수 없습니다"}
         </div>
-        <Link href="/users" className="text-blue-600 hover:underline">
+         <Link href="/users" className="text-accent hover:underline">
           사용자 목록으로
         </Link>
       </div>
@@ -94,87 +94,87 @@ export default function EditUserPage({ params }: PageProps) {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <Link
-          href={`/users/${userId}`}
-          className="text-blue-600 hover:underline text-sm"
-        >
+       <div className="mb-6">
+         <Link
+           href={`/users/${userId}`}
+           className="text-accent hover:underline text-sm"
+         >
           사용자 상세로
         </Link>
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg p-6 max-w-2xl">
+      <div className="bg-surface shadow-card rounded-lg p-6 max-w-2xl">
         <h1 className="text-2xl font-bold mb-6">사용자 수정</h1>
 
         {error && (
-          <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
+          <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">
             {error}
           </div>
         )}
 
         <form action={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              사용자명 *
-            </label>
-            <input
-              type="text"
-              name="username"
-              required
-              defaultValue={user.username}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               사용자명 *
+             </label>
+             <input
+               type="text"
+               name="username"
+               required
+               defaultValue={user.username}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              이메일 *
-            </label>
-            <input
-              type="email"
-              name="email"
-              required
-              defaultValue={user.email}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               이메일 *
+             </label>
+             <input
+               type="email"
+               name="email"
+               required
+               defaultValue={user.email}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              표시 이름
-            </label>
-            <input
-              type="text"
-              name="display_name"
-              defaultValue={user.display_name}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               표시 이름
+             </label>
+             <input
+               type="text"
+               name="display_name"
+               defaultValue={user.display_name}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              비밀번호
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="변경시에만 입력"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="mt-1 text-xs text-black">
-              비밀번호를 변경하려면 입력하세요. 비워두면 기존 비밀번호가 유지됩니다.
-            </p>
-          </div>
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               비밀번호
+             </label>
+             <input
+               type="password"
+               name="password"
+               placeholder="변경시에만 입력"
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             />
+             <p className="mt-1 text-xs text-text">
+               비밀번호를 변경하려면 입력하세요. 비워두면 기존 비밀번호가 유지됩니다.
+             </p>
+           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-black mb-1">
-              상태
-            </label>
-            <select
-              name="status"
-              defaultValue={user.status}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
+           <div>
+             <label className="block text-sm font-medium text-text mb-1">
+               상태
+             </label>
+             <select
+               name="status"
+               defaultValue={user.status}
+               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+             >
               {STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
@@ -183,30 +183,30 @@ export default function EditUserPage({ params }: PageProps) {
             </select>
           </div>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                name="is_active"
-                defaultChecked={user.is_active}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <span className="text-sm">계정 활성화</span>
-            </label>
-          </div>
+           <div className="space-y-2">
+             <label className="flex items-center gap-2">
+               <input
+                 type="checkbox"
+                 name="is_active"
+                 defaultChecked={user.is_active}
+                 className="rounded border-border text-accent focus:ring-accent"
+               />
+               <span className="text-sm">계정 활성화</span>
+             </label>
+           </div>
 
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? "저장 중..." : "저장"}
             </button>
-            <Link
-              href={`/users/${userId}`}
-              className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-            >
+             <Link
+               href={`/users/${userId}`}
+               className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken"
+             >
               취소
             </Link>
           </div>
