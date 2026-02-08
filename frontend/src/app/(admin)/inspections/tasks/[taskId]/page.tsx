@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { getAccessToken } from '@/lib/auth';
 
 interface TaskDetail {
   id: number;
@@ -18,6 +19,8 @@ interface TaskDetail {
   }>;
   created_at: string;
 }
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export default function InspectionTaskDetailPage() {
   const params = useParams();
@@ -37,7 +40,10 @@ export default function InspectionTaskDetailPage() {
     const fetchTask = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/v1/inspections/tasks/${taskId}/`);
+        const token = getAccessToken();
+        const response = await fetch(`${API_URL}/v1/inspections/tasks/${taskId}/`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
         if (!response.ok) {
           throw new Error('작업을 불러올 수 없습니다');
         }
@@ -59,10 +65,12 @@ export default function InspectionTaskDetailPage() {
 
     try {
       setSubmitting(true);
-      const response = await fetch(`/api/v1/inspections/tasks/${task.id}/complete/`, {
+      const token = getAccessToken();
+      const response = await fetch(`${API_URL}/v1/inspections/tasks/${task.id}/complete/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
         },
         body: JSON.stringify(formData),
       });
