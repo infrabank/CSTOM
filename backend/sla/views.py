@@ -133,6 +133,61 @@ class SLADefinitionViewSet(viewsets.ModelViewSet):
         serializer = SLAMetricSerializer(metrics, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["post"])
+    def add_metric(self, request, pk=None):
+        """Add a metric to this SLA definition.
+
+        Accepts target_type ('task' or 'event') and target_id instead of
+        raw content_type ID, resolving the ContentType internally.
+        """
+        from django.contrib.contenttypes.models import ContentType
+
+        sla = self.get_object()
+        target_type = request.data.get("target_type")
+        target_id = request.data.get("target_id")
+        actual_response = request.data.get("actual_response_time_minutes")
+        actual_resolution = request.data.get("actual_resolution_time_minutes")
+
+        if not all([target_type, target_id, actual_response, actual_resolution]):
+            return Response(
+                {
+                    "error": "target_type, target_id, actual_response_time_minutes, actual_resolution_time_minutes are required"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        model_map = {
+            "task": ("tasks", "task"),
+            "event": ("events", "changeincident"),
+        }
+
+        if target_type not in model_map:
+            return Response(
+                {"error": "target_type must be 'task' or 'event'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        app_label, model_name = model_map[target_type]
+        try:
+            ct = ContentType.objects.get(app_label=app_label, model=model_name)
+        except ContentType.DoesNotExist:
+            return Response(
+                {"error": f"ContentType for {target_type} not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        metric = SLAMetric(
+            sla_definition=sla,
+            content_type=ct,
+            object_id=int(target_id),
+            actual_response_time_minutes=int(actual_response),
+            actual_resolution_time_minutes=int(actual_resolution),
+        )
+        metric.save()
+
+        serializer = SLAMetricSerializer(metric)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class SLAMetricViewSet(viewsets.ModelViewSet):
     """ViewSet for SLA metrics with compliance filtering."""
