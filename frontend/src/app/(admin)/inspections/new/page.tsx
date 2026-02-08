@@ -113,12 +113,16 @@ export default function NewInspectionSchedulePage() {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        const errMsg =
-          errData.detail ||
-          Object.values(errData).flat().join(", ") ||
-          "등록에 실패했습니다";
-        throw new Error(errMsg);
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const errData = await res.json();
+          const errMsg =
+            errData.detail ||
+            Object.values(errData).flat().join(", ") ||
+            "등록에 실패했습니다";
+          throw new Error(errMsg);
+        }
+        throw new Error(`등록에 실패했습니다 (HTTP ${res.status})`);
       }
 
       router.push("/inspections");

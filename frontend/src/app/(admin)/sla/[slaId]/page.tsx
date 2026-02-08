@@ -222,8 +222,12 @@ export default function SLADetailPage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
+        }
+        throw new Error(`서버 오류가 발생했습니다 (HTTP ${res.status})`);
       }
 
       setMetricObjectId('');

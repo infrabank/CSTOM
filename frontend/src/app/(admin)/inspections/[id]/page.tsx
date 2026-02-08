@@ -198,12 +198,16 @@ export default function InspectionScheduleDetailPage() {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        const errMsg =
-          errData.detail ||
-          Object.values(errData).flat().join(", ") ||
-          "저장에 실패했습니다";
-        throw new Error(errMsg);
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const errData = await res.json();
+          const errMsg =
+            errData.detail ||
+            Object.values(errData).flat().join(", ") ||
+            "저장에 실패했습니다";
+          throw new Error(errMsg);
+        }
+        throw new Error(`저장에 실패했습니다 (HTTP ${res.status})`);
       }
 
       const updatedData = await res.json();

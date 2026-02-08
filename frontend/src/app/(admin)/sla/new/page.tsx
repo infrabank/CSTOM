@@ -84,8 +84,12 @@ export default function NewSLADefinitionPage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "SLA 정의 생성에 실패했습니다");
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || "SLA 정의 생성에 실패했습니다");
+        }
+        throw new Error(`SLA 정의 생성에 실패했습니다 (HTTP ${res.status})`);
       }
 
       const data = await res.json();

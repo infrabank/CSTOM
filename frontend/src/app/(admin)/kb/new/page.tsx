@@ -116,8 +116,12 @@ export default function NewKBArticlePage() {
       });
 
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.detail || "아티클 생성에 실패했습니다");
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const errData = await res.json();
+          throw new Error(errData.detail || "아티클 생성에 실패했습니다");
+        }
+        throw new Error(`아티클 생성에 실패했습니다 (HTTP ${res.status})`);
       }
 
       const data = await res.json();

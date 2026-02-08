@@ -141,8 +141,12 @@ export default function WorkforceSchedulePage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "일정 등록에 실패했습니다");
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || "일정 등록에 실패했습니다");
+        }
+        throw new Error(`일정 등록에 실패했습니다 (HTTP ${res.status})`);
       }
 
       // Reset form and refresh
