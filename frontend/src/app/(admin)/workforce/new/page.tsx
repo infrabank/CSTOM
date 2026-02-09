@@ -8,8 +8,7 @@ import { getAccessToken } from "@/lib/auth";
 interface User {
   id: number;
   username: string;
-  first_name: string;
-  last_name: string;
+  display_name: string;
   email: string;
 }
 
@@ -69,11 +68,8 @@ export default function NewEngineerPage() {
   }, []);
 
   const getUserDisplayName = (user: User) => {
-    const fullName = `${user.last_name}${user.first_name}`.trim();
-    if (fullName) {
-      return `${fullName} (${user.email})`;
-    }
-    return `${user.username} (${user.email})`;
+    const name = user.display_name || user.username;
+    return `${name} (${user.email})`;
   };
 
   const parseCommaSeparated = (input: string): string[] => {
