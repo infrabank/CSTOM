@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { getAccessToken } from "@/lib/auth";
 
 interface Version {
   id: number;
@@ -23,7 +24,7 @@ interface SOPDocument {
   title: string;
   category_name: string;
   author_name: string;
-  current_version: CurrentVersion;
+  current_version: CurrentVersion | null;
   versions: Version[];
   created_at: string;
   updated_at: string;
@@ -41,13 +42,14 @@ export default function SOPDetailPage() {
     const fetchDocument = async () => {
       try {
         setLoading(true);
+        const token = getAccessToken();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/sop/documents/${sopId}/`,
           {
             headers: {
               'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
             },
-            credentials: 'include',
           }
         );
 
@@ -141,39 +143,49 @@ export default function SOPDetailPage() {
         </div>
 
         {/* Current Version Info */}
-        <div className="mb-6 pb-6 border-b">
-          <h2 className="text-lg font-semibold mb-3">현재 버전</h2>
-          <div className="bg-info-bg rounded-lg p-4 mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <h3 className="text-sm font-medium text-text-muted mb-1">버전</h3>
-                <p className="text-text font-semibold">
-                  v{document.current_version.version_number}
-                </p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-text-muted mb-1">작성자</h3>
-                <p className="text-text">{document.current_version.created_by_name}</p>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium text-text-muted mb-1">작성일</h3>
-                <p className="text-text">
-                  {new Date(document.current_version.created_at).toLocaleString('ko-KR')}
-                </p>
+        {document.current_version ? (
+          <>
+            <div className="mb-6 pb-6 border-b">
+              <h2 className="text-lg font-semibold mb-3">현재 버전</h2>
+              <div className="bg-info-bg rounded-lg p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h3 className="text-sm font-medium text-text-muted mb-1">버전</h3>
+                    <p className="text-text font-semibold">
+                      v{document.current_version.version_number}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-text-muted mb-1">작성자</h3>
+                    <p className="text-text">{document.current_version.created_by_name}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-medium text-text-muted mb-1">작성일</h3>
+                    <p className="text-text">
+                      {new Date(document.current_version.created_at).toLocaleString('ko-KR')}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Markdown Content */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4">내용</h2>
-          <div className="prose prose-sm max-w-none bg-surface-sunken rounded-lg p-6">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {document.current_version.content}
-            </ReactMarkdown>
+            {/* Markdown Content */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold mb-4">내용</h2>
+              <div className="prose prose-sm max-w-none bg-surface-sunken rounded-lg p-6">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {document.current_version.content}
+                </ReactMarkdown>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="mb-6 pb-6 border-b">
+            <div className="p-4 bg-warning-bg text-warning rounded-md">
+              버전이 아직 등록되지 않았습니다. 수정 버튼을 눌러 내용을 작성해주세요.
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Version History */}
         <div className="mb-6">
@@ -204,7 +216,7 @@ export default function SOPDetailPage() {
                         <span className="font-semibold text-text">
                           v{version.version_number}
                         </span>
-                        {version.id === document.current_version.id && (
+                        {document.current_version && version.id === document.current_version.id && (
                           <span className="ml-2 px-2 py-1 bg-success-bg text-success text-xs rounded-full">
                             현재
                           </span>
