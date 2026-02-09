@@ -89,7 +89,7 @@ class UserCRUDTestCase(TestCase):
             {
                 "username": "newuser",
                 "email": "newuser@example.com",
-                "password": "newpass123",
+                "password": "NewPass123!",
             },
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -97,7 +97,7 @@ class UserCRUDTestCase(TestCase):
 
     def test_retrieve_user(self):
         """Test retrieving a user."""
-        response = self.client.get(f"/api/users/{self.admin.id}/")
+        response = self.client.get(f"/api/v1/users/{self.admin.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["email"], "admin@example.com")
 
@@ -135,7 +135,7 @@ class RoleTestCase(TestCase):
         """Test listing roles."""
         response = self.client.get("/api/v1/roles/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_assign_role_to_user(self):
         """Test assigning role to user."""

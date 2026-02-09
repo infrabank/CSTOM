@@ -48,10 +48,10 @@ class ContractCRUDTestCase(TestCase):
         self.assertEqual(len(response.data["results"]), 1)
 
     def test_list_contracts_unauthenticated(self):
-        """Test that unauthenticated users can list contracts (public read)."""
+        """Test that unauthenticated users cannot list contracts."""
         self.client.credentials()  # Remove auth
         response = self.client.get("/api/v1/contracts/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_create_contract(self):
         """Test creating a new contract."""
@@ -85,14 +85,14 @@ class ContractCRUDTestCase(TestCase):
 
     def test_retrieve_contract(self):
         """Test retrieving a contract."""
-        response = self.client.get(f"/api/contracts/{self.contract.id}/")
+        response = self.client.get(f"/api/v1/contracts/{self.contract.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], "Test Contract")
 
     def test_update_contract(self):
         """Test updating a contract."""
         response = self.client.put(
-            f"/api/contracts/{self.contract.id}/",
+            f"/api/v1/contracts/{self.contract.id}/",
             {
                 "name": "Updated Contract",
                 "client_org": "Updated Client",
@@ -106,7 +106,7 @@ class ContractCRUDTestCase(TestCase):
     def test_partial_update_contract(self):
         """Test partial update of a contract."""
         response = self.client.patch(
-            f"/api/contracts/{self.contract.id}/",
+            f"/api/v1/contracts/{self.contract.id}/",
             {"client_org": "Patched Client"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -114,7 +114,7 @@ class ContractCRUDTestCase(TestCase):
 
     def test_delete_contract(self):
         """Test deleting a contract."""
-        response = self.client.delete(f"/api/contracts/{self.contract.id}/")
+        response = self.client.delete(f"/api/v1/contracts/{self.contract.id}/")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Contract.objects.filter(id=self.contract.id).exists())
 
@@ -164,7 +164,7 @@ class ContractStatusTestCase(TestCase):
     def test_update_status(self):
         """Test updating contract status."""
         response = self.client.post(
-            f"/api/contracts/{self.contract.id}/status/",
+            f"/api/v1/contracts/{self.contract.id}/status/",
             {"status": "handover", "notes": "Starting handover phase"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -174,11 +174,11 @@ class ContractStatusTestCase(TestCase):
         """Test getting contract status history."""
         # First update status
         self.client.post(
-            f"/api/contracts/{self.contract.id}/status/",
+            f"/api/v1/contracts/{self.contract.id}/status/",
             {"status": "handover"},
         )
 
-        response = self.client.get(f"/api/contracts/{self.contract.id}/history/")
+        response = self.client.get(f"/api/v1/contracts/{self.contract.id}/history/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["old_status"], "pre-handover")
@@ -190,7 +190,7 @@ class ContractStatusTestCase(TestCase):
 
         for new_status in statuses:
             response = self.client.post(
-                f"/api/contracts/{self.contract.id}/status/",
+                f"/api/v1/contracts/{self.contract.id}/status/",
                 {"status": new_status},
             )
             self.assertEqual(response.status_code, status.HTTP_200_OK)
