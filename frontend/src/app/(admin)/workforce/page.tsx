@@ -4,10 +4,13 @@ import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface EngineerProfile {
   id: number;
+  user: number;
   user_name: string;
   user_email: string;
-  skills: string;
-  specialization: string;
+  skills: string[];
+  specializations: string[];
+  skills_display: string;
+  specialization_display: string;
   availability_status: string;
   availability_status_display: string;
 }
@@ -47,12 +50,20 @@ export default async function WorkforcePage() {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-text">인력 관리</h1>
-        <Link
-          href="/workforce/schedule"
-          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
-        >
-          일정 관리
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/workforce/new"
+            className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
+          >
+            엔지니어 등록
+          </Link>
+          <Link
+            href="/workforce/schedule"
+            className="px-4 py-2 border border-border text-text-secondary rounded-md hover:bg-surface-sunken transition-colors cursor-pointer text-sm font-medium"
+          >
+            일정 관리
+          </Link>
+        </div>
       </div>
 
       <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
@@ -98,10 +109,10 @@ export default async function WorkforcePage() {
                     {engineer.user_email}
                   </td>
                   <td className="px-6 py-4 text-text-secondary text-sm">
-                    {engineer.specialization || "-"}
+                    {engineer.specialization_display || "-"}
                   </td>
                   <td className="px-6 py-4 text-text-secondary text-sm">
-                    {engineer.skills || "-"}
+                    {engineer.skills_display || "-"}
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-2 py-1 rounded-full text-xs ${STATUS_COLORS[engineer.availability_status] || "bg-surface-sunken text-text-muted"}`}>
@@ -143,11 +154,11 @@ export default async function WorkforcePage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium text-text-secondary">전문분야</span>
-                  <span className="text-text-muted">{engineer.specialization || "-"}</span>
+                  <span className="text-text-muted">{engineer.specialization_display || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="font-medium text-text-secondary">기술스택</span>
-                  <span className="text-text-muted">{engineer.skills || "-"}</span>
+                  <span className="text-text-muted">{engineer.skills_display || "-"}</span>
                 </div>
               </div>
             </div>

@@ -12,8 +12,8 @@ class EngineerProfileSerializer(serializers.ModelSerializer):
 
     user_name = serializers.SerializerMethodField()
     user_email = serializers.EmailField(source="user.email", read_only=True)
-    skills = serializers.SerializerMethodField()
-    specialization = serializers.SerializerMethodField()
+    skills_display = serializers.SerializerMethodField()
+    specialization_display = serializers.SerializerMethodField()
     availability_status = serializers.SerializerMethodField()
     availability_status_display = serializers.SerializerMethodField()
 
@@ -25,7 +25,9 @@ class EngineerProfileSerializer(serializers.ModelSerializer):
             "user_name",
             "user_email",
             "skills",
-            "specialization",
+            "specializations",
+            "skills_display",
+            "specialization_display",
             "availability_status",
             "availability_status_display",
             "created_at",
@@ -38,12 +40,12 @@ class EngineerProfileSerializer(serializers.ModelSerializer):
         full_name = f"{user.first_name} {user.last_name}".strip()
         return full_name or user.username
 
-    def get_skills(self, obj) -> str:
+    def get_skills_display(self, obj) -> str:
         if isinstance(obj.skills, list):
             return ", ".join(obj.skills)
         return str(obj.skills) if obj.skills else ""
 
-    def get_specialization(self, obj) -> str:
+    def get_specialization_display(self, obj) -> str:
         if isinstance(obj.specializations, list):
             return ", ".join(obj.specializations)
         return str(obj.specializations) if obj.specializations else ""

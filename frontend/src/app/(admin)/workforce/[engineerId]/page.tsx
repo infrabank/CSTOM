@@ -8,8 +8,10 @@ interface EngineerProfile {
   user: number;
   user_name: string;
   user_email: string;
-  skills: string;
-  specialization: string;
+  skills: string[];
+  specializations: string[];
+  skills_display: string;
+  specialization_display: string;
   availability_status: string;
   availability_status_display: string;
   created_at: string;
@@ -120,13 +122,13 @@ export default async function EngineerDetailPage({
             <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
               전문분야
             </h3>
-            <p className="text-text text-sm">{engineer.specialization || "-"}</p>
+            <p className="text-text text-sm">{engineer.specialization_display || "-"}</p>
           </div>
           <div>
             <h3 className="text-xs font-medium text-text-muted uppercase tracking-wider mb-2">
               기술스택
             </h3>
-            <p className="text-text text-sm">{engineer.skills || "-"}</p>
+            <p className="text-text text-sm">{engineer.skills_display || "-"}</p>
           </div>
         </div>
       </div>
