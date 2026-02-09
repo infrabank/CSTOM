@@ -42,7 +42,7 @@ class ContractCRUDTestCase(TestCase):
 
     def test_list_contracts(self):
         """Test listing contracts."""
-        response = self.client.get("/api/contracts/")
+        response = self.client.get("/api/v1/contracts/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("results", response.data)
         self.assertEqual(len(response.data["results"]), 1)
@@ -50,13 +50,13 @@ class ContractCRUDTestCase(TestCase):
     def test_list_contracts_unauthenticated(self):
         """Test that unauthenticated users can list contracts (public read)."""
         self.client.credentials()  # Remove auth
-        response = self.client.get("/api/contracts/")
+        response = self.client.get("/api/v1/contracts/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_contract(self):
         """Test creating a new contract."""
         response = self.client.post(
-            "/api/contracts/",
+            "/api/v1/contracts/",
             {
                 "name": "New Contract",
                 "client_org": "New Client",
@@ -71,7 +71,7 @@ class ContractCRUDTestCase(TestCase):
     def test_create_contract_with_scope_flags(self):
         """Test creating contract with scope flags."""
         response = self.client.post(
-            "/api/contracts/",
+            "/api/v1/contracts/",
             {
                 "name": "Scoped Contract",
                 "client_org": "Client Org",
@@ -122,7 +122,7 @@ class ContractCRUDTestCase(TestCase):
         """Test that unauthenticated users cannot create contracts."""
         self.client.credentials()
         response = self.client.post(
-            "/api/contracts/",
+            "/api/v1/contracts/",
             {
                 "name": "Unauthorized Contract",
                 "client_org": "Client",
@@ -220,7 +220,7 @@ class ContractRiskFlagsTestCase(TestCase):
     def test_create_contract_with_risk_flags(self):
         """Test creating contract with risk flags set."""
         response = self.client.post(
-            "/api/contracts/",
+            "/api/v1/contracts/",
             {
                 "name": "Risky Contract",
                 "client_org": "Risk Client",

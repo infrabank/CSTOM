@@ -78,14 +78,14 @@ class UserCRUDTestCase(TestCase):
 
     def test_list_users(self):
         """Test listing users."""
-        response = self.client.get("/api/users/")
+        response = self.client.get("/api/v1/users/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("results", response.data)
 
     def test_create_user(self):
         """Test creating a new user."""
         response = self.client.post(
-            "/api/users/",
+            "/api/v1/users/",
             {
                 "username": "newuser",
                 "email": "newuser@example.com",
@@ -105,7 +105,7 @@ class UserCRUDTestCase(TestCase):
         """Test unauthorized access to user list."""
         # Remove credentials
         self.client.credentials()
-        response = self.client.get("/api/users/")
+        response = self.client.get("/api/v1/users/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
@@ -133,7 +133,7 @@ class RoleTestCase(TestCase):
 
     def test_list_roles(self):
         """Test listing roles."""
-        response = self.client.get("/api/roles/")
+        response = self.client.get("/api/v1/roles/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)
 
@@ -147,7 +147,7 @@ class RoleTestCase(TestCase):
         )
 
         response = self.client.patch(
-            f"/api/users/{user.id}/roles/",
+            f"/api/v1/users/{user.id}/roles/",
             {"role_ids": [self.pm_role.id]},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)

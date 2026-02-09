@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -31,9 +32,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 _secret_key = os.getenv("SECRET_KEY")
 if not _secret_key:
     import warnings
+
     warnings.warn(
         "SECRET_KEY not set! Using insecure default for development only.",
-        RuntimeWarning
+        RuntimeWarning,
     )
     _secret_key = "django-insecure-dev-only-key-DO-NOT-USE-IN-PRODUCTION"
 SECRET_KEY = _secret_key
@@ -245,6 +247,11 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     # Use SMTP backend in production
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+# Disable throttling during tests
+if "test" in sys.argv or "pytest" in sys.modules:
+    REST_FRAMEWORK["DEFAULT_THROTTLE_CLASSES"] = []
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {}
 
 # Celery Configuration
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")

@@ -55,7 +55,7 @@ class EquipmentCRUDTestCase(TestCase):
 
     def test_list_equipments(self):
         """Test listing equipments."""
-        response = self.client.get("/api/equipments/")
+        response = self.client.get("/api/v1/equipments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("results", response.data)
         self.assertEqual(len(response.data["results"]), 1)
@@ -63,13 +63,13 @@ class EquipmentCRUDTestCase(TestCase):
     def test_list_equipments_unauthenticated(self):
         """Test that unauthenticated users can list equipments (public read)."""
         self.client.credentials()
-        response = self.client.get("/api/equipments/")
+        response = self.client.get("/api/v1/equipments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_equipment(self):
         """Test creating new equipment."""
         response = self.client.post(
-            "/api/equipments/",
+            "/api/v1/equipments/",
             {
                 "contract": self.contract.id,
                 "name": "New Switch",
@@ -87,7 +87,7 @@ class EquipmentCRUDTestCase(TestCase):
     def test_create_equipment_duplicate_serial(self):
         """Test that duplicate serial numbers are rejected."""
         response = self.client.post(
-            "/api/equipments/",
+            "/api/v1/equipments/",
             {
                 "contract": self.contract.id,
                 "name": "Duplicate Server",
@@ -144,7 +144,7 @@ class EquipmentCRUDTestCase(TestCase):
         """Test that unauthenticated users cannot create equipment."""
         self.client.credentials()
         response = self.client.post(
-            "/api/equipments/",
+            "/api/v1/equipments/",
             {
                 "contract": self.contract.id,
                 "name": "Unauthorized Equipment",
@@ -442,6 +442,6 @@ class EquipmentCategoryFilterTestCase(TestCase):
 
     def test_list_all_equipment(self):
         """Test listing all equipment without filters."""
-        response = self.client.get("/api/equipments/")
+        response = self.client.get("/api/v1/equipments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 3)
