@@ -39,12 +39,20 @@ export default async function SOPPage() {
 
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-text">SOP 관리</h1>
-        <Link
-          href="/sop/new"
-          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
-        >
-          새 SOP 작성
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/sop/categories"
+            className="px-4 py-2 border border-border rounded-md hover:bg-surface-sunken transition-colors cursor-pointer text-sm font-medium text-text-secondary"
+          >
+            카테고리 관리
+          </Link>
+          <Link
+            href="/sop/new"
+            className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors cursor-pointer text-sm font-medium"
+          >
+            새 SOP 작성
+          </Link>
+        </div>
       </div>
 
       <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
