@@ -54,10 +54,7 @@ export default function NewSOPPage() {
     setError("");
 
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("cstom_access_token="))
-        ?.split("=")[1];
+      const token = getAccessToken();
 
       if (!token) {
         setError("인증 토큰이 없습니다");
@@ -86,19 +83,14 @@ export default function NewSOPPage() {
       const docData = await docRes.json();
       const documentId = docData.id;
 
-      // Step 2: Create version
-      const versionRes = await fetch(`${API_URL}/v1/sop/versions/`, {
+      // Step 2: Create version via document's custom action
+      const versionRes = await fetch(`${API_URL}/v1/sop/documents/${documentId}/create_version/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          document: documentId,
-          version_number: 1,
-          content,
-          created_by: null, // API will use authenticated user
-        }),
+        body: JSON.stringify({ content }),
       });
 
       if (!versionRes.ok) {
