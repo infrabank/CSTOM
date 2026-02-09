@@ -1,10 +1,27 @@
 'use client';
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getAccessToken } from "@/lib/auth";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const DashboardCharts = dynamic(() => import("@/components/dashboard-charts"), {
+  ssr: false,
+  loading: () => (
+    <div className="grid lg:grid-cols-2 gap-4 mb-6">
+      <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+        <Skeleton className="h-5 w-24 mb-4" />
+        <Skeleton className="h-[280px] w-full" />
+      </div>
+      <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
+        <Skeleton className="h-5 w-24 mb-4" />
+        <Skeleton className="h-[280px] w-full" />
+      </div>
+    </div>
+  ),
+});
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -79,8 +96,6 @@ const EQUIPMENT_STATUS_COLORS: Record<string, string> = {
   maintenance: "bg-danger-bg text-danger",
   retired: "bg-surface-sunken text-text-muted",
 };
-
-const CHART_COLORS = ['#0369A1', '#15803D', '#A16207', '#B91C1C'];
 
 export default function DashboardPage() {
   const [kpiData, setKpiData] = useState<DashboardSummary | null>(null);
@@ -239,49 +254,11 @@ export default function DashboardPage() {
 
       {/* Charts */}
       {kpiData && (
-        <div className="grid lg:grid-cols-2 gap-4 mb-6">
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
-            <h2 className="text-base font-semibold text-text mb-4">작업 현황</h2>
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie
-                  data={taskChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {taskChartData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
-            <h2 className="text-base font-semibold text-text mb-4">KPI 요약</h2>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart
-                data={[
-                  { name: 'SLA 준수율', value: kpiData.sla_compliance_rate },
-                  { name: '점검 완료율', value: kpiData.inspection_completion_rate },
-                ]}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
-                <XAxis dataKey="name" tick={{ fill: '#64748B', fontSize: 12 }} />
-                <YAxis domain={[0, 100]} tick={{ fill: '#64748B', fontSize: 12 }} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value" fill="#0369A1" name="비율 (%)" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <DashboardCharts
+          taskChartData={taskChartData}
+          slaComplianceRate={kpiData.sla_compliance_rate}
+          inspectionCompletionRate={kpiData.inspection_completion_rate}
+        />
       )}
 
       {/* Stats Grid */}

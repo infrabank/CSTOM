@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import QRScanner from '@/components/QRScanner';
+import dynamic from 'next/dynamic';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const QRScanner = dynamic(() => import('@/components/QRScanner'), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[300px] w-full rounded-lg" />,
+});
 
 export default function ScanPage() {
   const router = useRouter();

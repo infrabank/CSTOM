@@ -151,7 +151,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       <div className="flex items-center h-14 px-4 border-b border-border-light shrink-0">
         {isExpanded ? (
           <Link href="/dashboard" className="flex items-center gap-2" onClick={closeMobile}>
-            <Image src="/images/ci_21.jpg" alt="KRIHS 국토연구원" width={140} height={31} priority unoptimized className="h-8 w-auto" />
+            <Image src="/images/ci_21.jpg" alt="KRIHS 국토연구원" width={140} height={31} priority className="h-8 w-auto" />
           </Link>
         ) : (
           <Link href="/dashboard" className="mx-auto" onClick={closeMobile} title="KRIHS 국토연구원">

@@ -52,7 +52,6 @@ export default function LoginPage() {
               width={280}
               height={56}
               priority
-              unoptimized
               className="h-14 w-auto mx-auto"
             />
           </div>
@@ -90,7 +89,6 @@ export default function LoginPage() {
               width={200}
               height={40}
               priority
-              unoptimized
               className="h-10 w-auto"
             />
           </div>

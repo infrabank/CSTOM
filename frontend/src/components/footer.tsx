@@ -9,7 +9,6 @@ export default function Footer() {
           alt="CSTOM"
           width={160}
           height={32}
-          unoptimized
           className="h-8 w-auto"
         />
         <span className="text-xs text-text-muted">
