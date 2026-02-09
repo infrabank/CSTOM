@@ -105,7 +105,15 @@ export default function InspectionTasksPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">점검 작업</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">점검 작업</h1>
+        <Link
+          href="/inspections/tasks/new"
+          className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover text-sm"
+        >
+          점검 작업 등록
+        </Link>
+      </div>
 
       {error && (
         <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
