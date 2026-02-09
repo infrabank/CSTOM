@@ -19,7 +19,7 @@ export default function LoginPage() {
 
     try {
       await authApi.login({ email, password });
-      router.push("/contracts");
+      router.push("/dashboard");
     } catch (e: unknown) {
       const errorMessage = e instanceof Error ? e.message : "로그인에 실패했습니다";
       setError(errorMessage);
