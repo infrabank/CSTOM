@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { getAccessToken } from "@/lib/auth";
 
 interface Comment {
   id: number;
@@ -56,13 +57,14 @@ export default function TicketDetailPage() {
     const fetchTicket = async () => {
       try {
         setLoading(true);
+        const token = getAccessToken();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/`,
           {
             headers: {
               'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
-            credentials: 'include',
           }
         );
 
@@ -90,14 +92,15 @@ export default function TicketDetailPage() {
 
     setIsSubmitting(true);
     try {
+      const token = getAccessToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/add_comment/`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
           },
-          credentials: 'include',
           body: JSON.stringify({
             content: commentContent,
             is_internal: isInternal,
@@ -106,8 +109,21 @@ export default function TicketDetailPage() {
       );
 
       if (response.ok) {
-        const updatedTicket = await response.json();
-        setTicket(updatedTicket);
+        // Re-fetch the full ticket to get updated comments list
+        const ticketToken = getAccessToken();
+        const ticketRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              ...(ticketToken ? { 'Authorization': `Bearer ${ticketToken}` } : {}),
+            },
+          }
+        );
+        if (ticketRes.ok) {
+          const updatedTicket = await ticketRes.json();
+          setTicket(updatedTicket);
+        }
         setCommentContent("");
         setIsInternal(false);
       }

@@ -72,10 +72,7 @@ export default function NewTicketPage() {
     setError("");
 
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("cstom_access_token="))
-        ?.split("=")[1];
+      const token = getAccessToken();
 
       if (!token) {
         throw new Error("인증 토큰이 없습니다");
