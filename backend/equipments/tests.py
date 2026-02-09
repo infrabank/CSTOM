@@ -179,13 +179,13 @@ class EquipmentCheckOutTestCase(TestCase):
         self.token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-        # Create test data
+        # Create test data (pre-handover = non-operational, no PM approval needed)
         self.contract = Contract.objects.create(
-            name="Steady Contract",
+            name="Pre-Handover Contract",
             client_org="Client Corp",
             start_date="2024-01-01",
             end_date="2024-12-31",
-            status="steady",
+            status="pre-handover",
         )
 
         self.equipment = Equipment.objects.create(
@@ -283,13 +283,13 @@ class EquipmentCheckInTestCase(TestCase):
         self.token = response.data["access"]
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-        # Create test data
+        # Create test data (pre-handover = non-operational, no PM approval needed)
         self.contract = Contract.objects.create(
-            name="Steady Contract",
+            name="Pre-Handover Contract",
             client_org="Client Corp",
             start_date="2024-01-01",
             end_date="2024-12-31",
-            status="steady",
+            status="pre-handover",
         )
 
         self.equipment = Equipment.objects.create(
@@ -364,7 +364,7 @@ class EquipmentTransactionHistoryTestCase(TestCase):
             client_org="Test Client",
             start_date="2024-01-01",
             end_date="2024-12-31",
-            status="steady",
+            status="pre-handover",
         )
 
         self.equipment = Equipment.objects.create(
@@ -401,7 +401,7 @@ class EquipmentTransactionHistoryTestCase(TestCase):
             f"/api/v1/equipments/{self.equipment.id}/custody-history/"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("equipment", response.data)
+        self.assertIn("equipment_id", response.data)
         self.assertIn("transactions", response.data)
 
 
