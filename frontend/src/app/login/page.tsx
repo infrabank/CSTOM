@@ -45,7 +45,7 @@ export default function LoginPage() {
         </div>
 
         <div className="relative z-10 text-center max-w-md">
-          <div className="mb-8">
+          <div className="mb-8 bg-white rounded-lg px-6 py-3 inline-block">
             <Image
               src="/images/ci_21.jpg"
               alt="KRIHS 국토연구원"
@@ -53,14 +53,14 @@ export default function LoginPage() {
               height={56}
               priority
               unoptimized
-              className="h-14 w-auto mx-auto brightness-0 invert"
+              className="h-14 w-auto mx-auto"
             />
           </div>
           <h1 className="text-3xl font-bold text-text-on-primary mb-4">
-            클라우드 시스템 운영 관리
+            전산 유지보수 관리시스템
           </h1>
           <p className="text-text-on-primary/70 text-lg leading-relaxed">
-            CSTOM - Cloud System Total Operation Management
+            CSTOM - Computer System Total Operation Management
           </p>
           <div className="mt-12 flex items-center gap-6 justify-center text-text-on-primary/50 text-sm">
             <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export default function LoginPage() {
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
               </svg>
-              <span>클라우드 기반</span>
+              <span>전산 유지보수</span>
             </div>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
           </div>
 
           <div className="lg:hidden text-center mb-6">
-            <h1 className="text-xl font-bold text-text">클라우드 시스템 운영 관리</h1>
+            <h1 className="text-xl font-bold text-text">전산 유지보수 관리시스템</h1>
             <p className="text-sm text-text-muted mt-1">CSTOM</p>
           </div>
 
@@ -161,7 +161,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-8 text-center text-xs text-text-muted">
-            국토연구원 CSTOM 시스템
+            국토연구원 전산 유지보수 관리시스템
           </p>
         </div>
       </div>
