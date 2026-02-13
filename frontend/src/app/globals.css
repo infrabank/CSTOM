@@ -100,6 +100,12 @@ body {
   }
 }
 
+/* === QR Scanner animation === */
+@keyframes qr-scan-line {
+  0%, 100% { top: 0.5rem; }
+  50% { top: calc(100% - 0.5rem); }
+}
+
 /* === Print styles for single-page PDF export === */
 @media print {
   @page {
