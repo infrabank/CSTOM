@@ -41,7 +41,9 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
   const lastResultRef = useRef<string>('');
   const lastScanTimeRef = useRef<number>(0);
   const onScanRef = useRef(onScan);
-  onScanRef.current = onScan;
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
 
   const handleResult = useCallback((value: string) => {
     const now = Date.now();
