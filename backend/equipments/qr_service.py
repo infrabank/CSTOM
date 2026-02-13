@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 
 def generate_equipment_qr(
-    equipment_id: int, base_url: str = "https://cstom.example.com"
+    equipment_id: int, base_url: str = "https://cstom.kr"
 ) -> HttpResponse:
     """
     Generate QR code for equipment.

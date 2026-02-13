@@ -45,7 +45,10 @@ SECRET_KEY = _secret_key
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [
-    h.strip() for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+    h.strip()
+    for h in os.getenv(
+        "ALLOWED_HOSTS", "localhost,127.0.0.1,cstom.kr,www.cstom.kr"
+    ).split(",")
 ]
 
 
@@ -220,7 +223,10 @@ SIMPLE_JWT = {
 # CORS
 CORS_ALLOWED_ORIGINS = [
     o.strip()
-    for o in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+    for o in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:3000,https://cstom.kr,https://www.cstom.kr",
+    ).split(",")
     if o.strip()
 ]
 CORS_ALLOW_CREDENTIALS = True
@@ -234,7 +240,7 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@cstom.example.com")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@cstom.kr")
 
 # Security settings for production
 if not DEBUG:
