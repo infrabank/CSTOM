@@ -8,6 +8,28 @@ interface QRScannerProps {
   onError?: (error: string) => void;
 }
 
+interface DetectedBarcode {
+  rawValue: string;
+}
+
+type BarcodeDetectorInstance = {
+  detect: (source: HTMLVideoElement) => Promise<DetectedBarcode[]>;
+};
+
+function hasNativeBarcodeDetector(): boolean {
+  return typeof window !== 'undefined' && 'BarcodeDetector' in window;
+}
+
+function createNativeDetector(): BarcodeDetectorInstance | null {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const Ctor = (window as any).BarcodeDetector;
+    return new Ctor({ formats: ['qr_code'] }) as BarcodeDetectorInstance;
+  } catch {
+    return null;
+  }
+}
+
 export default function QRScanner({ onScan, onError }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -51,7 +73,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
       setCameraInfo('');
       lastResultRef.current = '';
 
-      // Step 1: Get back camera with highest possible resolution
+      // 1. Camera stream - high resolution for better QR detection
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: 'environment' },
@@ -65,7 +87,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
       const track = stream.getVideoTracks()[0];
       const settings = track.getSettings();
 
-      // Step 2: Try to apply continuous autofocus
+      // 2. Continuous autofocus
       let focusApplied = false;
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -76,51 +98,65 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
           focusApplied = true;
         }
       } catch {
-        // Not supported - device autofocus will handle it
+        // Not supported
       }
 
-      setCameraInfo(
-        `${settings.width}x${settings.height} | ` +
-        `${track.label?.split(',')[0] || 'Camera'} | ` +
-        `AF: ${focusApplied ? 'continuous' : 'auto'}`
-      );
-
-      // Step 3: Attach to video and start playback
+      // 3. Attach to video
       const video = videoRef.current;
       if (!video) return;
-
       video.srcObject = stream;
       video.setAttribute('playsinline', 'true');
       await video.play();
       setIsScanning(true);
 
-      // Step 4: Canvas-based frame extraction + jsQR decode loop
+      // 4. Choose decoder: native BarcodeDetector (best) or jsQR (fallback)
+      const useNative = hasNativeBarcodeDetector();
+      const nativeDetector = useNative ? createNativeDetector() : null;
+      const decoderName = nativeDetector ? 'BarcodeDetector' : 'jsQR';
+
+      setCameraInfo(
+        `${settings.width}x${settings.height} | ` +
+        `AF: ${focusApplied ? 'continuous' : 'auto'} | ` +
+        decoderName
+      );
+
+      // Canvas setup (needed for jsQR fallback, also useful for native on some devices)
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext('2d', { willReadFrequently: true });
       if (!ctx) return;
 
-      const scanFrame = () => {
+      // 5. Decode loop
+      const scanFrame = async () => {
         if (!streamRef.current || !video.videoWidth) {
           rafRef.current = requestAnimationFrame(scanFrame);
           return;
         }
 
-        // Match canvas to actual video resolution
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        // Draw current video frame to canvas
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Extract pixel data and run jsQR decoder
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'dontInvert',
-        });
-
-        if (code?.data) {
-          handleResult(code.data);
+        if (nativeDetector) {
+          // --- Native BarcodeDetector path (best performance) ---
+          // Processes video element directly, no canvas copy needed
+          try {
+            const barcodes = await nativeDetector.detect(video);
+            if (barcodes.length > 0 && barcodes[0].rawValue) {
+              handleResult(barcodes[0].rawValue);
+            }
+          } catch {
+            // Detection error on this frame - skip
+          }
+        } else {
+          // --- jsQR fallback path ---
+          // Requires canvas pixel extraction
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert',
+          });
+          if (code?.data) {
+            handleResult(code.data);
+          }
         }
 
         rafRef.current = requestAnimationFrame(scanFrame);
@@ -145,7 +181,6 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
 
   return (
     <div className="space-y-4">
-      {/* Hidden canvas for pixel extraction */}
       <canvas ref={canvasRef} className="hidden" />
 
       {/* Camera viewport */}
@@ -158,7 +193,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
           autoPlay
         />
 
-        {/* Viewfinder overlay */}
+        {/* Viewfinder */}
         {isScanning && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-56 h-56 border-2 border-white/50 rounded-lg relative">
@@ -174,7 +209,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
           </div>
         )}
 
-        {/* Camera info badge */}
+        {/* Camera info */}
         {isScanning && cameraInfo && (
           <div className="absolute bottom-2 left-2 right-2 text-center">
             <span className="inline-block px-2 py-0.5 bg-black/60 text-white/80 text-[10px] rounded">
@@ -183,7 +218,7 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
           </div>
         )}
 
-        {/* Idle placeholder */}
+        {/* Idle */}
         {!isScanning && !error && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center text-white/60">
@@ -222,7 +257,6 @@ export default function QRScanner({ onScan, onError }: QRScannerProps) {
         )}
       </div>
 
-      {/* Tips */}
       {isScanning && (
         <p className="text-center text-xs text-gray-400">
           QR 코드를 프레임 안에 맞춰주세요. 초점이 안 맞으면 거리를 조절해보세요.
