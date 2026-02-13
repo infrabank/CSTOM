@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
-    "@zxing/browser": "^0.1.5",
-    "@zxing/library": "^0.21.3",
+    "jsqr": "^1.4.0",
     "next": "15.5.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
