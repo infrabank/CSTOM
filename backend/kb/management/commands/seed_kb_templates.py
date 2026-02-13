@@ -8,260 +8,260 @@ from kb.models import KBCategory, KBTemplate
 # fmt: off
 CATEGORIES = [
     {
-        "name": "Hardware",
-        "description": "Hardware related issues and troubleshooting",
+        "name": "하드웨어",
+        "description": "하드웨어 관련 장애 및 문제 해결",
     },
     {
-        "name": "Software",
-        "description": "Software errors, configuration, and application issues",
+        "name": "소프트웨어",
+        "description": "소프트웨어 오류, 설정 및 애플리케이션 문제",
     },
     {
-        "name": "Network",
-        "description": "Network connectivity, routing, and communication issues",
+        "name": "네트워크",
+        "description": "네트워크 연결, 라우팅 및 통신 문제",
     },
     {
-        "name": "Security",
-        "description": "Security incidents, vulnerabilities, and access issues",
+        "name": "보안",
+        "description": "보안 사고, 취약점 및 접근 권한 문제",
     },
     {
-        "name": "Performance",
-        "description": "Performance degradation, optimization, and capacity issues",
+        "name": "성능",
+        "description": "성능 저하, 최적화 및 용량 문제",
     },
     {
-        "name": "General",
-        "description": "General troubleshooting and operational procedures",
+        "name": "일반",
+        "description": "일반 문제 해결 및 운영 절차",
     },
 ]
 
 TEMPLATES = [
-    # -- Hardware Failure --
+    # -- 하드웨어 장애 --
     {
-        "name": "Hardware Failure Report",
+        "name": "하드웨어 장애 보고서",
         "incident_type": "hardware_failure",
-        "category_name": "Hardware",
+        "category_name": "하드웨어",
         "template_content": (
-            "# Hardware Failure Report\n\n"
-            "## Incident Summary\n"
-            "- **Equipment**: \n"
-            "- **Location**: \n"
-            "- **Reported by**: \n"
-            "- **Date/Time**: \n\n"
-            "## Symptoms\n"
-            "Describe the observed symptoms:\n"
+            "# 하드웨어 장애 보고서\n\n"
+            "## 사고 개요\n"
+            "- **장비명**: \n"
+            "- **설치 위치**: \n"
+            "- **보고자**: \n"
+            "- **발생 일시**: \n\n"
+            "## 증상\n"
+            "관찰된 증상을 기술하세요:\n"
             "1. \n"
             "2. \n\n"
-            "## Root Cause\n"
-            "Identified root cause of the hardware failure:\n\n"
-            "## Impact\n"
-            "- **Affected Systems**: \n"
-            "- **Downtime Duration**: \n"
-            "- **Users Affected**: \n\n"
-            "## Resolution\n"
-            "Steps taken to resolve:\n"
+            "## 원인 분석\n"
+            "하드웨어 장애의 근본 원인:\n\n"
+            "## 영향 범위\n"
+            "- **영향받은 시스템**: \n"
+            "- **중단 시간**: \n"
+            "- **영향받은 사용자**: \n\n"
+            "## 조치 내역\n"
+            "문제 해결을 위해 수행한 단계:\n"
             "1. \n"
             "2. \n"
             "3. \n\n"
-            "## Prevention\n"
-            "Recommendations to prevent recurrence:\n"
+            "## 재발 방지 대책\n"
+            "재발 방지를 위한 권고사항:\n"
             "- \n"
         ),
     },
-    # -- Software Error --
+    # -- 소프트웨어 오류 --
     {
-        "name": "Software Error Troubleshooting",
+        "name": "소프트웨어 오류 해결",
         "incident_type": "software_error",
-        "category_name": "Software",
+        "category_name": "소프트웨어",
         "template_content": (
-            "# Software Error Troubleshooting\n\n"
-            "## Error Overview\n"
-            "- **Application**: \n"
-            "- **Environment**: (Production / Staging / Development)\n"
-            "- **Error Code/Message**: \n"
-            "- **First Occurrence**: \n\n"
-            "## Reproduction Steps\n"
+            "# 소프트웨어 오류 해결\n\n"
+            "## 오류 개요\n"
+            "- **애플리케이션**: \n"
+            "- **환경**: (운영 / 스테이징 / 개발)\n"
+            "- **오류 코드/메시지**: \n"
+            "- **최초 발생 일시**: \n\n"
+            "## 재현 절차\n"
             "1. \n"
             "2. \n"
             "3. \n\n"
-            "## Expected vs Actual Behavior\n"
-            "- **Expected**: \n"
-            "- **Actual**: \n\n"
-            "## Root Cause Analysis\n"
-            "Describe the identified root cause:\n\n"
-            "## Fix Applied\n"
+            "## 기대 동작 vs 실제 동작\n"
+            "- **기대 동작**: \n"
+            "- **실제 동작**: \n\n"
+            "## 원인 분석\n"
+            "확인된 근본 원인을 기술하세요:\n\n"
+            "## 적용된 수정 사항\n"
             "```\n"
-            "Paste relevant code changes or configuration updates here\n"
+            "관련 코드 변경 또는 설정 업데이트를 여기에 붙여넣으세요\n"
             "```\n\n"
-            "## Verification\n"
-            "How the fix was verified:\n"
-            "- [ ] Unit tests passed\n"
-            "- [ ] Integration tests passed\n"
-            "- [ ] Manual verification completed\n\n"
-            "## Related Artifacts\n"
-            "- Ticket/Issue: \n"
-            "- PR/Commit: \n"
+            "## 검증\n"
+            "수정 사항 검증 방법:\n"
+            "- [ ] 단위 테스트 통과\n"
+            "- [ ] 통합 테스트 통과\n"
+            "- [ ] 수동 검증 완료\n\n"
+            "## 관련 자료\n"
+            "- 티켓/이슈: \n"
+            "- PR/커밋: \n"
         ),
     },
-    # -- Network Issue --
+    # -- 네트워크 장애 --
     {
-        "name": "Network Issue Diagnosis",
+        "name": "네트워크 장애 진단",
         "incident_type": "network_issue",
-        "category_name": "Network",
+        "category_name": "네트워크",
         "template_content": (
-            "# Network Issue Diagnosis\n\n"
-            "## Incident Details\n"
-            "- **Affected Network Segment**: \n"
-            "- **Severity**: (Critical / High / Medium / Low)\n"
-            "- **Start Time**: \n"
-            "- **Resolution Time**: \n\n"
-            "## Symptoms\n"
-            "- [ ] Complete connectivity loss\n"
-            "- [ ] Intermittent connectivity\n"
-            "- [ ] High latency\n"
-            "- [ ] Packet loss\n"
-            "- [ ] DNS resolution failure\n"
-            "- [ ] Other: \n\n"
-            "## Diagnostic Steps\n"
+            "# 네트워크 장애 진단\n\n"
+            "## 사고 상세\n"
+            "- **영향받은 네트워크 구간**: \n"
+            "- **심각도**: (긴급 / 높음 / 보통 / 낮음)\n"
+            "- **발생 시각**: \n"
+            "- **해결 시각**: \n\n"
+            "## 증상\n"
+            "- [ ] 완전한 연결 끊김\n"
+            "- [ ] 간헐적 연결 불안정\n"
+            "- [ ] 높은 지연 시간\n"
+            "- [ ] 패킷 손실\n"
+            "- [ ] DNS 해석 실패\n"
+            "- [ ] 기타: \n\n"
+            "## 진단 절차\n"
             "1. \n"
             "2. \n"
             "3. \n\n"
-            "## Findings\n"
-            "Describe diagnostic results:\n\n"
-            "## Resolution\n"
-            "Steps taken to restore connectivity:\n"
+            "## 진단 결과\n"
+            "진단 결과를 기술하세요:\n\n"
+            "## 조치 내역\n"
+            "연결 복구를 위해 수행한 단계:\n"
             "1. \n"
             "2. \n\n"
-            "## Monitoring\n"
-            "Post-resolution monitoring actions:\n"
+            "## 사후 모니터링\n"
+            "해결 후 모니터링 조치:\n"
             "- \n"
         ),
     },
-    # -- Security Incident --
+    # -- 보안 사고 --
     {
-        "name": "Security Incident Response",
+        "name": "보안 사고 대응",
         "incident_type": "security_incident",
-        "category_name": "Security",
+        "category_name": "보안",
         "template_content": (
-            "# Security Incident Response\n\n"
-            "## Classification\n"
-            "- **Severity**: (Critical / High / Medium / Low)\n"
-            "- **Type**: (Unauthorized Access / Malware / Data Breach / Phishing / Other)\n"
-            "- **Detection Method**: \n"
-            "- **Date Detected**: \n\n"
-            "## Scope of Impact\n"
-            "- **Affected Systems**: \n"
-            "- **Affected Data**: \n"
-            "- **Affected Users**: \n\n"
-            "## Containment Actions\n"
-            "Immediate actions taken to contain the incident:\n"
+            "# 보안 사고 대응\n\n"
+            "## 분류\n"
+            "- **심각도**: (긴급 / 높음 / 보통 / 낮음)\n"
+            "- **유형**: (비인가 접근 / 악성코드 / 데이터 유출 / 피싱 / 기타)\n"
+            "- **탐지 방법**: \n"
+            "- **탐지 일시**: \n\n"
+            "## 영향 범위\n"
+            "- **영향받은 시스템**: \n"
+            "- **영향받은 데이터**: \n"
+            "- **영향받은 사용자**: \n\n"
+            "## 초동 대응\n"
+            "사고 억제를 위해 취한 즉각적 조치:\n"
             "1. \n"
             "2. \n\n"
-            "## Investigation\n"
-            "Findings from the investigation:\n\n"
-            "## Eradication & Recovery\n"
-            "Steps taken to remove the threat and restore operations:\n"
+            "## 조사 결과\n"
+            "조사를 통해 확인된 사항:\n\n"
+            "## 제거 및 복구\n"
+            "위협 제거 및 운영 복구를 위해 수행한 단계:\n"
             "1. \n"
             "2. \n\n"
-            "## Lessons Learned\n"
-            "- What went well: \n"
-            "- What could be improved: \n"
-            "- Action items: \n"
+            "## 교훈\n"
+            "- 잘된 점: \n"
+            "- 개선할 점: \n"
+            "- 후속 조치: \n"
         ),
     },
-    # -- Performance Degradation --
+    # -- 성능 저하 --
     {
-        "name": "Performance Degradation Analysis",
+        "name": "성능 저하 분석",
         "incident_type": "performance_degradation",
-        "category_name": "Performance",
+        "category_name": "성능",
         "template_content": (
-            "# Performance Degradation Analysis\n\n"
-            "## Overview\n"
-            "- **System/Service**: \n"
-            "- **Metric Affected**: (Response Time / Throughput / CPU / Memory / Disk I/O)\n"
-            "- **Baseline Value**: \n"
-            "- **Degraded Value**: \n"
-            "- **Duration**: \n\n"
-            "## Timeline\n"
-            "| Time | Event |\n"
+            "# 성능 저하 분석\n\n"
+            "## 개요\n"
+            "- **시스템/서비스**: \n"
+            "- **영향받은 지표**: (응답 시간 / 처리량 / CPU / 메모리 / 디스크 I/O)\n"
+            "- **기준값**: \n"
+            "- **저하값**: \n"
+            "- **지속 시간**: \n\n"
+            "## 타임라인\n"
+            "| 시각 | 이벤트 |\n"
             "| --- | --- |\n"
-            "| | Issue detected |\n"
-            "| | Investigation started |\n"
-            "| | Root cause identified |\n"
-            "| | Fix applied |\n"
-            "| | Performance restored |\n\n"
-            "## Root Cause\n"
-            "Identified cause of performance degradation:\n\n"
-            "## Optimization Applied\n"
-            "Changes made to restore performance:\n"
+            "| | 문제 감지 |\n"
+            "| | 조사 시작 |\n"
+            "| | 원인 파악 |\n"
+            "| | 수정 적용 |\n"
+            "| | 성능 복구 |\n\n"
+            "## 원인 분석\n"
+            "성능 저하의 근본 원인:\n\n"
+            "## 적용된 최적화\n"
+            "성능 복구를 위해 변경한 사항:\n"
             "1. \n"
             "2. \n\n"
-            "## Results\n"
-            "Performance metrics after optimization:\n"
-            "- Before: \n"
-            "- After: \n\n"
-            "## Monitoring Updates\n"
-            "New alerts or thresholds configured:\n"
+            "## 결과\n"
+            "최적화 후 성능 지표:\n"
+            "- 이전: \n"
+            "- 이후: \n\n"
+            "## 모니터링 업데이트\n"
+            "새로 설정한 알림 또는 임계치:\n"
             "- \n"
         ),
     },
-    # -- General / Other --
+    # -- 일반 / 기타 --
     {
-        "name": "General Troubleshooting Guide",
+        "name": "일반 문제 해결 가이드",
         "incident_type": "other",
-        "category_name": "General",
+        "category_name": "일반",
         "template_content": (
-            "# General Troubleshooting Guide\n\n"
-            "## Problem Description\n"
-            "Clearly describe the issue:\n\n"
-            "## Environment\n"
-            "- **System/Service**: \n"
-            "- **Version**: \n"
-            "- **Configuration**: \n\n"
-            "## Steps to Reproduce\n"
+            "# 일반 문제 해결 가이드\n\n"
+            "## 문제 설명\n"
+            "문제를 명확하게 기술하세요:\n\n"
+            "## 환경 정보\n"
+            "- **시스템/서비스**: \n"
+            "- **버전**: \n"
+            "- **설정**: \n\n"
+            "## 재현 절차\n"
             "1. \n"
             "2. \n"
             "3. \n\n"
-            "## Investigation\n"
-            "Diagnostic steps performed:\n"
+            "## 조사 내역\n"
+            "수행한 진단 단계:\n"
             "1. \n"
             "2. \n\n"
-            "## Solution\n"
-            "Resolution steps:\n"
+            "## 해결 방법\n"
+            "문제 해결 절차:\n"
             "1. \n"
             "2. \n\n"
-            "## Notes\n"
-            "Additional context or references:\n"
+            "## 비고\n"
+            "추가 맥락 또는 참고 자료:\n"
             "- \n"
         ),
     },
     {
-        "name": "Standard Operating Procedure",
+        "name": "표준 운영 절차 (SOP)",
         "incident_type": "other",
-        "category_name": "General",
+        "category_name": "일반",
         "template_content": (
-            "# Standard Operating Procedure\n\n"
-            "## Purpose\n"
-            "Describe the purpose of this procedure:\n\n"
-            "## Scope\n"
-            "Who and what this procedure applies to:\n\n"
-            "## Prerequisites\n"
+            "# 표준 운영 절차 (SOP)\n\n"
+            "## 목적\n"
+            "본 절차의 목적을 기술하세요:\n\n"
+            "## 적용 범위\n"
+            "본 절차의 적용 대상 및 범위:\n\n"
+            "## 사전 요건\n"
             "- \n"
             "- \n\n"
-            "## Procedure\n"
-            "### Step 1: \n"
-            "Description:\n\n"
-            "### Step 2: \n"
-            "Description:\n\n"
-            "### Step 3: \n"
-            "Description:\n\n"
-            "## Verification\n"
-            "How to verify the procedure was completed successfully:\n"
+            "## 절차\n"
+            "### 1단계: \n"
+            "설명:\n\n"
+            "### 2단계: \n"
+            "설명:\n\n"
+            "### 3단계: \n"
+            "설명:\n\n"
+            "## 완료 확인\n"
+            "절차가 정상 완료되었는지 확인하는 방법:\n"
             "- [ ] \n"
             "- [ ] \n\n"
-            "## Rollback Plan\n"
-            "Steps to revert if something goes wrong:\n"
+            "## 롤백 계획\n"
+            "문제 발생 시 복구 절차:\n"
             "1. \n"
             "2. \n\n"
-            "## References\n"
+            "## 참고 자료\n"
             "- \n"
         ),
     },
