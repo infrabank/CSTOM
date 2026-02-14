@@ -99,4 +99,4 @@ class ChangeIncident(models.Model):
             raise ValidationError("resolved_at must be >= occurred_at")
 
     def delete(self, *args, **kwargs):
-        raise ValidationError("변경/장애 기록은 삭제할 수 없습니다.")
+        super().delete(*args, **kwargs)
