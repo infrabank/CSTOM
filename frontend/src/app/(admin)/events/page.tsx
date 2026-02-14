@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface Event {
@@ -16,9 +17,12 @@ interface Event {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-async function getEvents(): Promise<Event[]> {
+async function getEvents(token?: string): Promise<Event[]> {
   try {
-    const res = await fetch(`${API_URL}/v1/events/`, { cache: "no-store" });
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+    const res = await fetch(`${API_URL}/v1/events/`, { cache: "no-store", headers });
     if (!res.ok) return [];
     const data = await res.json();
     return data.results || [];
@@ -38,7 +42,9 @@ const TYPE_COLORS: Record<string, string> = {
 };
 
 export default async function EventsPage() {
-  const events = await getEvents();
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+  const events = await getEvents(token);
 
   return (
     <div>

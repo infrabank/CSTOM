@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import EventLinkButton from "./event-link-button";
 import EventDeleteButton from "./event-delete-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -25,9 +26,12 @@ interface Event {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-async function getEvent(id: number): Promise<Event | null> {
+async function getEvent(id: number, token?: string): Promise<Event | null> {
   try {
-    const res = await fetch(`${API_URL}/v1/events/${id}/`, { cache: "no-store" });
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+    const res = await fetch(`${API_URL}/v1/events/${id}/`, { cache: "no-store", headers });
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -52,7 +56,9 @@ export default async function EventDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const event = await getEvent(id);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
+  const event = await getEvent(id, token);
 
   if (!event) {
     notFound();
