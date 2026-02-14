@@ -72,7 +72,7 @@ class CalculateSlaComplianceRateTest(TestCase):
         )
         self.ct = ContentType.objects.get_for_model(Contract)
         self.start = timezone.now() - timedelta(days=7)
-        self.end = timezone.now()
+        self.end = timezone.now() + timedelta(minutes=1)
 
     def _create_metric(self, response_met, resolution_met):
         """Create SLAMetric without triggering auto-calculation."""
@@ -121,7 +121,7 @@ class CalculateMttrTest(TestCase):
             end_date=date(2025, 12, 31),
         )
         self.start = timezone.now() - timedelta(days=7)
-        self.end = timezone.now()
+        self.end = timezone.now() + timedelta(minutes=1)
 
     def test_no_incidents_returns_zero(self):
         mttr = calculate_mttr(self.start, self.end)
@@ -207,7 +207,7 @@ class CalculateInspectionCompletionRateTest(TestCase):
             assigned_to=self.user,
         )
         self.start = timezone.now() - timedelta(days=7)
-        self.end = timezone.now()
+        self.end = timezone.now() + timedelta(minutes=1)
 
     def test_no_tasks_returns_zero(self):
         rate = calculate_inspection_completion_rate(self.start, self.end)
@@ -264,7 +264,7 @@ class GetTaskStatusSummaryTest(TestCase):
             assigned_to=self.user,
         )
         self.start = timezone.now() - timedelta(days=7)
-        self.end = timezone.now()
+        self.end = timezone.now() + timedelta(minutes=1)
 
     def test_empty_returns_zeros(self):
         summary = get_task_status_summary(self.start, self.end)

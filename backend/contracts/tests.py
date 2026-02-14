@@ -112,11 +112,11 @@ class ContractCRUDTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["client_org"], "Patched Client")
 
-    def test_delete_contract(self):
-        """Test deleting a contract."""
+    def test_delete_contract_blocked(self):
+        """Test that contract deletion is blocked (FR-013 immutability)."""
         response = self.client.delete(f"/api/v1/contracts/{self.contract.id}/")
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Contract.objects.filter(id=self.contract.id).exists())
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertTrue(Contract.objects.filter(id=self.contract.id).exists())
 
     def test_create_contract_unauthenticated(self):
         """Test that unauthenticated users cannot create contracts."""
