@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from contracts.models import Contract
+from events.models import ChangeIncident
 
 
 class Task(models.Model):
@@ -33,6 +34,14 @@ class Task(models.Model):
         Contract,
         on_delete=models.CASCADE,
         related_name="tasks",
+    )
+    related_incident = models.ForeignKey(
+        ChangeIncident,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tasks",
+        help_text="연관 장애/변경 이벤트",
     )
     task_type = models.CharField(max_length=20, choices=TASK_TYPES)
     impact_level = models.CharField(

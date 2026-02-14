@@ -9,6 +9,9 @@ class TaskSerializer(serializers.ModelSerializer):
     """Serializer for Task model."""
 
     contract_name = serializers.CharField(source="contract.name", read_only=True)
+    related_incident_title = serializers.CharField(
+        source="related_incident.title", read_only=True, default=None
+    )
 
     class Meta:
         model = Task
@@ -24,6 +27,8 @@ class TaskSerializer(serializers.ModelSerializer):
             "approved_at",
             "title",
             "description",
+            "related_incident",
+            "related_incident_title",
             "created_at",
             "updated_at",
         ]
@@ -81,4 +86,5 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             "impact_level",
             "title",
             "description",
+            "related_incident",
         ]

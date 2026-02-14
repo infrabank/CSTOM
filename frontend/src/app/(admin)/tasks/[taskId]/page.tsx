@@ -114,9 +114,21 @@ export default async function TaskDetailPage({ params }: PageProps) {
         </div>
 
         {task.description && (
-          <div>
+          <div className="mb-4">
             <h3 className="text-sm font-medium text-text mb-1">상세 내용</h3>
             <p className="text-text whitespace-pre-wrap">{task.description}</p>
+          </div>
+        )}
+
+        {task.related_incident && (
+          <div className="p-4 bg-surface-sunken rounded-lg">
+            <h3 className="text-sm font-medium text-text mb-1">연관 이벤트</h3>
+            <Link
+              href={`/events/${task.related_incident}`}
+              className="text-accent hover:underline"
+            >
+              {task.related_incident_title || `이벤트 #${task.related_incident}`}
+            </Link>
           </div>
         )}
       </div>

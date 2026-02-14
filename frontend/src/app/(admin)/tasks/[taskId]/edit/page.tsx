@@ -14,6 +14,12 @@ interface Contract {
   name: string;
 }
 
+interface IncidentOption {
+  id: number;
+  title: string;
+  record_type: string;
+}
+
 interface Task {
   id: number;
   contract: number;
@@ -23,6 +29,7 @@ interface Task {
   approval_required: boolean;
   title: string;
   description: string;
+  related_incident: number | null;
 }
 
 const TASK_TYPES = [
@@ -47,6 +54,7 @@ export default function EditTaskPage({ params }: PageProps) {
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [incidents, setIncidents] = useState<IncidentOption[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -70,6 +78,18 @@ export default function EditTaskPage({ params }: PageProps) {
         if (contractsRes.ok) {
           const contractsData = await contractsRes.json();
           setContracts(contractsData.results || []);
+        }
+
+        // Load incidents for task's contract
+        if (taskData.contract) {
+          const incRes = await fetch(
+            `${API_URL}/v1/events/?contract=${taskData.contract}`,
+            { cache: "no-store", headers }
+          );
+          if (incRes.ok) {
+            const incData = await incRes.json();
+            setIncidents(incData.results || []);
+          }
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "작업 정보를 불러오지 못했습니다");
@@ -221,6 +241,30 @@ export default function EditTaskPage({ params }: PageProps) {
                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
              />
            </div>
+
+          {incidents.length > 0 && (
+            <div>
+              <label htmlFor="related_incident" className="block text-sm font-medium text-text mb-1">
+                연관 이벤트
+              </label>
+              <select
+                id="related_incident"
+                name="related_incident"
+                defaultValue={task.related_incident?.toString() || ""}
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                <option value="">선택 안함</option>
+                {incidents.map((inc) => (
+                  <option key={inc.id} value={inc.id}>
+                    [{inc.record_type === "incident" ? "장애" : "변경"}] {inc.title}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-text-secondary">
+                이 작업과 연관된 장애/변경 이벤트를 선택합니다.
+              </p>
+            </div>
+          )}
 
           {task.approval_required && (
             <p className="text-sm text-warning">

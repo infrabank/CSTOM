@@ -16,16 +16,21 @@ interface TaskCreateInput {
   impact_level: string;
   title: string;
   description?: string;
+  related_incident?: number | null;
 }
 
 export async function createTask(formData: FormData) {
   const token = await getToken();
+  const relatedIncidentRaw = formData.get("related_incident") as string;
   const data: TaskCreateInput = {
     contract: parseInt(formData.get("contract") as string, 10),
     task_type: formData.get("task_type") as string,
     impact_level: formData.get("impact_level") as string,
     title: formData.get("title") as string,
     description: (formData.get("description") as string) || undefined,
+    related_incident: relatedIncidentRaw
+      ? parseInt(relatedIncidentRaw, 10)
+      : null,
   };
 
   try {
@@ -59,12 +64,16 @@ export async function createTask(formData: FormData) {
 
 export async function updateTask(id: number, formData: FormData) {
   const token = await getToken();
+  const updateRelatedIncidentRaw = formData.get("related_incident") as string;
   const data: Partial<TaskCreateInput> = {
     contract: parseInt(formData.get("contract") as string, 10),
     task_type: formData.get("task_type") as string,
     impact_level: formData.get("impact_level") as string,
     title: formData.get("title") as string,
     description: (formData.get("description") as string) || undefined,
+    related_incident: updateRelatedIncidentRaw
+      ? parseInt(updateRelatedIncidentRaw, 10)
+      : null,
   };
 
   try {

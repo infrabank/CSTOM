@@ -314,6 +314,8 @@ export interface Task {
   approved_at: string | null;
   title: string;
   description: string;
+  related_incident: number | null;
+  related_incident_title: string | null;
   created_at: string;
   updated_at: string;
 }

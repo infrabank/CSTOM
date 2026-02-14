@@ -22,7 +22,7 @@ from .services import TaskService
 class TaskViewSet(ModelViewSet):
     """ViewSet for Task CRUD operations."""
 
-    queryset = Task.objects.select_related("contract").all()
+    queryset = Task.objects.select_related("contract", "related_incident").all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
