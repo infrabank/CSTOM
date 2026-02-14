@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Breadcrumb from "@/components/ui/breadcrumb";
@@ -24,11 +24,13 @@ interface KBArticle {
 
 export default function KBArticleDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const articleId = params.articleId as string;
   const [article, setArticle] = useState<KBArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -95,6 +97,30 @@ export default function KBArticleDetailPage() {
       }
     } catch (err) {
       console.error('Failed to mark as helpful:', err);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('이 아티클을 삭제하시겠습니까?')) return;
+    setIsDeleting(true);
+    try {
+      const token = getAccessToken();
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/`,
+        {
+          method: 'DELETE',
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error('삭제에 실패했습니다');
+      }
+      router.push('/kb');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '삭제에 실패했습니다');
+      setIsDeleting(false);
     }
   };
 
@@ -220,6 +246,13 @@ export default function KBArticleDetailPage() {
            >
              수정
            </Link>
+           <button
+             onClick={handleDelete}
+             disabled={isDeleting}
+             className="px-4 py-2 bg-danger text-text-on-accent rounded-md hover:bg-danger/90 transition-colors disabled:opacity-50"
+           >
+             {isDeleting ? '삭제 중...' : '삭제'}
+           </button>
            <Link
              href="/kb"
              className="px-4 py-2 border border-border text-text-secondary rounded-md hover:bg-surface-sunken transition-colors"
