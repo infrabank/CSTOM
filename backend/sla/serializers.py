@@ -3,7 +3,14 @@
 from rest_framework import serializers
 from django.db.models import Q, Count, Case, When, IntegerField
 
-from .models import SLADefinition, SLAMetric
+from .models import (
+    SLADefinition,
+    SLAMetric,
+    SLACategory,
+    SLAEvaluationItem,
+    SLAEvaluationReport,
+    SLAEvaluationScore,
+)
 from contracts.models import Contract
 
 
@@ -139,3 +146,186 @@ class ComplianceSummarySerializer(serializers.Serializer):
     non_compliant_metrics = serializers.IntegerField()
     overall_compliance_rate = serializers.FloatField()
     by_priority = serializers.DictField()
+
+
+class SLAEvaluationItemSerializer(serializers.ModelSerializer):
+    """Serializer for SLA evaluation items."""
+
+    category_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SLAEvaluationItem
+        fields = [
+            "id",
+            "category",
+            "item_number",
+            "name",
+            "weight",
+            "measurement_cycle",
+            "description",
+            "is_active",
+            "category_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def get_category_name(self, obj):
+        """Return the category name."""
+        return obj.category.name
+
+
+class SLACategorySerializer(serializers.ModelSerializer):
+    """Serializer for SLA categories with nested items."""
+
+    items = SLAEvaluationItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SLACategory
+        fields = [
+            "id",
+            "name",
+            "code",
+            "weight_percent",
+            "contract",
+            "display_order",
+            "is_active",
+            "items",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+
+class SLACategoryListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for SLA category lists."""
+
+    item_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SLACategory
+        fields = [
+            "id",
+            "name",
+            "code",
+            "weight_percent",
+            "contract",
+            "display_order",
+            "is_active",
+            "item_count",
+        ]
+
+    def get_item_count(self, obj):
+        """Return count of items in this category."""
+        return obj.items.count()
+
+
+class SLAEvaluationScoreSerializer(serializers.ModelSerializer):
+    """Serializer for SLA evaluation scores."""
+
+    item_name = serializers.SerializerMethodField()
+    item_weight = serializers.SerializerMethodField()
+    item_number = serializers.SerializerMethodField()
+    category_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SLAEvaluationScore
+        fields = [
+            "id",
+            "report",
+            "evaluation_item",
+            "service_level",
+            "score",
+            "system_name",
+            "occurrence_date",
+            "notes",
+            "item_name",
+            "item_weight",
+            "item_number",
+            "category_name",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "score", "created_at", "updated_at"]
+
+    def get_item_name(self, obj):
+        """Return the evaluation item name."""
+        return obj.evaluation_item.name
+
+    def get_item_weight(self, obj):
+        """Return the evaluation item weight."""
+        return obj.evaluation_item.weight
+
+    def get_item_number(self, obj):
+        """Return the evaluation item number."""
+        return obj.evaluation_item.item_number
+
+    def get_category_name(self, obj):
+        """Return the category name."""
+        return obj.evaluation_item.category.name
+
+
+class SLAEvaluationReportSerializer(serializers.ModelSerializer):
+    """Serializer for SLA evaluation reports with nested scores."""
+
+    contract_name = serializers.SerializerMethodField(read_only=True)
+    grade_display = serializers.SerializerMethodField()
+    scores = SLAEvaluationScoreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = SLAEvaluationReport
+        fields = [
+            "id",
+            "contract",
+            "contract_name",
+            "evaluation_period_start",
+            "evaluation_period_end",
+            "total_score",
+            "grade",
+            "grade_display",
+            "evaluator_notes",
+            "deduction_notes",
+            "is_finalized",
+            "scores",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "total_score", "grade", "created_at", "updated_at"]
+
+    def get_contract_name(self, obj):
+        """Return the contract name."""
+        return obj.contract.name
+
+    def get_grade_display(self, obj):
+        """Return the human-readable grade."""
+        return obj.get_grade_display()
+
+
+class SLAEvaluationReportListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for SLA evaluation report lists."""
+
+    contract_name = serializers.SerializerMethodField()
+    grade_display = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SLAEvaluationReport
+        fields = [
+            "id",
+            "contract",
+            "contract_name",
+            "evaluation_period_start",
+            "evaluation_period_end",
+            "total_score",
+            "grade",
+            "grade_display",
+            "is_finalized",
+            "created_at",
+        ]
+
+    def get_contract_name(self, obj):
+        """Return the contract name."""
+        return obj.contract.name
+
+    def get_grade_display(self, obj):
+        """Return the human-readable grade."""
+        return obj.get_grade_display()

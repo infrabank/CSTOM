@@ -8,8 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.pagination import PageNumberPagination
-
+from common.pagination import StandardPagination
 from common.permissions import IsPMOrAdmin, IsPMOrEngineer
 
 from .authorization import AuthorizationDeniedError
@@ -45,14 +44,6 @@ from .services import (
     CustodyHistoryService,
     CustodyHistoryFilters,
 )
-
-
-class StandardPagination(PageNumberPagination):
-    """Standard pagination for API responses."""
-
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
 
 
 class EquipmentViewSet(ModelViewSet):

@@ -1,5 +1,6 @@
 """Task model for work units tied to contracts."""
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from contracts.models import Contract
@@ -50,6 +51,9 @@ class Task(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["contract", "task_type"]),
+        ]
 
     def __str__(self):
         return f"{self.title} ({self.get_task_type_display()})"
@@ -70,3 +74,6 @@ class Task(models.Model):
                 self.approval_status = "not_required"
 
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("작업 기록은 삭제할 수 없습니다.")

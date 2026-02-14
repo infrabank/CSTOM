@@ -3,8 +3,6 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { reportsApi, Report } from "@/lib/api";
 import PdfDownloadButton from "../pdf-download-button";
-import DeleteButton from "../delete-button";
-
 const TYPE_LABELS: Record<string, string> = {
   monthly: "월간 보고서",
   incident: "장애 보고서",
@@ -60,7 +58,6 @@ export default async function ReportDetailPage({ params }: PageProps) {
              >
               수정
             </Link>
-            <DeleteButton reportId={report.id} />
             <PdfDownloadButton
               reportTitle={`${TYPE_LABELS[report.report_type] || report.report_type} - ${report.contract_name}`}
             />

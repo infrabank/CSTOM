@@ -20,10 +20,11 @@ class ReportViewSet(ModelViewSet):
 
     queryset = Report.objects.select_related("contract").all()
     serializer_class = ReportSerializer
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ["create", "update", "partial_update", "destroy"]:
+        if self.action in ["create", "update", "partial_update"]:
             return [IsPMOrAdmin()]
         return [ReadOnlyForCustomer()]
 

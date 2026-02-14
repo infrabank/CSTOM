@@ -1,5 +1,6 @@
 """Contract business logic services."""
 
+from django.db import transaction
 from django.db.models import QuerySet
 
 from common.errors import BusinessLogicError, ResourceNotFoundError
@@ -32,6 +33,7 @@ class ContractService:
             raise ResourceNotFoundError(f"Contract with id {contract_id} not found")
 
     @staticmethod
+    @transaction.atomic
     def create(data: dict) -> Contract:
         """Create a new contract."""
         scope_list = data.pop("scope_list", None)

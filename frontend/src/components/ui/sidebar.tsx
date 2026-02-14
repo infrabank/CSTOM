@@ -52,6 +52,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { label: "SOP", href: "/sop" },
       { label: "SLA", href: "/sla" },
+      { label: "SLA 평가", href: "/sla/evaluations" },
       { label: "지식베이스", href: "/kb" },
       { label: "보고서", href: "/reports" },
     ],
@@ -69,6 +70,8 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "장비관리", href: "/equipments" },
       { label: "사용자", href: "/users" },
       { label: "AI 예측", href: "/predictions" },
+      { label: "알림", href: "/notifications" },
+      { label: "감사로그", href: "/audit" },
       { label: "QR 스캔", href: "/scan" },
     ],
   },

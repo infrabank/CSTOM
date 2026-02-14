@@ -92,32 +92,3 @@ export async function updateReport(id: number, formData: FormData) {
     };
   }
 }
-
-export async function deleteReport(id: number) {
-  const token = await getToken();
-
-  try {
-    const res = await fetch(`${API_URL}/v1/reports/${id}/`, {
-      method: "DELETE",
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      return {
-        success: false,
-        error: err?.error?.message || err?.detail || "보고서 삭제에 실패했습니다",
-      };
-    }
-
-    revalidatePath("/reports");
-    return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "보고서 삭제에 실패했습니다",
-    };
-  }
-}

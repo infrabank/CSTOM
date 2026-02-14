@@ -50,6 +50,15 @@ jobs:
           SECURE_SSL_REDIRECT: 'False'
         run: python manage.py migrate --no-input
       
+      - name: Run system checks
+        working-directory: backend
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/cstom_test
+          SECRET_KEY: test-secret-key-for-ci
+          DEBUG: 'False'
+          SECURE_SSL_REDIRECT: 'False'
+        run: python manage.py check --deploy --fail-level WARNING
+
       - name: Run tests
         working-directory: backend
         env:
@@ -77,10 +86,14 @@ jobs:
         working-directory: frontend
         run: npm ci
       
+      - name: Type check
+        working-directory: frontend
+        run: npx tsc --noEmit
+
       - name: Run linter
         working-directory: frontend
         run: npm run lint
-      
+
       - name: Build
         working-directory: frontend
         run: npm run build

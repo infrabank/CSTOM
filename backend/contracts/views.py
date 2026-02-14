@@ -30,12 +30,13 @@ class ContractViewSet(ModelViewSet):
 
     queryset = Contract.objects.all()
     serializer_class = ContractSerializer
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
 
     def get_permissions(self):
         """Set permissions based on action."""
         if self.action in ["list", "retrieve", "status_history", "equipment_movements"]:
             return [IsAuthenticated()]
-        if self.action in ["create", "update", "partial_update", "destroy"]:
+        if self.action in ["create", "update", "partial_update"]:
             return [IsPMOrAdmin()]
         if self.action in ["update_status"]:
             return [IsPMOrAdmin()]

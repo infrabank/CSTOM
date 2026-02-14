@@ -1,5 +1,6 @@
 """ChangeIncident model for unified change and incident records."""
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from contracts.models import Contract
@@ -49,6 +50,10 @@ class ChangeIncident(models.Model):
     class Meta:
         ordering = ["-occurred_at"]
         verbose_name_plural = "Change/Incidents"
+        indexes = [
+            models.Index(fields=["contract", "record_type"]),
+            models.Index(fields=["occurred_at"]),
+        ]
 
     def __str__(self):
         return f"[{self.get_record_type_display()}] {self.title}"
@@ -75,3 +80,6 @@ class ChangeIncident(models.Model):
             and self.resolved_at < self.occurred_at
         ):
             raise ValidationError("resolved_at must be >= occurred_at")
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("변경/장애 기록은 삭제할 수 없습니다.")

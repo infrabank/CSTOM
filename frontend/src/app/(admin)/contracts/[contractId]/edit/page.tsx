@@ -6,8 +6,6 @@ import Link from "next/link";
 import { use } from "react";
 import { getAccessToken } from "@/lib/auth";
 import { updateContract } from "../../actions";
-import DeleteContractButton from "../../delete-contract-button";
-
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const SCOPES = [
@@ -258,12 +256,6 @@ export default function EditContractPage({ params }: PageProps) {
              >
               취소
             </Link>
-            <div className="ml-auto">
-              <DeleteContractButton
-                contractId={parseInt(contractId, 10)}
-                contractName={contract.name}
-              />
-            </div>
           </div>
         </form>
       </div>

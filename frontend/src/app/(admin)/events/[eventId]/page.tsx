@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import EventDeleteButton from "./event-delete-button";
 import EventLinkButton from "./event-link-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
@@ -179,7 +178,6 @@ export default async function EventDetailPage({ params }: PageProps) {
           contractId={event.contract}
           currentRelatedEventId={event.related_event}
         />
-        <EventDeleteButton eventId={event.id} eventTitle={event.title} />
       </div>
     </div>
   );

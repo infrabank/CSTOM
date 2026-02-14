@@ -2,7 +2,6 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { contractsApi, Contract } from "@/lib/api";
-import DeleteContractButton from "../delete-contract-button";
 import StatusChangeButton from "../status-change-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
@@ -185,11 +184,6 @@ export default async function ContractDetailPage({ params }: PageProps) {
           >
             수정
           </Link>
-          <DeleteContractButton
-            contractId={contract!.id}
-            contractName={contract!.name}
-            className="px-4 py-2 text-danger border border-danger-border rounded-md hover:bg-danger-bg hover:border-danger-border transition-colors"
-          />
           <StatusChangeButton
             contractId={contract!.id}
             currentStatus={contract!.status}

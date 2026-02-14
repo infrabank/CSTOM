@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from .models import SLADefinition, SLAMetric
+from .models import (
+    SLACategory,
+    SLADefinition,
+    SLAEvaluationItem,
+    SLAEvaluationReport,
+    SLAEvaluationScore,
+    SLAMetric,
+)
 
 
 @admin.register(SLADefinition)
@@ -36,6 +43,102 @@ class SLADefinitionAdmin(admin.ModelAdmin):
         ("Status", {"fields": ("is_active",)}),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
+
+
+@admin.register(SLACategory)
+class SLACategoryAdmin(admin.ModelAdmin):
+    """Admin interface for SLA Categories."""
+
+    list_display = (
+        "name",
+        "code",
+        "weight_percent",
+        "contract",
+        "display_order",
+        "is_active",
+    )
+    list_filter = ("contract", "is_active")
+    search_fields = ("name", "code", "contract__name")
+    readonly_fields = ("created_at", "updated_at")
+    ordering = ("display_order",)
+
+
+@admin.register(SLAEvaluationItem)
+class SLAEvaluationItemAdmin(admin.ModelAdmin):
+    """Admin interface for SLA Evaluation Items."""
+
+    list_display = (
+        "item_number",
+        "name",
+        "category",
+        "weight",
+        "measurement_cycle",
+        "is_active",
+    )
+    list_filter = ("category", "measurement_cycle", "is_active")
+    search_fields = ("name", "category__name")
+    readonly_fields = ("created_at", "updated_at")
+    ordering = ("item_number",)
+
+
+@admin.register(SLAEvaluationReport)
+class SLAEvaluationReportAdmin(admin.ModelAdmin):
+    """Admin interface for SLA Evaluation Reports."""
+
+    list_display = (
+        "contract",
+        "evaluation_period_start",
+        "evaluation_period_end",
+        "total_score",
+        "grade",
+        "is_finalized",
+        "created_at",
+    )
+    list_filter = ("contract", "grade", "is_finalized", "evaluation_period_start")
+    search_fields = ("contract__name", "evaluator_notes")
+    readonly_fields = ("total_score", "grade", "created_at", "updated_at")
+    fieldsets = (
+        (
+            "Basic Information",
+            {
+                "fields": (
+                    "contract",
+                    "evaluation_period_start",
+                    "evaluation_period_end",
+                )
+            },
+        ),
+        (
+            "Scores",
+            {"fields": ("total_score", "grade")},
+        ),
+        (
+            "Notes",
+            {"fields": ("evaluator_notes", "deduction_notes")},
+        ),
+        (
+            "Status",
+            {"fields": ("is_finalized",)},
+        ),
+        ("Timestamps", {"fields": ("created_at", "updated_at")}),
+    )
+
+
+@admin.register(SLAEvaluationScore)
+class SLAEvaluationScoreAdmin(admin.ModelAdmin):
+    """Admin interface for SLA Evaluation Scores."""
+
+    list_display = (
+        "report",
+        "evaluation_item",
+        "service_level",
+        "score",
+        "system_name",
+        "occurrence_date",
+    )
+    list_filter = ("report__contract", "service_level", "evaluation_item__category")
+    search_fields = ("evaluation_item__name", "system_name", "notes")
+    readonly_fields = ("score", "created_at", "updated_at")
 
 
 @admin.register(SLAMetric)

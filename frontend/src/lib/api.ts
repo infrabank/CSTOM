@@ -2,7 +2,7 @@
  * API client for CSTOM backend.
  */
 
-import { getAccessToken, getRefreshToken, setTokens, clearTokens, TokenPair } from "./auth";
+import { getAccessToken, setTokens, clearTokens, TokenPair } from "./auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -145,11 +145,6 @@ export const contractsApi = {
       token,
     }),
 
-  delete: (id: number, token?: string) =>
-    fetchAPI<void>(`/v1/contracts/${id}/`, {
-      method: "DELETE",
-      token,
-    }),
 };
 
 export interface Report {
@@ -417,18 +412,63 @@ export const eventsApi = {
       body: JSON.stringify({ related_event: null }),
       token,
     }),
+};
 
-  delete: (id: number, token?: string) =>
-    fetchAPI<void>(`/v1/events/${id}/`, {
-      method: "DELETE",
+export interface Notification {
+  id: number;
+  type: string;
+  title: string;
+  content: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+export const notificationsApi = {
+  list: (token?: string) =>
+    fetchAPI<{ results: Notification[] }>("/v1/notifications/", { token }),
+
+  markRead: (id: number, token?: string) =>
+    fetchAPI<{ status: string }>(`/v1/notifications/${id}/mark_read/`, {
+      method: "POST",
+      token,
+    }),
+
+  unreadCount: (token?: string) =>
+    fetchAPI<{ unread_count: number }>("/v1/notifications/unread_count/", { token }),
+
+  markAllRead: (token?: string) =>
+    fetchAPI<{ marked_as_read: number }>("/v1/notifications/mark_all_read/", {
+      method: "POST",
       token,
     }),
 };
 
+export interface AuditEvent {
+  id: number;
+  actor: number | null;
+  actor_email: string | null;
+  actor_role: string;
+  action_type: string;
+  entity_type: string;
+  entity_id: string;
+  occurred_at: string;
+  ip_address: string | null;
+}
+
+export const auditApi = {
+  list: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: AuditEvent[]; count: number }>(
+      `/v1/audit/events/${query}`,
+      { token }
+    );
+  },
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
-    const url = `${API_URL}/token/`;
-    const res = await fetch(url, {
+    // Use Next.js API route which sets refresh token as HttpOnly cookie
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(credentials),
@@ -439,20 +479,16 @@ export const authApi = {
       throw new Error(error?.detail || "Invalid credentials");
     }
 
-    const tokens: TokenPair = await res.json();
-    setTokens(tokens);
-    return tokens;
+    const data = await res.json();
+    // Access token cookie is set by the API route response
+    return { access: data.access };
   },
 
   refresh: async (): Promise<TokenPair | null> => {
-    const refreshToken = getRefreshToken();
-    if (!refreshToken) return null;
-
-    const url = `${API_URL}/token/refresh/`;
-    const res = await fetch(url, {
+    // Use Next.js API route which reads HttpOnly refresh token cookie
+    const res = await fetch("/api/auth/refresh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh: refreshToken }),
     });
 
     if (!res.ok) {
@@ -460,14 +496,15 @@ export const authApi = {
       return null;
     }
 
-    const tokens: TokenPair = await res.json();
-    setTokens(tokens);
-    return tokens;
+    const data = await res.json();
+    // Access token cookie is updated by the API route response
+    return { access: data.access };
   },
 
   logout: async (): Promise<void> => {
     try {
-      await fetchAPI<void>("/auth/logout/", { method: "POST" });
+      // Use Next.js API route which clears HttpOnly cookies
+      await fetch("/api/auth/logout", { method: "POST" });
     } catch (error) {
       console.error("Logout API call failed:", error);
     } finally {

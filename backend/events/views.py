@@ -23,6 +23,7 @@ class ChangeIncidentViewSet(ModelViewSet):
     queryset = ChangeIncident.objects.select_related("contract", "related_event").all()
     serializer_class = ChangeIncidentSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""

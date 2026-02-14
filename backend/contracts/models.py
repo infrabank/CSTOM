@@ -1,6 +1,7 @@
 """Contract and ContractStatusHistory models."""
 
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
 
 
 class Contract(models.Model):
@@ -54,6 +55,9 @@ class Contract(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.client_org})"
@@ -76,18 +80,24 @@ class Contract(models.Model):
             "docs_incomplete": self.risk_docs_incomplete,
         }
 
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "계약 기록은 삭제할 수 없습니다. 계약을 종료하려면 상태를 'closed'로 변경하세요."
+        )
+
     def update_status(self, new_status: str, notes: str = ""):
         """Update contract status and create history record."""
-        old_status = self.status
-        self.status = new_status
-        self.save()
+        with transaction.atomic():
+            old_status = self.status
+            self.status = new_status
+            self.save()
 
-        ContractStatusHistory.objects.create(
-            contract=self,
-            old_status=old_status,
-            new_status=new_status,
-            notes=notes,
-        )
+            ContractStatusHistory.objects.create(
+                contract=self,
+                old_status=old_status,
+                new_status=new_status,
+                notes=notes,
+            )
 
 
 class ContractStatusHistory(models.Model):

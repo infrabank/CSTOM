@@ -2,21 +2,14 @@
 
 from rest_framework import filters, status
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from common.pagination import StandardPagination
+
 from .models import Notification, NotificationPreference
 from .serializers import NotificationSerializer, NotificationPreferenceSerializer
-
-
-class StandardPagination(PageNumberPagination):
-    """Standard pagination for Notification endpoints."""
-
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
 
 
 class NotificationViewSet(ModelViewSet):

@@ -1,7 +1,7 @@
 """Equipment and EquipmentTransaction models for check-in/check-out management."""
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 
 from common.errors import ValidationError
 from contracts.models import Contract
@@ -89,6 +89,9 @@ class Equipment(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["contract", "status"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.serial_number})"
@@ -168,13 +171,14 @@ class EquipmentTransaction(models.Model):
                 "EquipmentTransaction records are immutable and cannot be modified."
             )
 
-        super().save(*args, **kwargs)
+        with transaction.atomic():
+            super().save(*args, **kwargs)
 
-        if self.transaction_type == "check_out":
-            self.equipment.status = "checked_out"
-        elif self.transaction_type == "check_in":
-            self.equipment.status = "available"
-        self.equipment.save()
+            if self.transaction_type == "check_out":
+                self.equipment.status = "checked_out"
+            elif self.transaction_type == "check_in":
+                self.equipment.status = "available"
+            self.equipment.save()
 
     def delete(self, *args, **kwargs):
         raise ValidationError(
@@ -237,15 +241,17 @@ class EquipmentCorrection(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
-        super().save(*args, **kwargs)
 
-        # If this is a status override, update the equipment status
-        if is_new and self.correction_type == "status_override" and self.new_status:
-            self.equipment.status = self.new_status
-            # Bypass the normal save to allow status update
-            Equipment.objects.filter(pk=self.equipment.pk).update(
-                status=self.new_status
-            )
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+
+            # If this is a status override, update the equipment status
+            if is_new and self.correction_type == "status_override" and self.new_status:
+                self.equipment.status = self.new_status
+                # Bypass the normal save to allow status update
+                Equipment.objects.filter(pk=self.equipment.pk).update(
+                    status=self.new_status
+                )
 
 
 class AssetRelationship(models.Model):

@@ -10,9 +10,12 @@ import json
 from datetime import datetime
 from typing import Any
 
+from django.conf import settings
 
-# Default secret key (should be overridden from settings in production)
-DEFAULT_SECRET = "cstom-report-integrity-key"
+
+def _get_hmac_secret() -> str:
+    """Get HMAC secret from Django settings."""
+    return getattr(settings, "REPORT_HMAC_SECRET", settings.SECRET_KEY)
 
 
 def compute_content_hash(content: str | dict | list) -> str:
@@ -42,7 +45,7 @@ def compute_hmac(content: str | dict | list, secret: str | None = None) -> str:
         Hex-encoded HMAC-SHA256 signature
     """
     if secret is None:
-        secret = DEFAULT_SECRET
+        secret = _get_hmac_secret()
 
     if isinstance(content, (dict, list)):
         content = json.dumps(content, sort_keys=True, separators=(",", ":"))

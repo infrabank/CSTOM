@@ -62,32 +62,27 @@ def calculate_mttr(start_date, end_date):
     """
     Calculate Mean Time To Resolution (MTTR) in hours.
 
-    Formula: Average time from occurred_at to resolved_at
+    Formula: Average time from occurred_at to resolved_at (computed in DB).
     """
-    incidents = ChangeIncident.objects.filter(
+    from django.db.models import F, ExpressionWrapper, DurationField
+
+    result = ChangeIncident.objects.filter(
         record_type="incident",
         occurred_at__gte=start_date,
         occurred_at__lte=end_date,
         resolved_at__isnull=False,
-    )
+    ).annotate(
+        resolution_duration=ExpressionWrapper(
+            F("resolved_at") - F("occurred_at"),
+            output_field=DurationField(),
+        )
+    ).aggregate(avg_duration=Avg("resolution_duration"))
 
-    if not incidents.exists():
+    avg_duration = result["avg_duration"]
+    if avg_duration is None:
         return 0.0
 
-    total_resolution_time = timedelta()
-    count = 0
-
-    for incident in incidents:
-        resolution_time = incident.resolved_at - incident.occurred_at
-        total_resolution_time += resolution_time
-        count += 1
-
-    if count == 0:
-        return 0.0
-
-    average_resolution_time = total_resolution_time / count
-    mttr_hours = average_resolution_time.total_seconds() / 3600
-
+    mttr_hours = avg_duration.total_seconds() / 3600
     return round(mttr_hours, 2)
 
 

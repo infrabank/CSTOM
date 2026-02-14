@@ -2,6 +2,7 @@
 
 from datetime import date
 
+from django.db import transaction
 from django.db.models import Count, QuerySet
 
 from common.errors import ResourceNotFoundError
@@ -35,6 +36,7 @@ class ReportService:
             raise ResourceNotFoundError(f"Report with id {report_id} not found")
 
     @classmethod
+    @transaction.atomic
     def generate(
         cls,
         contract_id: int,
@@ -107,11 +109,10 @@ class ReportService:
 
         # Build summary
         task_type_labels = {
-            "maintenance": "유지보수",
-            "inspection": "점검",
-            "repair": "수리",
-            "installation": "설치",
-            "other": "기타",
+            "routine": "정기",
+            "incident": "장애",
+            "change": "변경",
+            "request": "요청",
         }
 
         lines = [

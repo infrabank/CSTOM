@@ -9,6 +9,8 @@ import logging
 from datetime import date, timedelta
 from typing import Optional
 
+from django.db.models import Count, Max, OuterRef, Subquery, Q
+
 from equipments.models import Equipment
 from events.models import ChangeIncident
 
@@ -28,32 +30,6 @@ def _calculate_age_days(equipment: Equipment) -> int:
     if equipment.purchase_date:
         return (date.today() - equipment.purchase_date).days
     return (date.today() - equipment.created_at.date()).days
-
-
-def _days_since_last_incident(equipment: Equipment) -> Optional[int]:
-    """Return days since most recent incident for this equipment's contract."""
-    last_incident = (
-        ChangeIncident.objects.filter(
-            contract=equipment.contract,
-            record_type="incident",
-        )
-        .order_by("-occurred_at")
-        .values_list("occurred_at", flat=True)
-        .first()
-    )
-    if last_incident is None:
-        return None
-    return (date.today() - last_incident.date()).days
-
-
-def _incident_count(equipment: Equipment, lookback_days: int = 365) -> int:
-    """Count incidents for this equipment's contract in the lookback window."""
-    since = date.today() - timedelta(days=lookback_days)
-    return ChangeIncident.objects.filter(
-        contract=equipment.contract,
-        record_type="incident",
-        occurred_at__date__gte=since,
-    ).count()
 
 
 def _compute_mtbf_days(failure_count: int, age_days: int) -> Optional[float]:
@@ -117,42 +93,76 @@ class PredictionService:
     def get_at_risk_equipment(min_risk_score: float = 0.0) -> list[dict]:
         """Return all equipment with risk assessment data.
 
-        For each equipment, tries EquipmentMetric first (pre-computed).
-        Falls back to live calculation from ChangeIncident history.
-
-        Args:
-            min_risk_score: Minimum risk score threshold (0-100).
-
-        Returns:
-            List of dicts matching AtRiskEquipmentSerializer fields,
-            sorted by risk_score descending.
+        Uses bulk queries instead of per-equipment queries to avoid N+1.
         """
+        since = date.today() - timedelta(days=365)
+
+        # Subquery for latest metric per equipment
+        latest_metric_subquery = (
+            EquipmentMetric.objects.filter(equipment=OuterRef("pk"))
+            .order_by("-metric_date")
+            .values("risk_score")[:1]
+        )
+        latest_metric_failure_count = (
+            EquipmentMetric.objects.filter(equipment=OuterRef("pk"))
+            .order_by("-metric_date")
+            .values("failure_count")[:1]
+        )
+        latest_metric_mtbf = (
+            EquipmentMetric.objects.filter(equipment=OuterRef("pk"))
+            .order_by("-metric_date")
+            .values("mtbf_hours")[:1]
+        )
+
+        # Bulk query: annotate equipment with incident stats
         equipments = (
-            Equipment.objects.exclude(status="retired").select_related("contract").all()
+            Equipment.objects.exclude(status="retired")
+            .select_related("contract")
+            .annotate(
+                incident_count=Count(
+                    "contract__change_incidents",
+                    filter=Q(
+                        contract__change_incidents__record_type="incident",
+                        contract__change_incidents__occurred_at__date__gte=since,
+                    ),
+                ),
+                last_incident_date=Max(
+                    "contract__change_incidents__occurred_at",
+                    filter=Q(
+                        contract__change_incidents__record_type="incident",
+                    ),
+                ),
+                precomputed_risk_score=Subquery(latest_metric_subquery),
+                precomputed_failure_count=Subquery(latest_metric_failure_count),
+                precomputed_mtbf_hours=Subquery(latest_metric_mtbf),
+            )
         )
 
         results = []
-        for eq in equipments:
-            metric = (
-                EquipmentMetric.objects.filter(equipment=eq)
-                .order_by("-metric_date")
-                .first()
-            )
+        today = date.today()
 
+        for eq in equipments:
             age_days = _calculate_age_days(eq)
 
-            if metric:
+            if eq.precomputed_risk_score is not None:
                 # Use pre-computed metric data
-                failure_count = metric.failure_count
-                mtbf_days = (
-                    round(metric.mtbf_hours / 24, 1) if metric.mtbf_hours > 0 else None
+                failure_count = eq.precomputed_failure_count or 0
+                mtbf_hours = eq.precomputed_mtbf_hours or 0
+                mtbf_days = round(mtbf_hours / 24, 1) if mtbf_hours > 0 else None
+                days_since_last = (
+                    (today - eq.last_incident_date.date()).days
+                    if eq.last_incident_date
+                    else None
                 )
-                days_since_last = _days_since_last_incident(eq)
-                risk_score = metric.risk_score
+                risk_score = eq.precomputed_risk_score
             else:
-                # Live calculation from incident history
-                failure_count = _incident_count(eq)
-                days_since_last = _days_since_last_incident(eq)
+                # Live calculation from annotated data
+                failure_count = eq.incident_count
+                days_since_last = (
+                    (today - eq.last_incident_date.date()).days
+                    if eq.last_incident_date
+                    else None
+                )
                 mtbf_days = _compute_mtbf_days(failure_count, age_days)
                 risk_score = _compute_risk_score(
                     failure_count, days_since_last, age_days, mtbf_days
@@ -180,14 +190,29 @@ class PredictionService:
 
     @staticmethod
     def recalculate_metrics(equipment: Equipment) -> EquipmentMetric:
-        """Recalculate and store metrics for a single equipment item.
-
-        Creates a new EquipmentMetric record for today with freshly
-        computed values from incident history.
-        """
+        """Recalculate and store metrics for a single equipment item."""
+        since = date.today() - timedelta(days=365)
         age_days = _calculate_age_days(equipment)
-        failure_count = _incident_count(equipment)
-        days_since_last = _days_since_last_incident(equipment)
+
+        failure_count = ChangeIncident.objects.filter(
+            contract=equipment.contract,
+            record_type="incident",
+            occurred_at__date__gte=since,
+        ).count()
+
+        last_incident = (
+            ChangeIncident.objects.filter(
+                contract=equipment.contract,
+                record_type="incident",
+            )
+            .order_by("-occurred_at")
+            .values_list("occurred_at", flat=True)
+            .first()
+        )
+        days_since_last = (
+            (date.today() - last_incident.date()).days if last_incident else None
+        )
+
         mtbf_days = _compute_mtbf_days(failure_count, age_days)
         risk_score = _compute_risk_score(
             failure_count, days_since_last, age_days, mtbf_days

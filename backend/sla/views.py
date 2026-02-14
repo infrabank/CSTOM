@@ -4,24 +4,31 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import PageNumberPagination
-from django.db.models import Count, Q, Case, When, IntegerField
+from django.db import transaction
+from django.db.models import Count, F, Q, Case, When, IntegerField
 
-from .models import SLADefinition, SLAMetric
+from common.pagination import StandardPagination
+
+from .models import (
+    SLADefinition,
+    SLAMetric,
+    SLACategory,
+    SLAEvaluationItem,
+    SLAEvaluationReport,
+    SLAEvaluationScore,
+)
 from .serializers import (
     SLADefinitionSerializer,
     SLADefinitionListSerializer,
     SLAMetricSerializer,
     ComplianceSummarySerializer,
+    SLACategorySerializer,
+    SLACategoryListSerializer,
+    SLAEvaluationItemSerializer,
+    SLAEvaluationReportSerializer,
+    SLAEvaluationReportListSerializer,
+    SLAEvaluationScoreSerializer,
 )
-
-
-class StandardPagination(PageNumberPagination):
-    """Standard pagination for API responses."""
-
-    page_size = 20
-    page_size_query_param = "page_size"
-    max_page_size = 100
 
 
 class SLADefinitionViewSet(viewsets.ModelViewSet):
@@ -64,63 +71,71 @@ class SLADefinitionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def compliance(self, request):
-        """Get compliance summary by contract."""
-        from contracts.models import Contract
+        """Get compliance summary by contract.
 
-        contracts = Contract.objects.all()
-        summary_data = []
+        Optimized: uses 2 aggregate queries instead of N+1 per-contract loops.
+        """
+        # Query 1: SLA definition counts per contract
+        sla_counts = dict(
+            SLADefinition.objects.values_list("contract_id").annotate(
+                count=Count("id")
+            ).values_list("contract_id", "count")
+        )
 
-        for contract in contracts:
-            slas = contract.sla_definitions.all()
-            if not slas.exists():
-                continue
-
-            total_slas = slas.count()
-            metrics = SLAMetric.objects.filter(sla_definition__in=slas)
-            total_metrics = metrics.count()
-
-            if total_metrics == 0:
-                continue
-
-            compliant = metrics.filter(
-                response_sla_met=True, resolution_sla_met=True
-            ).count()
-            non_compliant = total_metrics - compliant
-            compliance_rate = round((compliant / total_metrics * 100), 2)
-
-            # Breakdown by priority
-            by_priority = {}
-            for priority_code, priority_name in SLADefinition.PRIORITY_CHOICES:
-                priority_slas = slas.filter(priority=priority_code)
-                if priority_slas.exists():
-                    priority_metrics = SLAMetric.objects.filter(
-                        sla_definition__in=priority_slas
-                    )
-                    if priority_metrics.exists():
-                        priority_compliant = priority_metrics.filter(
-                            response_sla_met=True, resolution_sla_met=True
-                        ).count()
-                        priority_total = priority_metrics.count()
-                        by_priority[priority_code] = {
-                            "total": priority_total,
-                            "compliant": priority_compliant,
-                            "rate": round(
-                                (priority_compliant / priority_total * 100), 2
-                            ),
-                        }
-
-            summary_data.append(
-                {
-                    "contract_id": contract.id,
-                    "contract_name": contract.name,
-                    "total_slas": total_slas,
-                    "total_metrics": total_metrics,
-                    "compliant_metrics": compliant,
-                    "non_compliant_metrics": non_compliant,
-                    "overall_compliance_rate": compliance_rate,
-                    "by_priority": by_priority,
-                }
+        # Query 2: metric totals grouped by contract + priority
+        metrics_agg = (
+            SLAMetric.objects.select_related("sla_definition")
+            .values(
+                contract_id=F("sla_definition__contract_id"),
+                contract_name=F("sla_definition__contract__name"),
+                priority=F("sla_definition__priority"),
             )
+            .annotate(
+                total=Count("id"),
+                compliant=Count(
+                    "id",
+                    filter=Q(response_sla_met=True, resolution_sla_met=True),
+                ),
+            )
+        )
+
+        # Build response grouped by contract
+        contract_data = {}
+        for row in metrics_agg:
+            cid = row["contract_id"]
+            if cid not in contract_data:
+                contract_data[cid] = {
+                    "contract_id": cid,
+                    "contract_name": row["contract_name"],
+                    "total_slas": sla_counts.get(cid, 0),
+                    "total_metrics": 0,
+                    "compliant_metrics": 0,
+                    "non_compliant_metrics": 0,
+                    "overall_compliance_rate": 0.0,
+                    "by_priority": {},
+                }
+
+            cd = contract_data[cid]
+            cd["total_metrics"] += row["total"]
+            cd["compliant_metrics"] += row["compliant"]
+
+            priority = row["priority"]
+            if row["total"] > 0:
+                cd["by_priority"][priority] = {
+                    "total": row["total"],
+                    "compliant": row["compliant"],
+                    "rate": round((row["compliant"] / row["total"] * 100), 2),
+                }
+
+        # Calculate overall rates
+        summary_data = []
+        for cd in contract_data.values():
+            cd["non_compliant_metrics"] = cd["total_metrics"] - cd["compliant_metrics"]
+            if cd["total_metrics"] > 0:
+                cd["overall_compliance_rate"] = round(
+                    (cd["compliant_metrics"] / cd["total_metrics"] * 100), 2
+                )
+            summary_data.append(cd)
 
         serializer = ComplianceSummarySerializer(summary_data, many=True)
         return Response(serializer.data)
@@ -250,4 +265,209 @@ class SLAMetricViewSet(viewsets.ModelViewSet):
                 "total_metrics": metrics.count(),
                 "metrics": serializer.data,
             }
+        )
+
+
+class SLACategoryViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA evaluation categories with filtering and prefetching."""
+
+    queryset = SLACategory.objects.all()
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["contract", "is_active"]
+    search_fields = ["name", "code"]
+    ordering = ["display_order"]
+
+    def get_serializer_class(self):
+        """Use list serializer for list action."""
+        if self.action == "list":
+            return SLACategoryListSerializer
+        return SLACategorySerializer
+
+    def get_queryset(self):
+        """Filter queryset based on query parameters."""
+        queryset = super().get_queryset()
+
+        # Filter by contract
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(contract_id=contract_id)
+
+        return queryset.prefetch_related("items")
+
+
+class SLAEvaluationItemViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA evaluation items with filtering and category selection."""
+
+    queryset = SLAEvaluationItem.objects.all()
+    serializer_class = SLAEvaluationItemSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["category", "is_active", "measurement_cycle"]
+    search_fields = ["name"]
+    ordering = ["item_number"]
+
+    def get_queryset(self):
+        """Filter queryset based on query parameters."""
+        queryset = super().get_queryset()
+
+        # Filter by category
+        category_id = self.request.query_params.get("category")
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        return queryset.select_related("category")
+
+
+class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA evaluation reports with scoring and finalization."""
+
+    queryset = SLAEvaluationReport.objects.all()
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["contract", "grade", "is_finalized"]
+    search_fields = ["contract__name", "evaluator_notes"]
+    ordering = ["-evaluation_period_start"]
+
+    def get_serializer_class(self):
+        """Use list serializer for list action."""
+        if self.action == "list":
+            return SLAEvaluationReportListSerializer
+        return SLAEvaluationReportSerializer
+
+    def get_queryset(self):
+        """Filter queryset based on query parameters."""
+        queryset = super().get_queryset()
+
+        # Filter by contract
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(contract_id=contract_id)
+
+        return queryset.prefetch_related("scores", "scores__evaluation_item")
+
+    @action(detail=True, methods=["post"])
+    def calculate_score(self, request, pk=None):
+        """Calculate total score for this report."""
+        report = self.get_object()
+        with transaction.atomic():
+            report.calculate_total_score()
+            report.save()
+        serializer = self.get_serializer(report)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def finalize(self, request, pk=None):
+        """Finalize this report (requires score to be calculated)."""
+        report = self.get_object()
+
+        if report.total_score is None:
+            return Response(
+                {"error": "점수를 먼저 산출하세요"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        report.is_finalized = True
+        report.save()
+        serializer = self.get_serializer(report)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def scores(self, request, pk=None):
+        """Get all scores for this report."""
+        report = self.get_object()
+        scores = report.scores.all()
+        serializer = SLAEvaluationScoreSerializer(scores, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["post"])
+    def add_score(self, request, pk=None):
+        """Add or update a single score for this report."""
+        report = self.get_object()
+
+        evaluation_item_id = request.data.get("evaluation_item")
+        service_level = request.data.get("service_level")
+
+        if not evaluation_item_id or service_level is None:
+            return Response(
+                {"error": "evaluation_item and service_level are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Create or update score
+        score, created = SLAEvaluationScore.objects.update_or_create(
+            report=report,
+            evaluation_item_id=evaluation_item_id,
+            defaults={
+                "service_level": service_level,
+                "system_name": request.data.get("system_name"),
+                "occurrence_date": request.data.get("occurrence_date"),
+                "notes": request.data.get("notes"),
+            },
+        )
+
+        serializer = SLAEvaluationScoreSerializer(score)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    def bulk_scores(self, request, pk=None):
+        """Add or update multiple scores at once."""
+        report = self.get_object()
+        scores_data = request.data.get("scores", [])
+
+        if not scores_data:
+            return Response(
+                {"error": "scores array is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            for score_data in scores_data:
+                evaluation_item_id = score_data.get("evaluation_item")
+                service_level = score_data.get("service_level")
+
+                if not evaluation_item_id or service_level is None:
+                    continue
+
+                SLAEvaluationScore.objects.update_or_create(
+                    report=report,
+                    evaluation_item_id=evaluation_item_id,
+                    defaults={
+                        "service_level": service_level,
+                        "system_name": score_data.get("system_name"),
+                        "occurrence_date": score_data.get("occurrence_date"),
+                        "notes": score_data.get("notes"),
+                    },
+                )
+
+        # Return updated report
+        report.refresh_from_db()
+        serializer = self.get_serializer(report)
+        return Response(serializer.data)
+
+
+class SLAEvaluationScoreViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA evaluation scores with filtering and prefetching."""
+
+    queryset = SLAEvaluationScore.objects.all()
+    serializer_class = SLAEvaluationScoreSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["report", "evaluation_item", "service_level"]
+    ordering = ["evaluation_item__item_number"]
+
+    def get_queryset(self):
+        """Filter queryset based on query parameters."""
+        queryset = super().get_queryset()
+
+        # Filter by report
+        report_id = self.request.query_params.get("report")
+        if report_id:
+            queryset = queryset.filter(report_id=report_id)
+
+        return queryset.select_related(
+            "evaluation_item", "evaluation_item__category", "report"
         )

@@ -1,14 +1,14 @@
 /**
  * Authentication utilities for CSTOM.
- * Uses cookies for SSR compatibility.
+ * Access token: regular cookie (readable by middleware + client for role display)
+ * Refresh token: HttpOnly cookie (set by Next.js API routes, not accessible via JS)
  */
 
 const ACCESS_TOKEN_KEY = "cstom_access_token";
-const REFRESH_TOKEN_KEY = "cstom_refresh_token";
 
 export interface TokenPair {
   access: string;
-  refresh: string;
+  refresh?: string;
 }
 
 export interface AuthUser {
@@ -40,42 +40,35 @@ export function getAccessToken(): string | null {
 }
 
 /**
- * Get refresh token from cookie.
+ * Get refresh token - no longer available client-side (HttpOnly cookie).
+ * Refresh is handled via /api/auth/refresh server-side route.
  */
 export function getRefreshToken(): string | null {
-  if (!isClient()) return null;
-
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split("=");
-    if (name === REFRESH_TOKEN_KEY) {
-      return decodeURIComponent(value);
-    }
-  }
+  // Refresh token is now HttpOnly - not accessible from JS
+  // Token refresh is handled by the /api/auth/refresh API route
   return null;
 }
 
 /**
- * Store tokens in cookies.
+ * Store access token in cookie. Refresh token is set as HttpOnly by the API route.
  */
 export function setTokens(tokens: TokenPair): void {
   if (!isClient()) return;
 
-  // Access token: shorter expiry (1 hour)
-  document.cookie = `${ACCESS_TOKEN_KEY}=${encodeURIComponent(tokens.access)}; path=/; max-age=3600; SameSite=Lax`;
+  const isProduction = window.location.protocol === "https:";
+  const secureFlag = isProduction ? "; Secure" : "";
 
-  // Refresh token: longer expiry (7 days)
-  document.cookie = `${REFRESH_TOKEN_KEY}=${encodeURIComponent(tokens.refresh)}; path=/; max-age=604800; SameSite=Lax`;
+  // Access token: regular cookie for middleware + client-side role reading
+  document.cookie = `${ACCESS_TOKEN_KEY}=${encodeURIComponent(tokens.access)}; path=/; max-age=3600; SameSite=Lax${secureFlag}`;
 }
 
 /**
- * Clear all auth tokens.
+ * Clear access token cookie. Refresh token is cleared by the API route.
  */
 export function clearTokens(): void {
   if (!isClient()) return;
 
   document.cookie = `${ACCESS_TOKEN_KEY}=; path=/; max-age=0`;
-  document.cookie = `${REFRESH_TOKEN_KEY}=; path=/; max-age=0`;
 }
 
 /**

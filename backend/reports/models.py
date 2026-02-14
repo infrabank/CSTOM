@@ -2,6 +2,7 @@
 
 import hashlib
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 from contracts.models import Contract
@@ -43,3 +44,6 @@ class Report(models.Model):
         if not self.integrity_hash:
             self.integrity_hash = self.generate_integrity_hash()
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError("보고서 기록은 삭제할 수 없습니다.")

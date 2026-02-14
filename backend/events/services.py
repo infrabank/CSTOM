@@ -1,5 +1,6 @@
 """ChangeIncident business logic services."""
 
+from django.db import transaction
 from django.db.models import QuerySet
 
 from common.errors import BusinessLogicError, ResourceNotFoundError
@@ -33,6 +34,7 @@ class ChangeIncidentService:
             raise ResourceNotFoundError(f"Event with id {event_id} not found")
 
     @staticmethod
+    @transaction.atomic
     def create(data: dict) -> ChangeIncident:
         """Create a new event.
 
@@ -51,6 +53,7 @@ class ChangeIncidentService:
         return event
 
     @staticmethod
+    @transaction.atomic
     def update(event: ChangeIncident, data: dict) -> ChangeIncident:
         """Update an event."""
         for key, value in data.items():
