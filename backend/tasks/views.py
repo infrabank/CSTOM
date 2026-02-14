@@ -25,7 +25,7 @@ class TaskViewSet(ModelViewSet):
     queryset = Task.objects.select_related("contract").all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "patch", "head", "options"]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""

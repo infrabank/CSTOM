@@ -101,4 +101,4 @@ class Task(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        raise ValidationError("작업 기록은 삭제할 수 없습니다.")
+        super().delete(*args, **kwargs)
