@@ -62,6 +62,13 @@ htmlcov/
 .mypy_cache/
 coverage/
 
+# AI/Tool state
+.bkit/
+.omc/
+docs/.bkit-memory.json
+docs/.pdca-snapshots/
+nul
+
 # Misc
 *.bak
 *.orig
