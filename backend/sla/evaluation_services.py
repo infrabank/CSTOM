@@ -113,12 +113,19 @@ _UPTIME_THRESHOLDS = [
     (Decimal("98.0"), Decimal("0.4")),
 ]
 
-# Incident count thresholds: (max_count, service_level)
+# Severity weights: severity 1 = 1.0, severity 2 = 0.5, severity 3 = excluded
+_SEVERITY_WEIGHTS = {
+    1: Decimal("1.0"),
+    2: Decimal("0.5"),
+    3: Decimal("0"),
+}
+
+# Weighted incident count thresholds: (max_weighted_count, service_level)
 _INCIDENT_COUNT_THRESHOLDS = [
-    (0, Decimal("1.0")),
-    (1, Decimal("0.8")),
-    (2, Decimal("0.6")),
-    (3, Decimal("0.4")),
+    (Decimal("0"), Decimal("1.0")),
+    (Decimal("1"), Decimal("0.8")),
+    (Decimal("2"), Decimal("0.6")),
+    (Decimal("3"), Decimal("0.4")),
 ]
 
 # On-time rate thresholds: (min_percentage, service_level)
@@ -140,10 +147,10 @@ def _level_from_uptime(avg_uptime):
     return Decimal("0.2")
 
 
-def _level_from_incident_count(count):
-    """Map incident count to service level."""
+def _level_from_incident_count(weighted_count):
+    """Map weighted incident count to service level."""
     for threshold, level in _INCIDENT_COUNT_THRESHOLDS:
-        if count <= threshold:
+        if weighted_count <= threshold:
             return level
     return Decimal("0.2")
 
@@ -169,19 +176,39 @@ def auto_evaluate(contract, period_start, period_end):
 
     results = {}
 
-    # --- Item 1: Incident count in period ---
-    incident_count = ChangeIncident.objects.filter(
+    # --- Item 1: Weighted incident count in period ---
+    # Severity 1 = 1.0건, Severity 2 = 0.5건, Severity 3/미설정 = 제외
+    incidents = ChangeIncident.objects.filter(
         contract=contract,
         record_type="incident",
         occurred_at__date__gte=period_start,
         occurred_at__date__lte=period_end,
-    ).count()
+    ).values_list("severity", flat=True)
 
-    level = _level_from_incident_count(incident_count)
+    total_raw = len(incidents)
+    weighted_count = Decimal("0")
+    severity_breakdown = {1: 0, 2: 0, 3: 0, None: 0}
+    for sev in incidents:
+        severity_breakdown[sev] = severity_breakdown.get(sev, 0) + 1
+        weight = _SEVERITY_WEIGHTS.get(sev, Decimal("0"))
+        weighted_count += weight
+
+    level = _level_from_incident_count(weighted_count)
+    breakdown_parts = []
+    if severity_breakdown.get(1, 0):
+        breakdown_parts.append(f"심각도1: {severity_breakdown[1]}건(x1.0)")
+    if severity_breakdown.get(2, 0):
+        breakdown_parts.append(f"심각도2: {severity_breakdown[2]}건(x0.5)")
+    if severity_breakdown.get(3, 0):
+        breakdown_parts.append(f"심각도3: {severity_breakdown[3]}건(제외)")
+    if severity_breakdown.get(None, 0):
+        breakdown_parts.append(f"미분류: {severity_breakdown[None]}건(제외)")
+    breakdown_str = ", ".join(breakdown_parts) if breakdown_parts else "장애 없음"
+
     results[1] = {
         "service_level": str(level),
-        "notes": f"자동산출: 평가기간 내 장애 {incident_count}건",
-        "metric_value": str(incident_count),
+        "notes": f"자동산출: 총 {total_raw}건, 가중치 적용 {weighted_count}건 ({breakdown_str})",
+        "metric_value": str(weighted_count),
     }
 
     # --- Item 2: On-time maintenance rate ---
