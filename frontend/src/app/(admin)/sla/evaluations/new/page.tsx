@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getAccessToken } from "@/lib/auth";
@@ -179,8 +179,8 @@ export default function NewSLAEvaluationReportPage() {
       // Step 1: Create evaluation report
       const reportPayload = {
         contract: parseInt(contractId),
-        period_start: periodStart,
-        period_end: periodEnd,
+        evaluation_period_start: periodStart,
+        evaluation_period_end: periodEnd,
       };
 
       const reportRes = await fetch(`${API_URL}/v1/sla/evaluation-reports/`, {
@@ -357,8 +357,8 @@ export default function NewSLAEvaluationReportPage() {
                   </thead>
                   <tbody>
                     {categories.map((category) => (
-                      <>
-                        <tr key={`category-${category.id}`} className="bg-surface-sunken">
+                      <React.Fragment key={`category-${category.id}`}>
+                        <tr className="bg-surface-sunken">
                           <td colSpan={6} className="px-4 py-3 font-semibold">
                             {category.name} (카테고리 가중치: {category.weight_percent}%)
                           </td>
@@ -401,7 +401,7 @@ export default function NewSLAEvaluationReportPage() {
                             </tr>
                           );
                         })}
-                      </>
+                      </React.Fragment>
                     ))}
                   </tbody>
                 </table>

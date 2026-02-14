@@ -268,9 +268,10 @@ class SLAEvaluationReport(models.Model):
         return f"SLA Report {self.evaluation_period_start} - {self.evaluation_period_end} ({self.contract.name})"
 
     def calculate_total_score(self):
-        """Calculate total score by summing all related scores."""
+        """Calculate total score by summing all related scores and set on self."""
         total = self.scores.aggregate(total=models.Sum("score"))["total"]
-        return total or Decimal("0.00")
+        self.total_score = total or Decimal("0.00")
+        return self.total_score
 
     def save(self, *args, **kwargs):
         """Auto-calculate grade from total_score on save."""

@@ -272,17 +272,12 @@ class SLACategoryViewSet(viewsets.ModelViewSet):
     """ViewSet for SLA evaluation categories with filtering and prefetching."""
 
     queryset = SLACategory.objects.all()
+    serializer_class = SLACategorySerializer
     permission_classes = [IsAuthenticated]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "is_active"]
     search_fields = ["name", "code"]
     ordering = ["display_order"]
-
-    def get_serializer_class(self):
-        """Use list serializer for list action."""
-        if self.action == "list":
-            return SLACategoryListSerializer
-        return SLACategorySerializer
 
     def get_queryset(self):
         """Filter queryset based on query parameters."""
