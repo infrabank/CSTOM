@@ -447,9 +447,9 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
             evaluation_item_id=evaluation_item_id,
             defaults={
                 "service_level": service_level,
-                "system_name": request.data.get("system_name"),
-                "occurrence_date": request.data.get("occurrence_date"),
-                "notes": request.data.get("notes"),
+                "system_name": request.data.get("system_name") or "",
+                "occurrence_date": request.data.get("occurrence_date") or None,
+                "notes": request.data.get("notes") or "",
             },
         )
 
@@ -484,9 +484,9 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
                     evaluation_item_id=evaluation_item_id,
                     defaults={
                         "service_level": service_level,
-                        "system_name": score_data.get("system_name"),
-                        "occurrence_date": score_data.get("occurrence_date"),
-                        "notes": score_data.get("notes"),
+                        "system_name": score_data.get("system_name") or "",
+                        "occurrence_date": score_data.get("occurrence_date") or None,
+                        "notes": score_data.get("notes") or "",
                     },
                 )
 

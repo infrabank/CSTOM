@@ -353,7 +353,7 @@ class SLAEvaluationScore(models.Model):
     def save(self, *args, **kwargs):
         """Auto-calculate score = evaluation_item.weight * service_level on save."""
         if self.service_level is not None and self.evaluation_item:
-            self.score = Decimal(str(self.evaluation_item.weight)) * self.service_level
+            self.score = Decimal(str(self.evaluation_item.weight)) * Decimal(str(self.service_level))
 
         super().save(*args, **kwargs)
 
