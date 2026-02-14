@@ -10,6 +10,7 @@ interface Event {
   contract: number;
   contract_name: string;
   record_type: string;
+  severity: number | null;
   title: string;
   description: string;
   occurred_at: string;
@@ -42,6 +43,18 @@ async function getEvent(id: number, token?: string): Promise<Event | null> {
 const TYPE_LABELS: Record<string, string> = {
   change: "변경",
   incident: "장애",
+};
+
+const SEVERITY_LABELS: Record<number, string> = {
+  1: "심각도 1 (서비스 전면중단)",
+  2: "심각도 2 (주요기능 장애)",
+  3: "심각도 3 (경미한 장애)",
+};
+
+const SEVERITY_COLORS: Record<number, string> = {
+  1: "bg-danger-bg text-danger",
+  2: "bg-warning-bg text-warning",
+  3: "bg-surface-sunken text-text-secondary",
 };
 
 interface PageProps {
@@ -85,6 +98,11 @@ export default async function EventDetailPage({ params }: PageProps) {
               <span className={`px-3 py-1 rounded text-sm font-medium ${typeColor}`}>
                 {TYPE_LABELS[event.record_type] || event.record_type}
               </span>
+              {event.record_type === "incident" && event.severity && (
+                <span className={`px-3 py-1 rounded text-sm font-medium ${SEVERITY_COLORS[event.severity] || ""}`}>
+                  {SEVERITY_LABELS[event.severity] || `심각도 ${event.severity}`}
+                </span>
+              )}
               <h1 className="text-2xl font-semibold text-text">{event.title}</h1>
             </div>
             <p className="text-text">{event.contract_name}</p>

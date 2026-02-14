@@ -20,10 +20,12 @@ interface EventCreateInput {
   resolved_at?: string;
   customer_notified?: boolean;
   customer_notified_at?: string;
+  severity?: number | null;
 }
 
 export async function createEvent(formData: FormData) {
   const token = await getToken();
+  const severityRaw = formData.get("severity") as string;
   const data: EventCreateInput = {
     contract: parseInt(formData.get("contract") as string, 10),
     record_type: formData.get("record_type") as string,
@@ -35,6 +37,7 @@ export async function createEvent(formData: FormData) {
     customer_notified: formData.get("customer_notified") === "on",
     customer_notified_at:
       (formData.get("customer_notified_at") as string) || undefined,
+    severity: severityRaw ? parseInt(severityRaw, 10) : null,
   };
 
   try {
@@ -68,6 +71,7 @@ export async function createEvent(formData: FormData) {
 
 export async function updateEvent(id: number, formData: FormData) {
   const token = await getToken();
+  const updateSeverityRaw = formData.get("severity") as string;
   const data: Partial<EventCreateInput> = {
     contract: parseInt(formData.get("contract") as string, 10),
     record_type: formData.get("record_type") as string,
@@ -79,6 +83,7 @@ export async function updateEvent(id: number, formData: FormData) {
     customer_notified: formData.get("customer_notified") === "on",
     customer_notified_at:
       (formData.get("customer_notified_at") as string) || undefined,
+    severity: updateSeverityRaw ? parseInt(updateSeverityRaw, 10) : null,
   };
 
   try {

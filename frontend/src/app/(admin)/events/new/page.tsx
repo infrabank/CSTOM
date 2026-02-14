@@ -18,9 +18,17 @@ const RECORD_TYPES = [
   { value: "incident", label: "장애" },
 ];
 
+const SEVERITY_OPTIONS = [
+  { value: "", label: "선택 안함" },
+  { value: "1", label: "심각도 1 (서비스 전면중단)" },
+  { value: "2", label: "심각도 2 (주요기능 장애)" },
+  { value: "3", label: "심각도 3 (경미한 장애)" },
+];
+
 export default function NewEventPage() {
   const router = useRouter();
   const [contracts, setContracts] = useState<Contract[]>([]);
+  const [recordType, setRecordType] = useState("change");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -102,6 +110,8 @@ export default function NewEventPage() {
                id="record_type"
                name="record_type"
                required
+               value={recordType}
+               onChange={(e) => setRecordType(e.target.value)}
                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
              >
               {RECORD_TYPES.map((type) => (
@@ -111,6 +121,28 @@ export default function NewEventPage() {
               ))}
             </select>
           </div>
+
+          {recordType === "incident" && (
+            <div>
+              <label htmlFor="severity" className="block text-sm font-medium text-text mb-1">
+                심각도
+              </label>
+              <select
+                id="severity"
+                name="severity"
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {SEVERITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-text-secondary">
+                SLA 평가 시 심각도별 가중치 적용: 심각도1=1.0건, 심각도2=0.5건, 심각도3=제외
+              </p>
+            </div>
+          )}
 
           <div>
              <label htmlFor="title" className="block text-sm font-medium text-text mb-1">

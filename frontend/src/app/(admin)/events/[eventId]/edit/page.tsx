@@ -26,11 +26,19 @@ interface Event {
   resolved_at: string | null;
   customer_notified: boolean;
   customer_notified_at: string | null;
+  severity: number | null;
 }
 
 const RECORD_TYPES = [
   { value: "change", label: "변경" },
   { value: "incident", label: "장애" },
+];
+
+const SEVERITY_OPTIONS = [
+  { value: "", label: "선택 안함" },
+  { value: "1", label: "심각도 1 (서비스 전면중단)" },
+  { value: "2", label: "심각도 2 (주요기능 장애)" },
+  { value: "3", label: "심각도 3 (경미한 장애)" },
 ];
 
 function formatDatetimeLocal(isoString: string | null): string {
@@ -173,6 +181,28 @@ export default function EditEventPage({ params }: PageProps) {
               ))}
             </select>
           </div>
+
+          {event.record_type === "incident" && (
+            <div>
+              <label className="block text-sm font-medium text-text mb-1">
+                심각도
+              </label>
+              <select
+                name="severity"
+                defaultValue={event.severity?.toString() || ""}
+                className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {SEVERITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-text-secondary">
+                SLA 평가 시 심각도별 가중치 적용: 심각도1=1.0건, 심각도2=0.5건, 심각도3=제외
+              </p>
+            </div>
+          )}
 
            <div>
              <label className="block text-sm font-medium text-text mb-1">
