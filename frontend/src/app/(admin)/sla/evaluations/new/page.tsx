@@ -60,6 +60,9 @@ export default function NewSLAEvaluationReportPage() {
   const [categories, setCategories] = useState<SLACategory[]>([]);
   const [scores, setScores] = useState<Record<number, ScoreInput>>({});
 
+  const [autoEvaluated, setAutoEvaluated] = useState<Set<number>>(new Set());
+  const [isAutoEvaluating, setIsAutoEvaluating] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,6 +139,69 @@ export default function NewSLAEvaluationReportPage() {
       console.error(err);
     } finally {
       setIsLoadingItems(false);
+    }
+  };
+
+  const handleAutoEvaluate = async () => {
+    if (!contractId || !periodStart || !periodEnd) {
+      setError("자동 채점을 위해 사업과 평가기간을 먼저 설정하세요");
+      return;
+    }
+    if (categories.length === 0) {
+      setError("평가항목을 먼저 불러오세요");
+      return;
+    }
+
+    setError("");
+    setIsAutoEvaluating(true);
+
+    try {
+      const token = getAccessToken();
+      const headers: HeadersInit = token
+        ? { Authorization: `Bearer ${token}` }
+        : {};
+
+      const res = await fetch(
+        `${API_URL}/v1/sla/evaluation-reports/auto_evaluate/?contract=${contractId}&period_start=${periodStart}&period_end=${periodEnd}`,
+        { headers }
+      );
+
+      if (!res.ok) {
+        const errMsg = await parseApiError(res, "자동 채점에 실패했습니다");
+        throw new Error(errMsg);
+      }
+
+      const data: Record<string, { service_level: string; notes: string; metric_value: string }> = await res.json();
+
+      // Map item_number from API response to item IDs in the categories
+      const newAutoSet = new Set<number>();
+      const updatedScores = { ...scores };
+
+      categories.forEach((category) => {
+        category.items.forEach((item) => {
+          const autoResult = data[String(item.item_number)];
+          if (autoResult) {
+            updatedScores[item.id] = {
+              ...updatedScores[item.id],
+              service_level: autoResult.service_level,
+              notes: autoResult.notes,
+            };
+            newAutoSet.add(item.id);
+          }
+        });
+      });
+
+      setScores(updatedScores);
+      setAutoEvaluated(newAutoSet);
+
+      const autoCount = Object.keys(data).length;
+      const totalItems = categories.reduce((sum, c) => sum + c.items.length, 0);
+      const manualCount = totalItems - autoCount;
+      alert(`자동 채점 완료: ${autoCount}개 항목 자동산출, ${manualCount}개 항목 수동 입력 필요`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "자동 채점에 실패했습니다");
+    } finally {
+      setIsAutoEvaluating(false);
     }
   };
 
@@ -388,7 +454,7 @@ export default function NewSLAEvaluationReportPage() {
             </div>
           </div>
 
-          <div>
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={handleLoadItems}
@@ -397,6 +463,16 @@ export default function NewSLAEvaluationReportPage() {
             >
               {isLoadingItems ? "불러오는 중..." : "평가항목 불러오기"}
             </button>
+            {categories.length > 0 && (
+              <button
+                type="button"
+                onClick={handleAutoEvaluate}
+                disabled={isAutoEvaluating || !periodStart || !periodEnd}
+                className="px-6 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isAutoEvaluating ? "자동 채점 중..." : "자동 채점"}
+              </button>
+            )}
           </div>
         </div>
 
@@ -434,7 +510,14 @@ export default function NewSLAEvaluationReportPage() {
                           return (
                             <tr key={item.id} className="border-b border-border hover:bg-surface-sunken">
                               <td className="px-4 py-3 text-sm">{item.item_number}</td>
-                              <td className="px-4 py-3 text-sm">{item.name}</td>
+                              <td className="px-4 py-3 text-sm">
+                                {item.name}
+                                {autoEvaluated.has(item.id) && (
+                                  <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-emerald-100 text-emerald-800">
+                                    자동
+                                  </span>
+                                )}
+                              </td>
                               <td className="px-4 py-3 text-sm">{item.weight}</td>
                               <td className="px-4 py-3">
                                 <select

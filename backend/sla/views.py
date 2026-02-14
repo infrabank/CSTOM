@@ -383,6 +383,38 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
             )
         return super().destroy(request, *args, **kwargs)
 
+    @action(detail=False, methods=["get"])
+    def auto_evaluate(self, request):
+        """Auto-calculate service levels for items with available data.
+
+        Query params: contract, period_start, period_end
+        Returns: {item_number: {service_level, notes, metric_value}} for automatable items.
+        """
+        from .evaluation_services import auto_evaluate
+
+        contract_id = request.query_params.get("contract")
+        period_start = request.query_params.get("period_start")
+        period_end = request.query_params.get("period_end")
+
+        if not all([contract_id, period_start, period_end]):
+            return Response(
+                {"error": "contract, period_start, period_end are required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from contracts.models import Contract
+
+        try:
+            contract = Contract.objects.get(id=contract_id)
+        except Contract.DoesNotExist:
+            return Response(
+                {"error": "Contract not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        results = auto_evaluate(contract, period_start, period_end)
+        return Response(results)
+
     @action(detail=True, methods=["post"])
     def calculate_score(self, request, pk=None):
         """Calculate total score with adjustments for this report."""
