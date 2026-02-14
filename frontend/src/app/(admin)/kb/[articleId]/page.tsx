@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { getAccessToken } from "@/lib/auth";
 
 interface KBArticle {
   id: number;
@@ -33,14 +34,14 @@ export default function KBArticleDetailPage() {
     const fetchArticle = async () => {
       try {
         setLoading(true);
+        const token = getAccessToken();
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+          ...(token && { Authorization: `Bearer ${token}` }),
+        };
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          }
+          { headers }
         );
 
         if (!response.ok) {
@@ -55,10 +56,7 @@ export default function KBArticleDetailPage() {
           `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/increment_views/`,
           {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
+            headers,
           }
         );
       } catch (err) {
@@ -77,14 +75,15 @@ export default function KBArticleDetailPage() {
     if (hasVoted) return;
 
     try {
+      const token = getAccessToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/mark_helpful/`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` }),
           },
-          credentials: 'include',
         }
       );
 
