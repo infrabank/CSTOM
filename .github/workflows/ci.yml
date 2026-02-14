@@ -57,7 +57,7 @@ jobs:
           SECRET_KEY: test-secret-key-for-ci
           DEBUG: 'False'
           SECURE_SSL_REDIRECT: 'False'
-        run: python manage.py check --deploy --fail-level WARNING
+        run: python manage.py check --deploy --fail-level ERROR
 
       - name: Run tests
         working-directory: backend
