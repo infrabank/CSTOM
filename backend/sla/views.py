@@ -353,6 +353,36 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
             "scores", "scores__evaluation_item", "penalties"
         )
 
+    def update(self, request, *args, **kwargs):
+        """Block updates to finalized reports."""
+        report = self.get_object()
+        if report.is_finalized:
+            return Response(
+                {"error": "확정된 평가 보고서는 수정할 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """Block partial updates to finalized reports."""
+        report = self.get_object()
+        if report.is_finalized:
+            return Response(
+                {"error": "확정된 평가 보고서는 수정할 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Block deletion of finalized reports."""
+        report = self.get_object()
+        if report.is_finalized:
+            return Response(
+                {"error": "확정된 평가 보고서는 삭제할 수 없습니다."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
+
     @action(detail=True, methods=["post"])
     def calculate_score(self, request, pk=None):
         """Calculate total score with adjustments for this report."""

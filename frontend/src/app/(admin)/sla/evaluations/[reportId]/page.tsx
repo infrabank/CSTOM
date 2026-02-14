@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getAccessToken } from "@/lib/auth";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
@@ -100,6 +100,7 @@ function formatDate(dateString: string): string {
 
 export default function SLAEvaluationReportDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const reportId = params?.reportId as string;
 
   const [report, setReport] = useState<SLAEvaluationReport | null>(null);
@@ -107,6 +108,7 @@ export default function SLAEvaluationReportDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary[]>([]);
 
@@ -210,6 +212,42 @@ export default function SLAEvaluationReportDetailPage() {
       setActionError(err instanceof Error ? err.message : '확정에 실패했습니다');
     } finally {
       setIsFinalizing(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('이 평가 보고서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setActionError('');
+
+    try {
+      const token = getAccessToken();
+      if (!token) throw new Error('인증 토큰이 없습니다');
+
+      const res = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
+        }
+        throw new Error(`삭제에 실패했습니다 (HTTP ${res.status})`);
+      }
+
+      router.push('/sla/evaluations');
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : '삭제에 실패했습니다');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -504,6 +542,12 @@ export default function SLAEvaluationReportDetailPage() {
       <div className="flex gap-3">
         {!report.is_finalized && (
           <>
+            <Link
+              href={`/sla/evaluations/${reportId}/edit`}
+              className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover transition-colors"
+            >
+              수정
+            </Link>
             <button
               onClick={handleCalculateScore}
               disabled={isCalculating}
@@ -517,6 +561,13 @@ export default function SLAEvaluationReportDetailPage() {
               className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isFinalizing ? '확정 중...' : '확정'}
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="px-4 py-2 bg-danger-bg text-danger border border-danger-border rounded-md hover:bg-danger-bg/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isDeleting ? '삭제 중...' : '삭제'}
             </button>
           </>
         )}
