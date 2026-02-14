@@ -197,7 +197,8 @@ export default function NewSLAEvaluationReportPage() {
         const ct = reportRes.headers.get("content-type") || "";
         if (ct.includes("application/json")) {
           const errorData = await reportRes.json();
-          throw new Error(errorData.detail || "평가 리포트 생성에 실패했습니다");
+          const msg = errorData.detail || errorData.error || Object.entries(errorData).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join("; ");
+          throw new Error(msg || `평가 리포트 생성에 실패했습니다 (HTTP ${reportRes.status})`);
         }
         throw new Error(`평가 리포트 생성에 실패했습니다 (HTTP ${reportRes.status})`);
       }
@@ -223,7 +224,8 @@ export default function NewSLAEvaluationReportPage() {
       );
 
       if (!scoresRes.ok) {
-        throw new Error("평가 점수 저장에 실패했습니다");
+        const errBody = await scoresRes.json().catch(() => ({}));
+        throw new Error(errBody.detail || errBody.error || `평가 점수 저장에 실패했습니다 (HTTP ${scoresRes.status})`);
       }
 
       // Step 3: Calculate final score
@@ -238,7 +240,8 @@ export default function NewSLAEvaluationReportPage() {
       );
 
       if (!calcRes.ok) {
-        throw new Error("평가 점수 계산에 실패했습니다");
+        const errBody = await calcRes.json().catch(() => ({}));
+        throw new Error(errBody.detail || errBody.error || `평가 점수 계산에 실패했습니다 (HTTP ${calcRes.status})`);
       }
 
       router.push(`/sla/evaluations/${reportId}`);
