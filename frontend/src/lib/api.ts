@@ -465,6 +465,208 @@ export const auditApi = {
   },
 };
 
+// ---- SLA Types & API ----
+
+export interface SLAEvaluationCriteria {
+  id: number;
+  evaluation_item: number;
+  item_name: string;
+  item_number: number;
+  service_level: string;
+  criteria_text: string;
+}
+
+export interface SLAPenalty {
+  id: number;
+  report: number;
+  penalty_type: string;
+  penalty_type_display: string;
+  evaluation_item: number | null;
+  item_name: string | null;
+  penalty_rate: string;
+  penalty_amount: string | null;
+  is_offset: boolean;
+  notes: string;
+  created_at: string;
+}
+
+export interface UptimeRecord {
+  id: number;
+  equipment: number;
+  equipment_name: string;
+  equipment_category: string;
+  contract: number;
+  period_start: string;
+  period_end: string;
+  total_operating_hours: string;
+  unplanned_downtime_hours: string;
+  uptime_percentage: string | null;
+  downtime_reason: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PerformanceImprovement {
+  id: number;
+  contract: number;
+  contract_name: string;
+  title: string;
+  description: string;
+  proposed_by: string;
+  proposed_date: string;
+  is_accepted: boolean;
+  accepted_date: string | null;
+  effect_report: string;
+  evaluation_period_start: string | null;
+  evaluation_period_end: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SLARevisionRequest {
+  id: number;
+  contract: number;
+  contract_name: string;
+  requester_name: string;
+  requester_department: string;
+  request_date: string;
+  revision_reason: string;
+  document_name: string;
+  section_reference: string;
+  content_before: string;
+  content_after: string;
+  review_opinion: string;
+  review_result: string;
+  review_result_display: string;
+  review_date: string | null;
+  reviewer_name: string;
+  reviewer_department: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SLACategory {
+  id: number;
+  name: string;
+  code: string;
+  weight_percent: number;
+  contract: number;
+  display_order: number;
+  is_active: boolean;
+  items: SLAEvaluationItem[];
+}
+
+export interface SLAEvaluationItem {
+  id: number;
+  category: number;
+  item_number: number;
+  name: string;
+  weight: number;
+  measurement_cycle: string;
+  description: string;
+  is_active: boolean;
+  category_name: string;
+  criteria: SLAEvaluationCriteria[];
+}
+
+export const slaApi = {
+  // Criteria
+  listCriteria: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: SLAEvaluationCriteria[] }>(`/v1/sla/criteria/${query}`, { token });
+  },
+  updateCriteria: (id: number, data: Partial<SLAEvaluationCriteria>, token?: string) =>
+    fetchAPI<SLAEvaluationCriteria>(`/v1/sla/criteria/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+
+  // Categories with items
+  listCategories: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: SLACategory[] }>(`/v1/sla/categories/${query}`, { token });
+  },
+
+  // Penalties
+  listPenalties: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: SLAPenalty[] }>(`/v1/sla/penalties/${query}`, { token });
+  },
+
+  // Uptime Records
+  listUptimeRecords: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: UptimeRecord[] }>(`/v1/sla/uptime-records/${query}`, { token });
+  },
+  createUptimeRecord: (data: Partial<UptimeRecord>, token?: string) =>
+    fetchAPI<UptimeRecord>("/v1/sla/uptime-records/", {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+  updateUptimeRecord: (id: number, data: Partial<UptimeRecord>, token?: string) =>
+    fetchAPI<UptimeRecord>(`/v1/sla/uptime-records/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+  deleteUptimeRecord: (id: number, token?: string) =>
+    fetchAPI<void>(`/v1/sla/uptime-records/${id}/`, { method: "DELETE", token }),
+
+  // Performance Improvements
+  listImprovements: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: PerformanceImprovement[] }>(`/v1/sla/improvements/${query}`, { token });
+  },
+  createImprovement: (data: Partial<PerformanceImprovement>, token?: string) =>
+    fetchAPI<PerformanceImprovement>("/v1/sla/improvements/", {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+  updateImprovement: (id: number, data: Partial<PerformanceImprovement>, token?: string) =>
+    fetchAPI<PerformanceImprovement>(`/v1/sla/improvements/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+  deleteImprovement: (id: number, token?: string) =>
+    fetchAPI<void>(`/v1/sla/improvements/${id}/`, { method: "DELETE", token }),
+
+  // Revision Requests
+  listRevisionRequests: (params?: Record<string, string>, token?: string) => {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return fetchAPI<{ results: SLARevisionRequest[] }>(`/v1/sla/revision-requests/${query}`, { token });
+  },
+  createRevisionRequest: (data: Partial<SLARevisionRequest>, token?: string) =>
+    fetchAPI<SLARevisionRequest>("/v1/sla/revision-requests/", {
+      method: "POST",
+      body: JSON.stringify(data),
+      token,
+    }),
+  updateRevisionRequest: (id: number, data: Partial<SLARevisionRequest>, token?: string) =>
+    fetchAPI<SLARevisionRequest>(`/v1/sla/revision-requests/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+      token,
+    }),
+  deleteRevisionRequest: (id: number, token?: string) =>
+    fetchAPI<void>(`/v1/sla/revision-requests/${id}/`, { method: "DELETE", token }),
+
+  // Report actions
+  calculateScore: (reportId: number, token?: string) =>
+    fetchAPI(`/v1/sla/evaluation-reports/${reportId}/calculate_score/`, {
+      method: "POST",
+      token,
+    }),
+  getReportPenalties: (reportId: number, token?: string) =>
+    fetchAPI<SLAPenalty[]>(`/v1/sla/evaluation-reports/${reportId}/penalties/`, { token }),
+  getUptimeSummary: (reportId: number, token?: string) =>
+    fetchAPI(`/v1/sla/evaluation-reports/${reportId}/uptime_summary/`, { token }),
+};
+
 export const authApi = {
   login: async (credentials: LoginCredentials): Promise<TokenPair> => {
     // Use Next.js API route which sets refresh token as HttpOnly cookie

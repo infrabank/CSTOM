@@ -7,6 +7,11 @@ from .models import (
     SLAEvaluationReport,
     SLAEvaluationScore,
     SLAMetric,
+    SLAEvaluationCriteria,
+    SLAPenalty,
+    UptimeRecord,
+    PerformanceImprovement,
+    SLARevisionRequest,
 )
 
 
@@ -197,3 +202,78 @@ class SLAMetricAdmin(admin.ModelAdmin):
         ),
         ("Timestamps", {"fields": ("created_at", "updated_at")}),
     )
+
+
+@admin.register(SLAEvaluationCriteria)
+class SLAEvaluationCriteriaAdmin(admin.ModelAdmin):
+    list_display = ("evaluation_item", "service_level", "criteria_text")
+    list_filter = ("service_level", "evaluation_item__category")
+    search_fields = ("criteria_text", "evaluation_item__name")
+    ordering = ("evaluation_item__item_number", "-service_level")
+
+
+@admin.register(SLAPenalty)
+class SLAPenaltyAdmin(admin.ModelAdmin):
+    list_display = (
+        "report",
+        "penalty_type",
+        "evaluation_item",
+        "penalty_rate",
+        "penalty_amount",
+        "is_offset",
+        "created_at",
+    )
+    list_filter = ("penalty_type", "is_offset", "report__contract")
+    search_fields = ("notes", "report__contract__name")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(UptimeRecord)
+class UptimeRecordAdmin(admin.ModelAdmin):
+    list_display = (
+        "equipment",
+        "contract",
+        "period_start",
+        "period_end",
+        "total_operating_hours",
+        "unplanned_downtime_hours",
+        "uptime_percentage",
+    )
+    list_filter = ("contract", "equipment__category", "period_start")
+    search_fields = ("equipment__name", "contract__name")
+    readonly_fields = ("uptime_percentage", "created_at", "updated_at")
+
+
+@admin.register(PerformanceImprovement)
+class PerformanceImprovementAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "contract",
+        "proposed_by",
+        "proposed_date",
+        "is_accepted",
+        "accepted_date",
+    )
+    list_filter = ("contract", "is_accepted", "proposed_date")
+    search_fields = ("title", "description", "proposed_by")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(SLARevisionRequest)
+class SLARevisionRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "contract",
+        "requester_name",
+        "request_date",
+        "review_result",
+        "reviewer_name",
+        "review_date",
+    )
+    list_filter = ("contract", "review_result", "request_date")
+    search_fields = (
+        "revision_reason",
+        "requester_name",
+        "document_name",
+        "reviewer_name",
+    )
+    readonly_fields = ("created_at", "updated_at")

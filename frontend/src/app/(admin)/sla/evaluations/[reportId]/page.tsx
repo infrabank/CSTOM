@@ -21,6 +21,10 @@ interface SLAEvaluationReport {
   scores: SLAEvaluationScore[];
   created_at: string;
   updated_at: string;
+  adjustment_points: number;
+  duplicate_incident_count: number;
+  improvement_count: number;
+  penalties: SLAPenalty[];
 }
 
 interface SLAEvaluationScore {
@@ -35,6 +39,23 @@ interface SLAEvaluationScore {
   system_name: string;
   occurrence_date: string | null;
   notes: string;
+}
+
+interface SLAPenalty {
+  id: number;
+  penalty_type: string;
+  penalty_type_display: string;
+  item_name: string | null;
+  penalty_rate: string;
+  penalty_amount: string | null;
+  is_offset: boolean;
+  notes: string;
+}
+
+interface UptimeSummary {
+  equipment_category: string;
+  avg_uptime: number;
+  record_count: number;
 }
 
 interface ScoresByCategory {
@@ -53,6 +74,11 @@ const GRADE_COLORS: Record<string, string> = {
   B: 'bg-warning-bg text-warning',
   C: 'bg-danger-bg text-danger',
   D: 'bg-danger-bg text-danger',
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  server: "서버", network: "네트워크", storage: "스토리지",
+  security: "보안장비", pc: "PC", other: "기타",
 };
 
 function GradeBadge({ grade, gradeDisplay }: { grade: string; gradeDisplay: string }) {
@@ -82,6 +108,7 @@ export default function SLAEvaluationReportDetailPage() {
   const [isCalculating, setIsCalculating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [actionError, setActionError] = useState('');
+  const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary[]>([]);
 
   const getHeaders = useCallback((): HeadersInit => {
     const token = getAccessToken();
@@ -97,6 +124,14 @@ export default function SLAEvaluationReportDetailPage() {
       if (!res.ok) throw new Error('평가 보고서를 불러오지 못했습니다');
       const data = await res.json();
       setReport(data);
+      // Fetch uptime summary
+      try {
+        const uptimeRes = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/uptime_summary/`, { headers: getHeaders() });
+        if (uptimeRes.ok) {
+          const uptimeData = await uptimeRes.json();
+          setUptimeSummary(uptimeData);
+        }
+      } catch {}
     } catch (e) {
       setError(e instanceof Error ? e.message : '평가 보고서를 불러오지 못했습니다');
     } finally {
@@ -347,6 +382,104 @@ export default function SLAEvaluationReportDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Adjustment Points */}
+      {(report.duplicate_incident_count > 0 || report.improvement_count > 0) && (
+        <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">가감점 내역</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-lg border border-border-light">
+              <div className="text-sm text-text-muted">동일장애 감점</div>
+              <div className="text-xl font-semibold text-danger mt-1">
+                -{report.duplicate_incident_count}점
+              </div>
+              <div className="text-xs text-text-muted mt-1">동일장애 {report.duplicate_incident_count}건</div>
+            </div>
+            <div className="p-4 rounded-lg border border-border-light">
+              <div className="text-sm text-text-muted">성능개선 가점</div>
+              <div className="text-xl font-semibold text-success mt-1">
+                +{report.improvement_count}점
+              </div>
+              <div className="text-xs text-text-muted mt-1">승인된 개선안 {report.improvement_count}건</div>
+            </div>
+            <div className="p-4 rounded-lg border border-border-light">
+              <div className="text-sm text-text-muted">순 가감점</div>
+              <div className={`text-xl font-semibold mt-1 ${report.adjustment_points >= 0 ? 'text-success' : 'text-danger'}`}>
+                {report.adjustment_points > 0 ? '+' : ''}{report.adjustment_points}점
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Penalty Summary */}
+      {report.penalties && report.penalties.length > 0 && (
+        <div className="bg-surface shadow-card rounded-lg overflow-hidden mb-6">
+          <div className="p-6 border-b border-border-light">
+            <h2 className="text-lg font-semibold">벌점 내역</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-border-light">
+              <thead className="bg-surface-sunken">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">유형</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">관련항목</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-text-muted uppercase">벌점율</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-text-muted uppercase">벌점금액</th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-text-muted uppercase">상계</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase">비고</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border-light">
+                {report.penalties.map((p) => (
+                  <tr key={p.id} className="hover:bg-surface-sunken">
+                    <td className="px-6 py-4 text-sm text-text">{p.penalty_type_display}</td>
+                    <td className="px-6 py-4 text-sm text-text">{p.item_name || '-'}</td>
+                    <td className="px-6 py-4 text-sm text-text text-right">{p.penalty_rate}%</td>
+                    <td className="px-6 py-4 text-sm text-text text-right">
+                      {p.penalty_amount ? Number(p.penalty_amount).toLocaleString() + '원' : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        p.is_offset ? 'bg-success-bg text-success' : 'bg-surface-sunken text-text-muted'
+                      }`}>
+                        {p.is_offset ? '상계' : '-'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-text-secondary">{p.notes || '-'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Uptime Summary */}
+      {uptimeSummary.length > 0 && (
+        <div className="bg-surface shadow-card rounded-lg p-6 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">장비 가동율 요약</h2>
+            <Link href="/sla/uptime" className="text-sm text-accent hover:underline">
+              상세 기록 보기
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {uptimeSummary.map((item) => {
+              const color = item.avg_uptime >= 99.5 ? 'text-success' : item.avg_uptime >= 99.0 ? 'text-warning' : 'text-danger';
+              return (
+                <div key={item.equipment_category} className="p-3 rounded-lg border border-border-light text-center">
+                  <div className="text-xs text-text-muted">{CATEGORY_LABELS[item.equipment_category] || item.equipment_category}</div>
+                  <div className={`text-lg font-semibold mt-1 ${color}`}>
+                    {item.avg_uptime.toFixed(2)}%
+                  </div>
+                  <div className="text-xs text-text-muted">{item.record_count}건</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Notes Section */}
       {(report.evaluator_notes || report.deduction_notes) && (

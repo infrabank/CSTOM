@@ -16,6 +16,7 @@ interface SLAEvaluationItem {
   name: string;
   weight: number;
   category_name: string;
+  criteria: { service_level: string; criteria_text: string }[];
 }
 
 interface SLACategory {
@@ -35,11 +36,11 @@ interface ScoreInput {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const SERVICE_LEVEL_OPTIONS = [
-  { value: "1.0", label: "1.0 (최고)" },
-  { value: "0.8", label: "0.8" },
-  { value: "0.6", label: "0.6" },
-  { value: "0.4", label: "0.4" },
-  { value: "0.2", label: "0.2 (최저)" },
+  { value: "1.0", label: "1.0 (목표이상)" },
+  { value: "0.8", label: "0.8 (최소이상)" },
+  { value: "0.6", label: "0.6 (최소미만)" },
+  { value: "0.4", label: "0.4 (미흡)" },
+  { value: "0.2", label: "0.2 (매우미흡)" },
 ];
 
 const getGradeInfo = (score: number): { grade: string; label: string } => {
@@ -352,6 +353,7 @@ export default function NewSLAEvaluationReportPage() {
                       <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">가중치</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">서비스 수준</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">점수</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">배점기준</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-text-secondary">비고</th>
                     </tr>
                   </thead>
@@ -359,7 +361,7 @@ export default function NewSLAEvaluationReportPage() {
                     {categories.map((category) => (
                       <React.Fragment key={`category-${category.id}`}>
                         <tr className="bg-surface-sunken">
-                          <td colSpan={6} className="px-4 py-3 font-semibold">
+                          <td colSpan={7} className="px-4 py-3 font-semibold">
                             {category.name} (카테고리 가중치: {category.weight_percent}%)
                           </td>
                         </tr>
@@ -389,6 +391,9 @@ export default function NewSLAEvaluationReportPage() {
                                 </select>
                               </td>
                               <td className="px-4 py-3 text-sm font-medium">{calculatedScore}</td>
+                              <td className="px-4 py-3 text-xs text-text-secondary max-w-xs">
+                                {item.criteria?.find(c => c.service_level === (scoreData?.service_level || "1.0"))?.criteria_text || ""}
+                              </td>
                               <td className="px-4 py-3">
                                 <input
                                   type="text"

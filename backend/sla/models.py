@@ -8,6 +8,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from contracts.models import Contract
+from equipments.models import Equipment
 
 
 class SLADefinition(models.Model):
@@ -251,6 +252,11 @@ class SLAEvaluationReport(models.Model):
     is_finalized = models.BooleanField(
         default=False, help_text="Whether this report is finalized"
     )
+    adjustment_points = models.IntegerField(
+        default=0, help_text="Bonus/penalty from duplicates and improvements"
+    )
+    duplicate_incident_count = models.IntegerField(default=0)
+    improvement_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -350,3 +356,171 @@ class SLAEvaluationScore(models.Model):
             self.score = Decimal(str(self.evaluation_item.weight)) * self.service_level
 
         super().save(*args, **kwargs)
+
+
+class SLAEvaluationCriteria(models.Model):
+    """Scoring criteria text for each service level per evaluation item."""
+
+    evaluation_item = models.ForeignKey(
+        SLAEvaluationItem, on_delete=models.CASCADE, related_name="criteria"
+    )
+    service_level = models.DecimalField(
+        max_digits=3,
+        decimal_places=1,
+        help_text="Service level: 1.0, 0.8, 0.6, 0.4, 0.2",
+    )
+    criteria_text = models.TextField(help_text="Description of criteria for this level")
+
+    class Meta:
+        unique_together = ("evaluation_item", "service_level")
+        ordering = ["evaluation_item__item_number", "-service_level"]
+        verbose_name = "SLA Evaluation Criteria"
+        verbose_name_plural = "SLA Evaluation Criteria"
+
+    def __str__(self):
+        return f"{self.evaluation_item.name} - Level {self.service_level}"
+
+
+class SLAPenalty(models.Model):
+    """Penalty record per evaluation report."""
+
+    PENALTY_TYPE_CHOICES = [
+        ("overall", "종합평가 벌점"),
+        ("item_level", "항목별 벌점"),
+    ]
+
+    report = models.ForeignKey(
+        SLAEvaluationReport, on_delete=models.CASCADE, related_name="penalties"
+    )
+    penalty_type = models.CharField(max_length=20, choices=PENALTY_TYPE_CHOICES)
+    evaluation_item = models.ForeignKey(
+        SLAEvaluationItem, null=True, blank=True, on_delete=models.SET_NULL
+    )
+    penalty_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, help_text="Penalty percentage"
+    )
+    penalty_amount = models.DecimalField(
+        max_digits=12, decimal_places=0, null=True, blank=True
+    )
+    is_offset = models.BooleanField(
+        default=False, help_text="Whether this penalty is offset by annual adjustment"
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "SLA Penalty"
+        verbose_name_plural = "SLA Penalties"
+
+    def __str__(self):
+        return f"{self.get_penalty_type_display()} - {self.penalty_rate}%"
+
+
+class UptimeRecord(models.Model):
+    """Monthly uptime record per equipment."""
+
+    equipment = models.ForeignKey(
+        Equipment, on_delete=models.CASCADE, related_name="uptime_records"
+    )
+    contract = models.ForeignKey(
+        Contract, on_delete=models.CASCADE, related_name="uptime_records"
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+    total_operating_hours = models.DecimalField(max_digits=8, decimal_places=2)
+    unplanned_downtime_hours = models.DecimalField(
+        max_digits=8, decimal_places=2, default=0
+    )
+    uptime_percentage = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True
+    )
+    downtime_reason = models.TextField(blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("equipment", "period_start", "period_end")
+        ordering = ["-period_start"]
+        verbose_name = "Uptime Record"
+        verbose_name_plural = "Uptime Records"
+
+    def __str__(self):
+        return f"{self.equipment.name} - {self.period_start} ({self.uptime_percentage}%)"
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate uptime_percentage on save."""
+        if self.total_operating_hours and self.total_operating_hours > 0:
+            effective = self.total_operating_hours - self.unplanned_downtime_hours
+            self.uptime_percentage = (effective / self.total_operating_hours) * 100
+        super().save(*args, **kwargs)
+
+
+class PerformanceImprovement(models.Model):
+    """Voluntary performance improvement proposal (+1 point each when accepted)."""
+
+    contract = models.ForeignKey(
+        Contract, on_delete=models.CASCADE, related_name="performance_improvements"
+    )
+    title = models.CharField(max_length=300)
+    description = models.TextField()
+    proposed_by = models.CharField(max_length=100, blank=True)
+    proposed_date = models.DateField()
+    is_accepted = models.BooleanField(default=False)
+    accepted_date = models.DateField(null=True, blank=True)
+    effect_report = models.TextField(
+        blank=True, help_text="실질개선 효과 결과 보고서"
+    )
+    evaluation_period_start = models.DateField(null=True, blank=True)
+    evaluation_period_end = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-proposed_date"]
+        verbose_name = "Performance Improvement"
+        verbose_name_plural = "Performance Improvements"
+
+    def __str__(self):
+        status = "승인" if self.is_accepted else "제안"
+        return f"[{status}] {self.title}"
+
+
+class SLARevisionRequest(models.Model):
+    """SLA revision request workflow (Appendix 2)."""
+
+    REVIEW_RESULT_CHOICES = [
+        ("approved", "개정"),
+        ("needs_review", "추가검토"),
+        ("rejected", "의견반려"),
+    ]
+
+    contract = models.ForeignKey(
+        Contract, on_delete=models.CASCADE, related_name="sla_revision_requests"
+    )
+    requester_name = models.CharField(max_length=100)
+    requester_department = models.CharField(max_length=100)
+    request_date = models.DateField()
+    revision_reason = models.TextField()
+    document_name = models.CharField(max_length=200, blank=True)
+    section_reference = models.CharField(max_length=100, blank=True)
+    content_before = models.TextField()
+    content_after = models.TextField()
+    review_opinion = models.TextField(blank=True)
+    review_result = models.CharField(
+        max_length=20, choices=REVIEW_RESULT_CHOICES, blank=True
+    )
+    review_date = models.DateField(null=True, blank=True)
+    reviewer_name = models.CharField(max_length=100, blank=True)
+    reviewer_department = models.CharField(max_length=100, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-request_date"]
+        verbose_name = "SLA Revision Request"
+        verbose_name_plural = "SLA Revision Requests"
+
+    def __str__(self):
+        return f"SLA 개정요청: {self.revision_reason[:50]} ({self.request_date})"

@@ -116,6 +116,7 @@ class EquipmentSerializer(serializers.ModelSerializer):
             "location",
             "status",
             "status_display",
+            "importance_grade",
             "notes",
             "purchase_date",
             "warranty_expiry_date",
@@ -160,6 +161,7 @@ class EquipmentListSerializer(serializers.ModelSerializer):
             "model_name",
             "status",
             "status_display",
+            "importance_grade",
             "location",
             "last_transaction",
             "created_at",
@@ -195,6 +197,7 @@ class EquipmentCreateSerializer(serializers.ModelSerializer):
             "manufacturer",
             "location",
             "status",
+            "importance_grade",
             "notes",
         ]
 

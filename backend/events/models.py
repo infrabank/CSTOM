@@ -41,6 +41,23 @@ class ChangeIncident(models.Model):
         related_name="linked_events",
     )
 
+    # Severity and duplicate tracking
+    SEVERITY_CHOICES = [
+        (1, "심각도 1"),
+        (2, "심각도 2"),
+        (3, "심각도 3"),
+    ]
+    severity = models.IntegerField(choices=SEVERITY_CHOICES, null=True, blank=True)
+    root_cause_category = models.CharField(max_length=200, blank=True)
+    is_duplicate = models.BooleanField(default=False)
+    original_incident = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="duplicate_incidents",
+    )
+
     # Auto-generated summaries
     summary_notice = models.TextField(blank=True, help_text="1st notice summary")
     audit_summary = models.TextField(blank=True, help_text="Audit/report summary")

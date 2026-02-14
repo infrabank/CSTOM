@@ -249,10 +249,13 @@ def _determine_priority(impact_level: str) -> str:
 
 def _determine_incident_priority(incident: ChangeIncident) -> str:
     """
-    Determine SLA priority for an incident.
+    Determine SLA priority for an incident based on severity.
 
-    For now, default to high priority. Can be enhanced with
-    incident severity field in future.
+    Severity mapping:
+    - 1 (심각도 1): critical
+    - 2 (심각도 2): high
+    - 3 (심각도 3): medium
+    - None: high (default)
 
     Args:
         incident: ChangeIncident instance
@@ -260,7 +263,12 @@ def _determine_incident_priority(incident: ChangeIncident) -> str:
     Returns:
         SLA priority
     """
-    return "high"
+    severity_map = {
+        1: "critical",
+        2: "high",
+        3: "medium",
+    }
+    return severity_map.get(incident.severity, "high")
 
 
 def _has_warning_been_sent(metric: SLAMetric, sla_type: str) -> bool:

@@ -13,6 +13,10 @@ class ChangeIncidentSerializer(serializers.ModelSerializer):
         source="related_event.title", read_only=True, allow_null=True
     )
 
+    original_incident_title = serializers.CharField(
+        source="original_incident.title", read_only=True, allow_null=True
+    )
+
     class Meta:
         model = ChangeIncident
         fields = [
@@ -29,6 +33,11 @@ class ChangeIncidentSerializer(serializers.ModelSerializer):
             "customer_notified_at",
             "related_event",
             "related_event_title",
+            "severity",
+            "root_cause_category",
+            "is_duplicate",
+            "original_incident",
+            "original_incident_title",
             "summary_notice",
             "audit_summary",
             "created_at",
@@ -54,6 +63,8 @@ class ChangeIncidentListSerializer(serializers.ModelSerializer):
             "resolved_at",
             "customer_notified",
             "has_related",
+            "severity",
+            "is_duplicate",
             "created_at",
         ]
 
@@ -76,6 +87,10 @@ class ChangeIncidentCreateSerializer(serializers.ModelSerializer):
             "resolved_at",
             "customer_notified",
             "customer_notified_at",
+            "severity",
+            "root_cause_category",
+            "is_duplicate",
+            "original_incident",
         ]
 
 

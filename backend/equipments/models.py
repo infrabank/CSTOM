@@ -26,6 +26,12 @@ class Equipment(models.Model):
         ("retired", "Retired"),
     ]
 
+    IMPORTANCE_GRADE_CHOICES = [
+        ("A", "A등급"),
+        ("B", "B등급"),
+        ("C", "C등급"),
+    ]
+
     contract = models.ForeignKey(
         Contract,
         on_delete=models.CASCADE,
@@ -47,6 +53,13 @@ class Equipment(models.Model):
     )
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="available"
+    )
+    importance_grade = models.CharField(
+        max_length=1,
+        choices=IMPORTANCE_GRADE_CHOICES,
+        default="C",
+        blank=True,
+        help_text="장비 중요도 등급 (A: 2시간, B: 4시간, C: 8시간 복구목표)",
     )
     notes = models.TextField(blank=True)
 

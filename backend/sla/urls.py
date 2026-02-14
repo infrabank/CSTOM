@@ -10,6 +10,11 @@ from .views import (
     SLAEvaluationItemViewSet,
     SLAEvaluationReportViewSet,
     SLAEvaluationScoreViewSet,
+    SLAEvaluationCriteriaViewSet,
+    SLAPenaltyViewSet,
+    UptimeRecordViewSet,
+    PerformanceImprovementViewSet,
+    SLARevisionRequestViewSet,
 )
 
 router = DefaultRouter()
@@ -28,6 +33,19 @@ router.register(
     r"v1/sla/evaluation-scores",
     SLAEvaluationScoreViewSet,
     basename="sla-evaluation-score",
+)
+router.register(r"v1/sla/criteria", SLAEvaluationCriteriaViewSet, basename="sla-criteria")
+router.register(r"v1/sla/penalties", SLAPenaltyViewSet, basename="sla-penalty")
+router.register(r"v1/sla/uptime-records", UptimeRecordViewSet, basename="sla-uptime-record")
+router.register(
+    r"v1/sla/improvements",
+    PerformanceImprovementViewSet,
+    basename="sla-improvement",
+)
+router.register(
+    r"v1/sla/revision-requests",
+    SLARevisionRequestViewSet,
+    basename="sla-revision-request",
 )
 
 urlpatterns = [

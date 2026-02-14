@@ -16,6 +16,11 @@ from .models import (
     SLAEvaluationItem,
     SLAEvaluationReport,
     SLAEvaluationScore,
+    SLAEvaluationCriteria,
+    SLAPenalty,
+    UptimeRecord,
+    PerformanceImprovement,
+    SLARevisionRequest,
 )
 from .serializers import (
     SLADefinitionSerializer,
@@ -28,6 +33,11 @@ from .serializers import (
     SLAEvaluationReportSerializer,
     SLAEvaluationReportListSerializer,
     SLAEvaluationScoreSerializer,
+    SLAEvaluationCriteriaSerializer,
+    SLAPenaltySerializer,
+    UptimeRecordSerializer,
+    PerformanceImprovementSerializer,
+    SLARevisionRequestSerializer,
 )
 
 
@@ -339,17 +349,59 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
         if contract_id:
             queryset = queryset.filter(contract_id=contract_id)
 
-        return queryset.prefetch_related("scores", "scores__evaluation_item")
+        return queryset.prefetch_related(
+            "scores", "scores__evaluation_item", "penalties"
+        )
 
     @action(detail=True, methods=["post"])
     def calculate_score(self, request, pk=None):
-        """Calculate total score for this report."""
+        """Calculate total score with adjustments for this report."""
+        from .evaluation_services import calculate_adjustment_points, calculate_penalties
+
         report = self.get_object()
         with transaction.atomic():
+            # 1. Sum item scores
             report.calculate_total_score()
+            # 2. Calculate and apply adjustments
+            adjustment, dup_count, imp_count = calculate_adjustment_points(report)
+            report.adjustment_points = adjustment
+            report.duplicate_incident_count = dup_count
+            report.improvement_count = imp_count
+            report.total_score += adjustment
+            # 3. Save (triggers grade calculation)
             report.save()
+            # 4. Generate penalties
+            calculate_penalties(report)
+        report.refresh_from_db()
         serializer = self.get_serializer(report)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def penalties(self, request, pk=None):
+        """Get all penalties for this report."""
+        report = self.get_object()
+        penalties = report.penalties.all()
+        serializer = SLAPenaltySerializer(penalties, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"])
+    def uptime_summary(self, request, pk=None):
+        """Get uptime summary by equipment category for this report's period."""
+        from django.db.models import Avg
+
+        report = self.get_object()
+        records = UptimeRecord.objects.filter(
+            contract=report.contract,
+            period_start__gte=report.evaluation_period_start,
+            period_end__lte=report.evaluation_period_end,
+        ).select_related("equipment")
+
+        summary = (
+            records.values("equipment__category")
+            .annotate(avg_uptime=Avg("uptime_percentage"))
+            .order_by("equipment__category")
+        )
+        return Response(list(summary))
 
     @action(detail=True, methods=["post"])
     def finalize(self, request, pk=None):
@@ -466,3 +518,127 @@ class SLAEvaluationScoreViewSet(viewsets.ModelViewSet):
         return queryset.select_related(
             "evaluation_item", "evaluation_item__category", "report"
         )
+
+
+class SLAEvaluationCriteriaViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA evaluation criteria."""
+
+    queryset = SLAEvaluationCriteria.objects.all()
+    serializer_class = SLAEvaluationCriteriaSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["evaluation_item", "service_level"]
+    ordering = ["evaluation_item__item_number", "-service_level"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        evaluation_item_id = self.request.query_params.get("evaluation_item")
+        if evaluation_item_id:
+            queryset = queryset.filter(evaluation_item_id=evaluation_item_id)
+        # Filter by contract (via item -> category -> contract)
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(
+                evaluation_item__category__contract_id=contract_id
+            )
+        return queryset.select_related("evaluation_item")
+
+
+class SLAPenaltyViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for SLA penalties (read-only, auto-generated)."""
+
+    queryset = SLAPenalty.objects.all()
+    serializer_class = SLAPenaltySerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["report", "penalty_type", "is_offset"]
+    ordering = ["-created_at"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        report_id = self.request.query_params.get("report")
+        if report_id:
+            queryset = queryset.filter(report_id=report_id)
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(report__contract_id=contract_id)
+        return queryset.select_related("report", "evaluation_item")
+
+
+class UptimeRecordViewSet(viewsets.ModelViewSet):
+    """ViewSet for uptime records with filtering."""
+
+    queryset = UptimeRecord.objects.all()
+    serializer_class = UptimeRecordSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["equipment", "contract"]
+    ordering = ["-period_start"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        equipment_id = self.request.query_params.get("equipment")
+        if equipment_id:
+            queryset = queryset.filter(equipment_id=equipment_id)
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(contract_id=contract_id)
+        # Filter by period
+        period_start = self.request.query_params.get("period_start")
+        if period_start:
+            queryset = queryset.filter(period_start__gte=period_start)
+        period_end = self.request.query_params.get("period_end")
+        if period_end:
+            queryset = queryset.filter(period_end__lte=period_end)
+        # Filter by equipment category
+        category = self.request.query_params.get("equipment_category")
+        if category:
+            queryset = queryset.filter(equipment__category=category)
+        return queryset.select_related("equipment", "contract")
+
+
+class PerformanceImprovementViewSet(viewsets.ModelViewSet):
+    """ViewSet for performance improvement proposals."""
+
+    queryset = PerformanceImprovement.objects.all()
+    serializer_class = PerformanceImprovementSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["contract", "is_accepted"]
+    search_fields = ["title", "description", "proposed_by"]
+    ordering = ["-proposed_date"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(contract_id=contract_id)
+        period_start = self.request.query_params.get("period_start")
+        if period_start:
+            queryset = queryset.filter(evaluation_period_start__gte=period_start)
+        period_end = self.request.query_params.get("period_end")
+        if period_end:
+            queryset = queryset.filter(evaluation_period_end__lte=period_end)
+        return queryset.select_related("contract")
+
+
+class SLARevisionRequestViewSet(viewsets.ModelViewSet):
+    """ViewSet for SLA revision requests."""
+
+    queryset = SLARevisionRequest.objects.all()
+    serializer_class = SLARevisionRequestSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+    filterset_fields = ["contract", "review_result"]
+    search_fields = ["revision_reason", "requester_name", "document_name"]
+    ordering = ["-request_date"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        contract_id = self.request.query_params.get("contract")
+        if contract_id:
+            queryset = queryset.filter(contract_id=contract_id)
+        review_result = self.request.query_params.get("status")
+        if review_result:
+            queryset = queryset.filter(review_result=review_result)
+        return queryset.select_related("contract")

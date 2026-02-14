@@ -46,6 +46,18 @@ class Task(models.Model):
     approved_at = models.DateTimeField(null=True, blank=True)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+
+    # Request processing category (SLA)
+    REQUEST_CATEGORY_CHOICES = [
+        ("simple", "단순"),
+        ("change", "변경"),
+        ("replacement", "교체"),
+    ]
+    request_category = models.CharField(
+        max_length=20, choices=REQUEST_CATEGORY_CHOICES, blank=True
+    )
+    target_completion_hours = models.PositiveIntegerField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -58,7 +70,20 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.title} ({self.get_task_type_display()})"
 
+    # Target hours by request category
+    REQUEST_TARGET_HOURS = {
+        "simple": 72,
+        "change": 168,
+        "replacement": 336,
+    }
+
     def save(self, *args, **kwargs):
+        # Auto-set target_completion_hours based on request_category
+        if self.request_category and not self.target_completion_hours:
+            self.target_completion_hours = self.REQUEST_TARGET_HOURS.get(
+                self.request_category
+            )
+
         # Auto-derive approval_required and approval_status based on impact and type
         requires_approval = self.impact_level == "full" or self.task_type == "change"
         self.approval_required = requires_approval

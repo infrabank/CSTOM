@@ -29,6 +29,13 @@ class Contract(models.Model):
     contract_amount = models.DecimalField(
         max_digits=15, decimal_places=2, null=True, blank=True
     )
+    monthly_contract_amount = models.DecimalField(
+        max_digits=15,
+        decimal_places=0,
+        null=True,
+        blank=True,
+        help_text="월간 계약금액 (벌점 계산 기준)",
+    )
 
     # Scope flags stored as comma-separated values
     scope_flags = models.CharField(
