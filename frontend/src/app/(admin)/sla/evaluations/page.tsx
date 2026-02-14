@@ -64,11 +64,11 @@ function formatPeriod(start: string, end: string): string {
   return `${formatDate(start)} - ${formatDate(end)}`;
 }
 
-function formatScore(score: number | null): string {
+function formatScore(score: number | string | null): string {
   if (score === null || score === undefined) {
     return "-";
   }
-  return score.toFixed(1);
+  return Number(score).toFixed(1);
 }
 
 export default async function SLAEvaluationsPage() {

@@ -254,8 +254,8 @@ export default function SLAEvaluationReportDetailPage() {
       };
     }
     acc[score.category_name].scores.push(score);
-    acc[score.category_name].subtotal += score.score;
-    acc[score.category_name].weight += score.item_weight;
+    acc[score.category_name].subtotal += Number(score.score);
+    acc[score.category_name].weight += Number(score.item_weight);
     return acc;
   }, {} as ScoresByCategory);
 
@@ -288,7 +288,7 @@ export default function SLAEvaluationReportDetailPage() {
           <div className="p-4 rounded-lg border border-border-light">
             <h3 className="text-sm font-medium text-text-secondary mb-2">총점</h3>
             <p className="text-2xl font-semibold text-text">
-              {report.total_score !== null ? report.total_score.toFixed(1) : '-'}
+              {report.total_score !== null ? Number(report.total_score).toFixed(1) : '-'}
             </p>
           </div>
           <div className="p-4 rounded-lg border border-border-light">
@@ -354,7 +354,7 @@ export default function SLAEvaluationReportDetailPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-text">{score.item_weight}%</td>
                         <td className="px-6 py-4 text-sm text-text">{score.service_level}%</td>
-                        <td className="px-6 py-4 text-sm text-text font-medium">{score.score.toFixed(1)}</td>
+                        <td className="px-6 py-4 text-sm text-text font-medium">{Number(score.score).toFixed(1)}</td>
                       </tr>
                     ))}
                     {/* Category Subtotal */}
@@ -363,7 +363,7 @@ export default function SLAEvaluationReportDetailPage() {
                         {categoryName} 소계
                       </td>
                       <td className="px-6 py-3 text-sm text-text font-bold">
-                        {categoryData.subtotal.toFixed(1)}
+                        {Number(categoryData.subtotal).toFixed(1)}
                       </td>
                     </tr>
                   </React.Fragment>
@@ -374,7 +374,7 @@ export default function SLAEvaluationReportDetailPage() {
                     총점
                   </td>
                   <td className="px-6 py-4 text-sm text-text font-bold text-lg">
-                    {report.total_score !== null ? report.total_score.toFixed(1) : '-'}
+                    {report.total_score !== null ? Number(report.total_score).toFixed(1) : '-'}
                   </td>
                 </tr>
               </tbody>
