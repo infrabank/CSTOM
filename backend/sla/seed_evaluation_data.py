@@ -274,6 +274,140 @@ def seed_equipment_importance(contract_id):
     return updated_count
 
 
+def seed_sla_definitions(contract_id):
+    """Seed SLA definitions based on KRIHS standard.
+
+    Creates SLA targets for:
+    - 장애대응 (Incident Response): 4 priorities based on severity/importance grade
+      - Critical (심각도1): 즉시 대응, A등급 복구목표 2시간
+      - High (심각도2): 30분 대응, B등급 복구목표 4시간
+      - Medium (심각도3): 1시간 대응, C등급 복구목표 8시간
+      - Low: 4시간 대응, 24시간 복구
+    - 서비스 요청 처리 (Service Request): Article 10 기준
+      - 단순요청: 72시간
+      - 변경요청: 168시간 (7일)
+      - 교체요청: 336시간 (14일)
+    - 정기점검 (Regular Maintenance): 월 1회, 보고서 3일 이내
+    - 보안 사고 대응 (Security Incident): 즉시 대응, 4시간 해결
+    - 백업/복구 (Backup & Recovery): 일일 백업, 4시간 복구
+    """
+    from sla.models import SLADefinition
+    from contracts.models import Contract
+
+    contract = Contract.objects.get(id=contract_id)
+
+    DEFINITIONS = [
+        # === 장애대응 (Incident Response) - Article 9 ===
+        {
+            "service_type": "장애대응",
+            "priority": "critical",
+            "target_response_time_minutes": 10,
+            "target_resolution_time_minutes": 120,  # A등급 복구목표 2시간
+            "description": "심각도1: 전체 시스템 장애, 핵심 업무 중단. A등급 장비 복구목표 2시간 이내. 즉시 대응 후 원인분석 보고서 4시간 이내 작성.",
+        },
+        {
+            "service_type": "장애대응",
+            "priority": "high",
+            "target_response_time_minutes": 30,
+            "target_resolution_time_minutes": 240,  # B등급 복구목표 4시간
+            "description": "심각도2: 주요 서비스 장애, 일부 업무 영향. B등급 장비 복구목표 4시간 이내. 30분 이내 대응.",
+        },
+        {
+            "service_type": "장애대응",
+            "priority": "medium",
+            "target_response_time_minutes": 60,
+            "target_resolution_time_minutes": 480,  # C등급 복구목표 8시간
+            "description": "심각도3: 개별 시스템 장애, 업무 일부 지연. C등급 장비 복구목표 8시간 이내. 1시간 이내 대응.",
+        },
+        {
+            "service_type": "장애대응",
+            "priority": "low",
+            "target_response_time_minutes": 240,
+            "target_resolution_time_minutes": 1440,  # 24시간
+            "description": "경미한 장애, 대체수단 가용. 4시간 이내 대응, 24시간 이내 복구.",
+        },
+        # === 서비스 요청 처리 (Service Request) - Article 10 ===
+        {
+            "service_type": "서비스요청-단순",
+            "priority": "low",
+            "target_response_time_minutes": 60,
+            "target_resolution_time_minutes": 4320,  # 72시간 (3일)
+            "description": "단순 서비스 요청: 계정 생성, 권한 변경, 소프트웨어 설치, 설정 변경 등. 접수 후 72시간(3영업일) 이내 처리.",
+        },
+        {
+            "service_type": "서비스요청-변경",
+            "priority": "medium",
+            "target_response_time_minutes": 60,
+            "target_resolution_time_minutes": 10080,  # 168시간 (7일)
+            "description": "변경 서비스 요청: 시스템 구성 변경, 네트워크 설정 변경, 보안정책 변경 등. 접수 후 168시간(7영업일) 이내 처리.",
+        },
+        {
+            "service_type": "서비스요청-교체",
+            "priority": "medium",
+            "target_response_time_minutes": 120,
+            "target_resolution_time_minutes": 20160,  # 336시간 (14일)
+            "description": "교체 서비스 요청: 장비 교체, 부품 교체, 시스템 이전 등. 접수 후 336시간(14영업일) 이내 처리.",
+        },
+        # === 정기점검 (Regular Maintenance) - Article 11 ===
+        {
+            "service_type": "정기점검",
+            "priority": "medium",
+            "target_response_time_minutes": 0,
+            "target_resolution_time_minutes": 43200,  # 30일 (월 1회)
+            "description": "월 1회 시스템 정기점검 실시. 점검 결과 보고서 점검 완료 후 3영업일 이내 제출. 서버, 네트워크, 보안장비, SW 전수 점검.",
+        },
+        # === 보안 사고 대응 (Security Incident) ===
+        {
+            "service_type": "보안사고대응",
+            "priority": "critical",
+            "target_response_time_minutes": 10,
+            "target_resolution_time_minutes": 240,  # 4시간
+            "description": "보안 침해사고 발생 시 즉시 대응. 10분 이내 초동대응, 4시간 이내 차단 및 복구 조치. 24시간 이내 사고분석 보고서 작성.",
+        },
+        {
+            "service_type": "보안사고대응",
+            "priority": "high",
+            "target_response_time_minutes": 30,
+            "target_resolution_time_minutes": 480,  # 8시간
+            "description": "보안 이상징후 감지. 30분 이내 확인 대응, 8시간 이내 원인 파악 및 조치 완료.",
+        },
+        # === 백업/복구 (Backup & Recovery) ===
+        {
+            "service_type": "백업복구",
+            "priority": "high",
+            "target_response_time_minutes": 30,
+            "target_resolution_time_minutes": 240,  # 4시간 복구
+            "description": "일일 백업 수행 및 백업 상태 점검. 데이터 복구 요청 시 4시간 이내 복구 완료. 월 1회 복구 테스트 실시.",
+        },
+        {
+            "service_type": "백업복구",
+            "priority": "medium",
+            "target_response_time_minutes": 60,
+            "target_resolution_time_minutes": 480,  # 8시간
+            "description": "비핵심 시스템 백업/복구. 1시간 이내 대응, 8시간 이내 복구 완료.",
+        },
+    ]
+
+    created_count = 0
+    for defn in DEFINITIONS:
+        _, created = SLADefinition.objects.get_or_create(
+            contract=contract,
+            service_type=defn["service_type"],
+            priority=defn["priority"],
+            defaults={
+                "target_response_time_minutes": defn["target_response_time_minutes"],
+                "target_resolution_time_minutes": defn["target_resolution_time_minutes"],
+                "description": defn["description"],
+                "is_active": True,
+            },
+        )
+        if created:
+            created_count += 1
+
+    print(f"Created {created_count} SLA definitions for contract: {contract.name}")
+    return created_count
+
+
 if __name__ == "__main__":
     import sys
 
@@ -290,5 +424,9 @@ if __name__ == "__main__":
     print("3. Seed equipment importance grades:")
     print("   >>> from sla.seed_evaluation_data import seed_equipment_importance")
     print("   >>> seed_equipment_importance(contract_id=1)")
+    print("")
+    print("4. Seed SLA definitions (response/resolution targets):")
+    print("   >>> from sla.seed_evaluation_data import seed_sla_definitions")
+    print("   >>> seed_sla_definitions(contract_id=1)")
     print("")
     print("Note: Replace '1' with actual contract ID")
