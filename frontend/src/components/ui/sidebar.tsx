@@ -57,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "벌점 관리", href: "/sla/penalties" },
       { label: "성능개선", href: "/sla/improvements" },
       { label: "개정요청", href: "/sla/revisions" },
+      { label: "사용매뉴얼", href: "/sla/manual" },
     ],
   },
   {
