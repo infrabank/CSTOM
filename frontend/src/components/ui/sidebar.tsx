@@ -39,6 +39,7 @@ const NAV_GROUPS: NavGroup[] = [
       { label: "변경/장애", href: "/events" },
       { label: "티켓", href: "/tickets" },
       { label: "인력관리", href: "/workforce" },
+      { label: "사용매뉴얼", href: "/guide" },
     ],
   },
   {
