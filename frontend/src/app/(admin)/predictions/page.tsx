@@ -25,7 +25,7 @@ function getRiskLevel(score: number): { label: string; color: string } {
 async function getAtRiskEquipment(token?: string): Promise<EquipmentPrediction[]> {
   try {
     const res = await fetch(`${API_URL}/v1/predictions/at-risk/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

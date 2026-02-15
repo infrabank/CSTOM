@@ -22,7 +22,7 @@ async function getEvents(token?: string): Promise<Event[]> {
     const headers: HeadersInit = token
       ? { Authorization: `Bearer ${token}` }
       : {};
-    const res = await fetch(`${API_URL}/v1/events/`, { cache: "no-store", headers });
+    const res = await fetch(`${API_URL}/v1/events/`, { headers, next: { revalidate: 30 } });
     if (!res.ok) return [];
     const data = await res.json();
     return data.results || [];

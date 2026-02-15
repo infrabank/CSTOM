@@ -26,7 +26,7 @@ interface UsersResponse {
 async function fetchUsers(token?: string): Promise<User[]> {
   try {
     const res = await fetch(`${API_URL}/v1/users/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
       },

@@ -21,7 +21,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 async function getTasks(token?: string): Promise<Task[]> {
   try {
     const res = await fetch(`${API_URL}/v1/tasks/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

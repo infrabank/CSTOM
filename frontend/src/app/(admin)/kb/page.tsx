@@ -21,7 +21,7 @@ async function getKBArticles(token?: string, search?: string): Promise<KBArticle
       : `${API_URL}/v1/kb/articles/`;
     
     const res = await fetch(url, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

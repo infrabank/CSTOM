@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
 async function getEngineers(token?: string): Promise<EngineerProfile[]> {
   try {
     const res = await fetch(`${API_URL}/v1/workforce/engineers/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

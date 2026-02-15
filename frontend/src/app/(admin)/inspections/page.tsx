@@ -20,7 +20,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 async function getInspections(token?: string): Promise<InspectionSchedule[]> {
   try {
     const res = await fetch(`${API_URL}/v1/inspections/schedules/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

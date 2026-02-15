@@ -3,8 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import ReactMarkdown from "react-markdown";
+import dynamic from "next/dynamic";
 import { getAccessToken } from "@/lib/auth";
+
+const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"), {
+  loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
+});
 
 interface Category {
   id: number;
@@ -290,9 +294,9 @@ export default function NewKBArticlePage() {
             {/* Preview Tab */}
             {activeTab === "preview" && (
                <div className="min-h-96 p-4 border border-border rounded-md bg-surface-sunken prose prose-sm max-w-none">
-                <ReactMarkdown>
+                <MarkdownRenderer>
                   {content || "내용을 입력하면 여기에 미리보기가 표시됩니다"}
-                </ReactMarkdown>
+                </MarkdownRenderer>
               </div>
             )}
           </div>

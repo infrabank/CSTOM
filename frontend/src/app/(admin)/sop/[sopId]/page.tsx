@@ -3,9 +3,12 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import dynamic from 'next/dynamic';
 import Breadcrumb from "@/components/ui/breadcrumb";
+
+const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
+  loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
+});
 import { getAccessToken } from "@/lib/auth";
 
 interface Version {
@@ -173,9 +176,9 @@ export default function SOPDetailPage() {
             <div className="mb-8">
               <h2 className="text-lg font-semibold mb-4">내용</h2>
               <div className="prose prose-sm max-w-none bg-surface-sunken rounded-lg p-6">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                <MarkdownRenderer>
                   {document.current_version.content}
-                </ReactMarkdown>
+                </MarkdownRenderer>
               </div>
             </div>
           </>

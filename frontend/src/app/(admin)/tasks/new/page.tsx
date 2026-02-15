@@ -61,7 +61,8 @@ export default function NewTaskPage() {
 
   useEffect(() => {
     if (!selectedContract) {
-      setIncidents([]);
+      // Reset incidents when contract is deselected
+      queueMicrotask(() => setIncidents([]));
       return;
     }
     async function fetchIncidents() {

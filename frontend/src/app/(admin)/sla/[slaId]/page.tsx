@@ -167,16 +167,20 @@ export default function SLADetailPage() {
         setLoading(true);
         const headers = getHeaders();
 
-        const slaResponse = await fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, { headers });
-        if (!slaResponse.ok) throw new Error('SLA 정의를 불러오지 못했습니다');
-        setSla(await slaResponse.json());
-
-        await fetchMetrics();
-
-        const [tasksRes, eventsRes] = await Promise.all([
+        const [slaResponse, metricsSettled, tasksRes, eventsRes] = await Promise.all([
+          fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, { headers }),
+          fetch(`${API_URL}/v1/sla/definitions/${slaId}/metrics/`, { headers }).catch(() => null),
           fetch(`${API_URL}/v1/tasks/`, { headers }),
           fetch(`${API_URL}/v1/events/`, { headers }),
         ]);
+
+        if (!slaResponse.ok) throw new Error('SLA 정의를 불러오지 못했습니다');
+        setSla(await slaResponse.json());
+
+        if (metricsSettled && metricsSettled.ok) {
+          const metricsData = await metricsSettled.json();
+          setMetrics(metricsData.results || metricsData || []);
+        }
 
         if (tasksRes.ok) {
           const d = await tasksRes.json();

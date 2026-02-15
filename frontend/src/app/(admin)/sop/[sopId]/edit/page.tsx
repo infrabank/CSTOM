@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import dynamic from 'next/dynamic';
 import { getAccessToken } from '@/lib/auth';
+
+const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
+  loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
+});
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
@@ -279,9 +282,9 @@ export default function EditSOPPage() {
              ) : (
                <div className="w-full px-3 py-2 border border-border rounded-md bg-surface-sunken min-h-96">
                 <div className="prose prose-sm max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  <MarkdownRenderer>
                     {formData.content}
-                  </ReactMarkdown>
+                  </MarkdownRenderer>
                 </div>
               </div>
             )}

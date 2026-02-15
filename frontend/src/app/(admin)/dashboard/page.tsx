@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getAccessToken } from "@/lib/auth";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -106,50 +106,25 @@ export default function DashboardPage() {
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
   const [loading, setLoading] = useState(true);
 
+  // Fetch period-independent data once on mount
   useEffect(() => {
-    const loadData = async () => {
+    const loadBaseData = async () => {
       setLoading(true);
       try {
         const token = getAccessToken();
+        const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
 
-        const [kpiRes, contractsRes, equipmentsRes, eventsRes, tasksRes] = await Promise.all([
-          fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_URL}/v1/contracts/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_URL}/v1/equipments/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_URL}/v1/events/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_URL}/v1/tasks/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
+        const [contractsRes, equipmentsRes, eventsRes, tasksRes] = await Promise.all([
+          fetch(`${API_URL}/v1/contracts/`, { headers }),
+          fetch(`${API_URL}/v1/equipments/`, { headers }),
+          fetch(`${API_URL}/v1/events/`, { headers }),
+          fetch(`${API_URL}/v1/tasks/`, { headers }),
         ]);
 
-        if (kpiRes.ok) {
-          const kpiJson = await kpiRes.json();
-          setKpiData(kpiJson);
-        }
-        if (contractsRes.ok) {
-          const contractsJson = await contractsRes.json();
-          setContracts(contractsJson.results || []);
-        }
-        if (equipmentsRes.ok) {
-          const equipmentsJson = await equipmentsRes.json();
-          setEquipments(equipmentsJson.results || []);
-        }
-        if (eventsRes.ok) {
-          const eventsJson = await eventsRes.json();
-          setEvents(eventsJson.results || []);
-        }
-        if (tasksRes.ok) {
-          const tasksJson = await tasksRes.json();
-          setTasks(tasksJson.results || []);
-        }
+        if (contractsRes.ok) setContracts((await contractsRes.json()).results || []);
+        if (equipmentsRes.ok) setEquipments((await equipmentsRes.json()).results || []);
+        if (eventsRes.ok) setEvents((await eventsRes.json()).results || []);
+        if (tasksRes.ok) setTasks((await tasksRes.json()).results || []);
       } catch (error) {
         console.error('Failed to load dashboard data:', error);
       } finally {
@@ -157,21 +132,38 @@ export default function DashboardPage() {
       }
     };
 
-    loadData();
+    loadBaseData();
+  }, []);
+
+  // Fetch KPI data when period changes
+  useEffect(() => {
+    const loadKpi = async () => {
+      try {
+        const token = getAccessToken();
+        const res = await fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok) setKpiData(await res.json());
+      } catch (error) {
+        console.error('Failed to load KPI data:', error);
+      }
+    };
+
+    loadKpi();
   }, [period]);
 
-  const activeContracts = contracts.filter((c) => c.status !== "closed").length;
-  const contractsWithRisks = contracts.filter(
+  const activeContracts = useMemo(() => contracts.filter((c) => c.status !== "closed").length, [contracts]);
+  const contractsWithRisks = useMemo(() => contracts.filter(
     (c) =>
       c.risk_flags?.pre_env ||
       c.risk_flags?.prior_vendor_coordination ||
       c.risk_flags?.docs_incomplete
-  ).length;
-  const availableEquipments = equipments.filter((e) => e.status === "available").length;
-  const checkedOutEquipments = equipments.filter((e) => e.status === "checked_out").length;
-  const recentIncidents = events.filter((e) => e.record_type === "incident").slice(0, 5);
-  const highImpactTasks = tasks.filter((t) => t.impact_level === "full").length;
-  const pendingApprovals = tasks.filter((t) => t.approval_status === "pending");
+  ).length, [contracts]);
+  const availableEquipments = useMemo(() => equipments.filter((e) => e.status === "available").length, [equipments]);
+  const checkedOutEquipments = useMemo(() => equipments.filter((e) => e.status === "checked_out").length, [equipments]);
+  const recentIncidents = useMemo(() => events.filter((e) => e.record_type === "incident").slice(0, 5), [events]);
+  const highImpactTasks = useMemo(() => tasks.filter((t) => t.impact_level === "full").length, [tasks]);
+  const pendingApprovals = useMemo(() => tasks.filter((t) => t.approval_status === "pending"), [tasks]);
 
   const taskChartData = kpiData ? [
     { name: '대기', value: kpiData.task_summary.pending },

@@ -122,18 +122,18 @@ export default function SLAEvaluationReportDetailPage() {
 
   const fetchReport = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/`, { headers: getHeaders() });
+      const headers = getHeaders();
+      const [res, uptimeRes] = await Promise.all([
+        fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/`, { headers }),
+        fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/uptime_summary/`, { headers }).catch(() => null),
+      ]);
       if (!res.ok) throw new Error('평가 보고서를 불러오지 못했습니다');
       const data = await res.json();
       setReport(data);
-      // Fetch uptime summary
-      try {
-        const uptimeRes = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/uptime_summary/`, { headers: getHeaders() });
-        if (uptimeRes.ok) {
-          const uptimeData = await uptimeRes.json();
-          setUptimeSummary(uptimeData);
-        }
-      } catch {}
+      if (uptimeRes && uptimeRes.ok) {
+        const uptimeData = await uptimeRes.json();
+        setUptimeSummary(uptimeData);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : '평가 보고서를 불러오지 못했습니다');
     } finally {

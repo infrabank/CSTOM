@@ -31,7 +31,7 @@ const TYPE_COLORS: Record<string, string> = {
 async function getNotifications(token?: string): Promise<Notification[]> {
   try {
     const res = await fetch(`${API_URL}/v1/notifications/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];

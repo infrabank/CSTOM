@@ -51,7 +51,7 @@ const ENTITY_LABELS: Record<string, string> = {
 async function getAuditEvents(token?: string): Promise<AuditEvent[]> {
   try {
     const res = await fetch(`${API_URL}/v1/audit/events/`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     if (!res.ok) return [];
