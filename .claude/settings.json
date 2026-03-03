@@ -73,10 +73,7 @@
       "Bash(git rebase:*)",
       "Bash(git -c core.editor=true rebase --continue)"
     ],
-    "deny": [
-      "Bash(git -C:*)",
-      "Bash(git --no-pager:*)"
-    ],
+    "deny": ["Bash(git -C:*)", "Bash(git --no-pager:*)"],
     "ask": [
       "Bash(python:*)",
       "Bash(py:*)",
@@ -106,11 +103,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\clean_commit_guard.py\""
+            "command": "py -3 .claude/hooks/clean_commit_guard.py"
           },
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\github_issue_guard.py\""
+            "command": "py -3 .claude/hooks/github_issue_guard.py"
           }
         ]
       },
@@ -119,7 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\protect_claude_md.py\""
+            "command": "py -3 .claude/hooks/protect_claude_md.py"
           }
         ]
       },
@@ -128,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\clean_commit_guard.py\""
+            "command": "py -3 .claude/hooks/clean_commit_guard.py"
           }
         ]
       },
@@ -137,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\github_issue_guard.py\""
+            "command": "py -3 .claude/hooks/github_issue_guard.py"
           }
         ]
       }
@@ -148,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 \"%USERPROFILE%\\.claude\\hooks\\emoji_remover.py\""
+            "command": "py -3 .claude/hooks/emoji_remover.py"
           }
         ]
       }

@@ -20,3 +20,12 @@ When creating or updating markdown documentation files:
 - **Delete verbose explanations** - if it takes more than 3 sentences, it's probably too long
 
 Default to 1-2 sentence explanations. Only expand when complexity absolutely requires it.
+
+## Code Editing Strategy
+
+Minimize str_replace failures and token waste:
+
+- **Small edit targets**: Use the minimum unique context in `old_string` (3-5 lines). Avoid copying large blocks just to change one line.
+- **AST tools first**: For structural changes (rename, pattern replace across files), prefer `ast_grep_search`/`ast_grep_replace` over string-based Edit. They work with code structure, not raw text.
+- **Write for large rewrites**: If changing more than ~40% of a file under 400 lines, use `Write` to rewrite the whole file instead of chaining many small `Edit` calls.
+- **One Edit per logical change**: Don't batch unrelated changes into one `old_string` block. Separate edits are more precise and less prone to mismatch.
