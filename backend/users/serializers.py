@@ -43,6 +43,12 @@ class UserSerializer(serializers.ModelSerializer):
     roles = RoleSerializer(many=True, read_only=True)
     role_names = serializers.SerializerMethodField()
     primary_role = serializers.SerializerMethodField()
+    password = serializers.CharField(
+        write_only=True,
+        required=False,
+        min_length=8,
+        validators=[validate_password_complexity],
+    )
 
     class Meta:
         model = User
@@ -51,6 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "display_name",
+            "password",
             "roles",
             "role_names",
             "primary_role",
@@ -66,6 +73,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_primary_role(self, obj) -> str | None:
         return obj.primary_role
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        instance = super().update(instance, validated_data)
+        if password:
+            instance.set_password(password)
+            instance.save(update_fields=["password"])
+        return instance
 
 
 class UserListSerializer(serializers.ModelSerializer):
