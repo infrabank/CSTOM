@@ -1,5 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface KBArticle {
   id: number;
@@ -12,37 +18,24 @@ interface KBArticle {
   updated_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getKBArticles(token?: string, search?: string): Promise<KBArticle[]> {
-  try {
-    const url = search 
-      ? `${API_URL}/v1/kb/articles/?search=${encodeURIComponent(search)}`
-      : `${API_URL}/v1/kb/articles/`;
-    
-    const res = await fetch(url, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
-}
-
 interface PageProps {
-  searchParams: Promise<{ search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string }>;
 }
 
 export default async function KBPage({ searchParams }: PageProps) {
+  const { page: pageRaw, search } = await searchParams;
+  const page = parsePageParam(pageRaw);
+  const searchQuery = search || "";
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const params = await searchParams;
-  const searchQuery = params.search || "";
-  
-  const articles = await getKBArticles(token, searchQuery);
+
+  const data = await fetchPaginated<KBArticle>("/v1/kb/articles/", {
+    token,
+    page,
+    query: { search: searchQuery || undefined },
+  });
+  const articles = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div className="p-6">
@@ -128,8 +121,8 @@ export default async function KBPage({ searchParams }: PageProps) {
                    </td>
                    <td className="px-6 py-4 text-sm">
                      <span className={`px-2 py-1 rounded-full text-xs ${
-                       article.is_published 
-                          ? "bg-success-bg text-success" 
+                       article.is_published
+                          ? "bg-success-bg text-success"
                           : "bg-surface-sunken text-text-muted"
                      }`}>
                        {article.is_published ? "공개" : "비공개"}
@@ -180,8 +173,8 @@ export default async function KBPage({ searchParams }: PageProps) {
                  <div className="flex justify-between">
                    <span className="font-medium text-text">상태</span>
                    <span className={`px-2 py-1 rounded-full text-xs ${
-                     article.is_published 
-                       ? "bg-success-bg text-success" 
+                     article.is_published
+                       ? "bg-success-bg text-success"
                         : "bg-surface-sunken text-text-muted"
                    }`}>
                      {article.is_published ? "공개" : "비공개"}
@@ -198,6 +191,12 @@ export default async function KBPage({ searchParams }: PageProps) {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

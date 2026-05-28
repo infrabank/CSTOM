@@ -8,7 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from common.pagination import StandardPagination
 from common.permissions import IsPMOrAdmin, IsPMOrEngineer, ReadOnlyForCustomer
+from django.db.models import Q
 from equipments.serializers import ContractEquipmentMovementsResultSerializer
 from equipments.services import (
     ContractEquipmentMovementsService,
@@ -30,7 +32,21 @@ class ContractViewSet(ModelViewSet):
 
     queryset = Contract.objects.all()
     serializer_class = ContractSerializer
+    pagination_class = StandardPagination
     http_method_names = ["get", "post", "put", "patch", "head", "options"]
+
+    def get_queryset(self):
+        """Filter by search term and status if provided."""
+        queryset = super().get_queryset()
+        status_value = self.request.query_params.get("status")
+        if status_value:
+            queryset = queryset.filter(status=status_value)
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(client_org__icontains=search)
+            )
+        return queryset
 
     def get_permissions(self):
         """Set permissions based on action."""

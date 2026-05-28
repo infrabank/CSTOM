@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import { contractsApi, ContractListItem } from "@/lib/api";
+import { ContractListItem } from "@/lib/api";
 import SearchInput from "@/components/ui/search-input";
 import FilterSelect from "@/components/ui/filter-select";
 import Pagination from "@/components/ui/pagination";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { fetchPaginated, parsePageParam } from "@/lib/fetch-paginated";
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
@@ -83,37 +84,20 @@ export default async function ContractsPage({ searchParams }: PageProps) {
 
   const search = (params.search as string) || "";
   const statusFilter = (params.status as string) || "";
-  const page = parseInt((params.page as string) || "1", 10);
+  const page = parsePageParam(params.page as string | undefined);
 
-  let allContracts: ContractListItem[] = [];
-  let error: string | null = null;
-
-  try {
-    const response = await contractsApi.list(token);
-    allContracts = response.results || [];
-  } catch (e) {
-    error = e instanceof Error ? e.message : "사업 목록을 불러오지 못했습니다";
-  }
-
-  let filteredContracts = allContracts;
-
-  if (search) {
-    const searchLower = search.toLowerCase();
-    filteredContracts = filteredContracts.filter(
-      (c) =>
-        c.name.toLowerCase().includes(searchLower) ||
-        c.client_org.toLowerCase().includes(searchLower)
-    );
-  }
-
-  if (statusFilter) {
-    filteredContracts = filteredContracts.filter((c) => c.status === statusFilter);
-  }
-
-  const totalItems = filteredContracts.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const contracts = filteredContracts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const data = await fetchPaginated<ContractListItem>("/v1/contracts/", {
+    token,
+    page,
+    pageSize: ITEMS_PER_PAGE,
+    query: {
+      search: search || undefined,
+      status: statusFilter || undefined,
+    },
+  });
+  const contracts = data.results;
+  const totalItems = data.count;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
 
   return (
     <div>
@@ -144,10 +128,6 @@ export default async function ContractsPage({ searchParams }: PageProps) {
           />
         </Suspense>
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
-      )}
 
       <Suspense fallback={<TableSkeleton rows={5} columns={5} />}>
         {/* Desktop table */}
@@ -247,15 +227,13 @@ export default async function ContractsPage({ searchParams }: PageProps) {
             ))
           )}
         </div>
-
-        <Suspense fallback={null}>
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={totalItems}
-          />
-        </Suspense>
       </Suspense>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+      />
     </div>
   );
 }

@@ -1,5 +1,11 @@
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface AuditEvent {
   id: number;
@@ -12,8 +18,6 @@ interface AuditEvent {
   occurred_at: string;
   ip_address: string | null;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const ACTION_LABELS: Record<string, string> = {
   create: "생성",
@@ -48,24 +52,22 @@ const ENTITY_LABELS: Record<string, string> = {
   sla: "SLA",
 };
 
-async function getAuditEvents(token?: string): Promise<AuditEvent[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/audit/events/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function AuditPage() {
+export default async function AuditPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const events = await getAuditEvents(token);
+
+  const data = await fetchPaginated<AuditEvent>("/v1/audit/events/", {
+    token,
+    page,
+  });
+  const events = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -175,6 +177,12 @@ export default async function AuditPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

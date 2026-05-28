@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface SOPDocument {
   id: number;
@@ -11,27 +17,22 @@ interface SOPDocument {
   updated_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getSOPDocuments(token?: string): Promise<SOPDocument[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/sop/documents/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function SOPPage() {
+export default async function SOPPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  
-  const documents = await getSOPDocuments(token);
+
+  const data = await fetchPaginated<SOPDocument>("/v1/sop/documents/", {
+    token,
+    page,
+  });
+  const documents = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -152,6 +153,12 @@ export default async function SOPPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

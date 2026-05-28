@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface InspectionSchedule {
   id: number;
@@ -13,22 +19,6 @@ interface InspectionSchedule {
   is_active: boolean;
   task_count: number;
   created_at: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getInspections(token?: string): Promise<InspectionSchedule[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/inspections/schedules/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
 }
 
 const CYCLE_LABELS: Record<string, string> = {
@@ -69,18 +59,22 @@ function CycleBadge({ cycle }: { cycle: string }) {
   );
 }
 
-export default async function InspectionsPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function InspectionsPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 
-  let inspections: InspectionSchedule[] = [];
-  let error: string | null = null;
-
-  try {
-    inspections = await getInspections(token);
-  } catch (e) {
-    error = e instanceof Error ? e.message : "점검 스케줄을 불러오지 못했습니다";
-  }
+  const data = await fetchPaginated<InspectionSchedule>(
+    "/v1/inspections/schedules/",
+    { token, page },
+  );
+  const inspections = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -95,10 +89,6 @@ export default async function InspectionsPage() {
           점검 스케줄 등록
         </Link>
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
-      )}
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
@@ -132,7 +122,7 @@ export default async function InspectionsPage() {
             {inspections.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-text-muted">
-                  {error ? "점검 스케줄을 불러올 수 없습니다" : "등록된 점검 스케줄이 없습니다"}
+                  등록된 점검 스케줄이 없습니다
                 </td>
               </tr>
             ) : (
@@ -180,7 +170,7 @@ export default async function InspectionsPage() {
       <div className="md:hidden space-y-4">
         {inspections.length === 0 ? (
           <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
-            {error ? "점검 스케줄을 불러올 수 없습니다" : "등록된 점검 스케줄이 없습니다"}
+            등록된 점검 스케줄이 없습니다
           </div>
         ) : (
           inspections.map((inspection) => (
@@ -232,6 +222,12 @@ export default async function InspectionsPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

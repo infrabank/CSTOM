@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Task {
   id: number;
@@ -14,22 +20,6 @@ interface Task {
   description: string;
   created_at: string;
   updated_at: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getTasks(token?: string): Promise<Task[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/tasks/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -73,22 +63,39 @@ const APPROVAL_STATUS_COLORS: Record<string, string> = {
 };
 
 interface PageProps {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; page?: string }>;
 }
 
 export default async function TasksPage({ searchParams }: PageProps) {
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const { filter } = await searchParams;
-  
-  let tasks = await getTasks(token);
-  
-  // Filter by approval status if requested
-  if (filter === "pending") {
-    tasks = tasks.filter((t) => t.approval_status === "pending");
-  }
+  const { filter, page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
 
-  const pendingCount = tasks.filter((t) => t.approval_status === "pending").length;
+  const isPendingFilter = filter === "pending";
+
+  const [listPage, pendingHead] = await Promise.all([
+    fetchPaginated<Task>("/v1/tasks/", {
+      token,
+      page,
+      query: isPendingFilter ? { approval_status: "pending" } : {},
+    }),
+    // Lightweight head request to know the badge count without paginating.
+    isPendingFilter
+      ? Promise.resolve(null)
+      : fetchPaginated<Task>("/v1/tasks/", {
+          token,
+          page: 1,
+          pageSize: 1,
+          query: { approval_status: "pending" },
+        }),
+  ]);
+
+  const tasks = listPage.results;
+  const totalPages = Math.max(1, Math.ceil(listPage.count / DEFAULT_PAGE_SIZE));
+  const pendingCount = isPendingFilter
+    ? listPage.count
+    : (pendingHead?.count ?? 0);
   
   return (
     <div>
@@ -290,6 +297,12 @@ export default async function TasksPage({ searchParams }: PageProps) {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={listPage.count}
+      />
     </div>
   );
 }

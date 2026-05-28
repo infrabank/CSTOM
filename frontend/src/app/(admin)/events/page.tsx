@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Event {
   id: number;
@@ -15,22 +21,6 @@ interface Event {
   created_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-async function getEvents(token?: string): Promise<Event[]> {
-  try {
-    const headers: HeadersInit = token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
-    const res = await fetch(`${API_URL}/v1/events/`, { headers, next: { revalidate: 30 } });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
-}
-
 const TYPE_LABELS: Record<string, string> = {
   change: "변경",
   incident: "장애",
@@ -41,10 +31,19 @@ const TYPE_COLORS: Record<string, string> = {
   incident: "bg-danger-bg text-danger",
 };
 
-export default async function EventsPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function EventsPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const events = await getEvents(token);
+
+  const data = await fetchPaginated<Event>("/v1/events/", { token, page });
+  const events = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -207,6 +206,12 @@ export default async function EventsPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

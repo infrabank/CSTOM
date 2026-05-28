@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import { equipmentsApi, EquipmentListItem } from "@/lib/api";
+import { EquipmentListItem } from "@/lib/api";
 import SearchInput from "@/components/ui/search-input";
 import FilterSelect from "@/components/ui/filter-select";
 import Pagination from "@/components/ui/pagination";
 import { TableSkeleton } from "@/components/ui/skeleton";
+import { fetchPaginated, parsePageParam } from "@/lib/fetch-paginated";
 
 const CATEGORY_LABELS: Record<string, string> = {
   server: "서버",
@@ -70,44 +71,21 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
   const search = (params.search as string) || "";
   const statusFilter = (params.status as string) || "";
   const categoryFilter = (params.category as string) || "";
-  const page = parseInt((params.page as string) || "1", 10);
+  const page = parsePageParam(params.page as string | undefined);
 
-  let allEquipments: EquipmentListItem[] = [];
-  let error: string | null = null;
-
-  try {
-    const response = await equipmentsApi.list(token);
-    allEquipments = response.results || [];
-  } catch (e) {
-    error = e instanceof Error ? e.message : "장비 목록을 불러오지 못했습니다";
-  }
-
-  // Client-side filtering
-  let filteredEquipments = allEquipments;
-
-  if (search) {
-    const searchLower = search.toLowerCase();
-    filteredEquipments = filteredEquipments.filter(
-      (e) =>
-        e.name.toLowerCase().includes(searchLower) ||
-        e.serial_number.toLowerCase().includes(searchLower) ||
-        e.contract_name.toLowerCase().includes(searchLower)
-    );
-  }
-
-  if (statusFilter) {
-    filteredEquipments = filteredEquipments.filter((e) => e.status === statusFilter);
-  }
-
-  if (categoryFilter) {
-    filteredEquipments = filteredEquipments.filter((e) => e.category === categoryFilter);
-  }
-
-  // Pagination
-  const totalItems = filteredEquipments.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (page - 1) * ITEMS_PER_PAGE;
-  const equipments = filteredEquipments.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const data = await fetchPaginated<EquipmentListItem>("/v1/equipments/", {
+    token,
+    page,
+    pageSize: ITEMS_PER_PAGE,
+    query: {
+      search: search || undefined,
+      status: statusFilter || undefined,
+      category: categoryFilter || undefined,
+    },
+  });
+  const equipments = data.results;
+  const totalItems = data.count;
+  const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
 
   const hasFilters = search || statusFilter || categoryFilter;
 
@@ -147,10 +125,6 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
           </Suspense>
         </div>
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
-      )}
 
        <Suspense fallback={<TableSkeleton rows={5} columns={6} />}>
          <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
@@ -309,15 +283,13 @@ export default async function EquipmentsPage({ searchParams }: PageProps) {
             ))
           )}
         </div>
-
-        <Suspense fallback={null}>
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            totalItems={totalItems}
-          />
-        </Suspense>
       </Suspense>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={totalItems}
+      />
     </div>
   );
 }

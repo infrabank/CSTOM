@@ -3,6 +3,12 @@ import { cookies } from "next/headers";
 import { Suspense } from "react";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface SLADefinition {
   id: number;
@@ -16,10 +22,6 @@ interface SLADefinition {
   metric_count: number;
   compliance_rate: number | null;
   created_at: string;
-}
-
-interface SLAListResponse {
-  results: SLADefinition[];
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -89,31 +91,22 @@ function ActiveStatusBadge({ isActive }: { isActive: boolean }) {
   );
 }
 
-export default async function SLAPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function SLAPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 
-  let slaDefinitions: SLADefinition[] = [];
-  let error: string | null = null;
-
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const response = await fetch(`${apiUrl}/v1/sla/definitions/`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("SLA 정의 목록을 불러오지 못했습니다");
-    }
-
-    const data: SLAListResponse = await response.json();
-    slaDefinitions = data.results || [];
-  } catch (e) {
-    error = e instanceof Error ? e.message : "SLA 정의 목록을 불러오지 못했습니다";
-  }
+  const data = await fetchPaginated<SLADefinition>("/v1/sla/definitions/", {
+    token,
+    page,
+  });
+  const slaDefinitions = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -128,10 +121,6 @@ export default async function SLAPage() {
           SLA 정의 등록
         </Link>
       </div>
-
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
-      )}
 
       <Suspense fallback={<TableSkeleton rows={5} columns={7} />}>
         {/* Desktop Table View */}
@@ -257,6 +246,12 @@ export default async function SLAPage() {
           )}
         </div>
       </Suspense>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

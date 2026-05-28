@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Ticket {
   id: number;
@@ -14,8 +20,6 @@ interface Ticket {
   created_at: string;
   updated_at: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "bg-danger-bg text-danger",
@@ -31,25 +35,19 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "bg-surface-sunken text-text-muted",
 };
 
-async function getTickets(token?: string): Promise<Ticket[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/tickets/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function TicketsPage() {
+export default async function TicketsPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  
-  const tickets = await getTickets(token);
+
+  const data = await fetchPaginated<Ticket>("/v1/tickets/", { token, page });
+  const tickets = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -177,6 +175,12 @@ export default async function TicketsPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

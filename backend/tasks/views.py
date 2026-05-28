@@ -38,11 +38,14 @@ class TaskViewSet(ModelViewSet):
         return TaskSerializer
 
     def get_queryset(self):
-        """Filter by contract if provided."""
+        """Filter by contract or approval status if provided."""
         queryset = super().get_queryset()
         contract_id = self.request.query_params.get("contract")
         if contract_id:
             queryset = queryset.filter(contract_id=contract_id)
+        approval_status = self.request.query_params.get("approval_status")
+        if approval_status:
+            queryset = queryset.filter(approval_status=approval_status)
         return queryset
 
     def create(self, request, *args, **kwargs):

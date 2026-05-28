@@ -1,5 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface EquipmentPrediction {
   id: number;
@@ -13,8 +19,6 @@ interface EquipmentPrediction {
   age_days: number;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
 function getRiskLevel(score: number): { label: string; color: string } {
   if (score >= 80) return { label: "매우 높음", color: "bg-danger-bg text-danger border-danger-border" };
   if (score >= 60) return { label: "높음", color: "bg-warning-bg text-warning border-warning-border" };
@@ -22,25 +26,22 @@ function getRiskLevel(score: number): { label: string; color: string } {
   return { label: "낮음", color: "bg-success-bg text-success border-success-border" };
 }
 
-async function getAtRiskEquipment(token?: string): Promise<EquipmentPrediction[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/predictions/at-risk/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function PredictionsPage() {
+export default async function PredictionsPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  
-  const equipment = await getAtRiskEquipment(token);
+
+  const data = await fetchPaginated<EquipmentPrediction>(
+    "/v1/predictions/at-risk/",
+    { token, page },
+  );
+  const equipment = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div className="p-6">
@@ -124,7 +125,7 @@ export default async function PredictionsPage() {
                      <div>
                        <div className="text-xs text-text-muted mb-1">마지막 장애</div>
                        <div className="text-sm font-medium text-text">
-                         {item.days_since_last_failure !== null 
+                         {item.days_since_last_failure !== null
                            ? `${item.days_since_last_failure}일 전`
                            : "-"}
                        </div>
@@ -132,7 +133,7 @@ export default async function PredictionsPage() {
                      <div>
                        <div className="text-xs text-text-muted mb-1">MTBF</div>
                        <div className="text-sm font-medium text-text">
-                         {item.mtbf_days !== null 
+                         {item.mtbf_days !== null
                            ? `${item.mtbf_days}일`
                            : "-"}
                        </div>
@@ -158,6 +159,12 @@ export default async function PredictionsPage() {
           </div>
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

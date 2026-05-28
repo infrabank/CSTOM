@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -64,6 +64,21 @@ class EquipmentViewSet(ModelViewSet):
                 to_attr="prefetched_transactions",
             )
         )
+        for param_name, field in [
+            ("status", "status"),
+            ("category", "category"),
+        ]:
+            value = self.request.query_params.get(param_name)
+            if value:
+                queryset = queryset.filter(**{field: value})
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search)
+                | Q(serial_number__icontains=search)
+                | Q(model_name__icontains=search)
+                | Q(contract__name__icontains=search)
+            )
         return queryset
 
     def get_permissions(self):

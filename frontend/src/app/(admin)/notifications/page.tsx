@@ -1,5 +1,11 @@
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Notification {
   id: number;
@@ -9,8 +15,6 @@ interface Notification {
   is_read: boolean;
   created_at: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const TYPE_LABELS: Record<string, string> = {
   sla_breach: "SLA 위반",
@@ -28,24 +32,22 @@ const TYPE_COLORS: Record<string, string> = {
   system: "bg-surface-sunken text-text-muted",
 };
 
-async function getNotifications(token?: string): Promise<Notification[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/notifications/`, {
-      next: { revalidate: 30 },
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    });
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
 }
 
-export default async function NotificationsPage() {
+export default async function NotificationsPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const notifications = await getNotifications(token);
+
+  const data = await fetchPaginated<Notification>("/v1/notifications/", {
+    token,
+    page,
+  });
+  const notifications = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div>
@@ -97,6 +99,12 @@ export default async function NotificationsPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

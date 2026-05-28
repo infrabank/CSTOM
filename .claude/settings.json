@@ -103,11 +103,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/clean_commit_guard.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/clean_commit_guard.py"
           },
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/github_issue_guard.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/github_issue_guard.py"
           }
         ]
       },
@@ -116,7 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/protect_claude_md.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/protect_claude_md.py"
           }
         ]
       },
@@ -125,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/clean_commit_guard.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/clean_commit_guard.py"
           }
         ]
       },
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/github_issue_guard.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/github_issue_guard.py"
           }
         ]
       }
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "py -3 .claude/hooks/emoji_remover.py"
+            "command": "py -3 D:/Opencode/CSTOM/.claude/hooks/emoji_remover.py"
           }
         ]
       }

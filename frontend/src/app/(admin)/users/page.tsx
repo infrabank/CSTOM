@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Role {
   id: number;
@@ -17,28 +21,6 @@ interface User {
   status: string;
   roles: Role[];
   created_at: string;
-}
-
-interface UsersResponse {
-  results: User[];
-}
-
-async function fetchUsers(token?: string): Promise<User[]> {
-  try {
-    const res = await fetch(`${API_URL}/v1/users/`, {
-      next: { revalidate: 30 },
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
-    if (!res.ok) {
-      throw new Error(`API error: ${res.status}`);
-    }
-    const data: UsersResponse = await res.json();
-    return data.results || [];
-  } catch {
-    return [];
-  }
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -98,10 +80,19 @@ function RoleBadges({ roles }: { roles?: Role[] }) {
   );
 }
 
-export default async function UsersPage() {
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function UsersPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
-  const users = await fetchUsers(token);
+
+  const data = await fetchPaginated<User>("/v1/users/", { token, page });
+  const users = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
   return (
     <div className="p-6">
@@ -219,6 +210,12 @@ export default async function UsersPage() {
           ))
         )}
       </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }
