@@ -1,8 +1,11 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getAccessToken } from "@/lib/auth";
+import { cookies } from "next/headers";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface InspectionTask {
   id: number;
@@ -16,8 +19,6 @@ interface InspectionTask {
   created_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
 const STATUS_LABELS: Record<string, string> = {
   pending: "대기",
   in_progress: "진행중",
@@ -30,6 +31,8 @@ const STATUS_COLORS: Record<string, string> = {
   completed: "bg-success-bg text-success",
 };
 
+const STATUS_VALUES = new Set(["pending", "in_progress", "completed"]);
+
 function StatusBadge({ status }: { status: string }) {
    const colorClass = STATUS_COLORS[status] || "bg-surface-sunken text-text-muted";
   const label = STATUS_LABELS[status] || status;
@@ -40,67 +43,60 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default function InspectionTasksPage() {
-  const [tasks, setTasks] = useState<InspectionTask[]>([]);
-  const [filteredTasks, setFilteredTasks] = useState<InspectionTask[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [activeFilter, setActiveFilter] = useState<string>("all");
+interface PageProps {
+  searchParams: Promise<{ page?: string; status?: string }>;
+}
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = getAccessToken();
+export default async function InspectionTasksPage({ searchParams }: PageProps) {
+  const { page: pageRaw, status: statusRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
+  const status = statusRaw && STATUS_VALUES.has(statusRaw) ? statusRaw : undefined;
 
-        const res = await fetch(`${API_URL}/v1/inspections/tasks/`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
 
-        if (!res.ok) {
-          throw new Error("점검 작업을 불러올 수 없습니다");
-        }
+  const [data, counts] = await Promise.all([
+    fetchPaginated<InspectionTask>("/v1/inspections/tasks/", {
+      token,
+      page,
+      query: status ? { status } : {},
+    }),
+    Promise.all([
+      fetchPaginated<InspectionTask>("/v1/inspections/tasks/", {
+        token,
+        page: 1,
+        pageSize: 1,
+      }),
+      fetchPaginated<InspectionTask>("/v1/inspections/tasks/", {
+        token,
+        page: 1,
+        pageSize: 1,
+        query: { status: "pending" },
+      }),
+      fetchPaginated<InspectionTask>("/v1/inspections/tasks/", {
+        token,
+        page: 1,
+        pageSize: 1,
+        query: { status: "in_progress" },
+      }),
+      fetchPaginated<InspectionTask>("/v1/inspections/tasks/", {
+        token,
+        page: 1,
+        pageSize: 1,
+        query: { status: "completed" },
+      }),
+    ]),
+  ]);
 
-        const data = await res.json();
-        setTasks(data.results || []);
-        setFilteredTasks(data.results || []);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "점검 작업을 불러올 수 없습니다"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-  }, []);
-
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    if (filter === "all") {
-      setFilteredTasks(tasks);
-    } else {
-      setFilteredTasks(tasks.filter((task) => task.status === filter));
-    }
-  };
+  const tasks = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
+  const [allHead, pendingHead, progressHead, completedHead] = counts;
 
   const filterTabs = [
-    { label: "전체", value: "all", count: tasks.length },
-    {
-      label: "대기",
-      value: "pending",
-      count: tasks.filter((t) => t.status === "pending").length,
-    },
-    {
-      label: "진행중",
-      value: "in_progress",
-      count: tasks.filter((t) => t.status === "in_progress").length,
-    },
-    {
-      label: "완료",
-      value: "completed",
-      count: tasks.filter((t) => t.status === "completed").length,
-    },
+    { label: "전체", value: undefined, count: allHead.count, href: "/inspections/tasks" },
+    { label: "대기", value: "pending", count: pendingHead.count, href: "/inspections/tasks?status=pending" },
+    { label: "진행중", value: "in_progress", count: progressHead.count, href: "/inspections/tasks?status=in_progress" },
+    { label: "완료", value: "completed", count: completedHead.count, href: "/inspections/tasks?status=completed" },
   ];
 
   return (
@@ -115,165 +111,151 @@ export default function InspectionTasksPage() {
         </Link>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md">{error}</div>
-      )}
-
-       {/* Filter Tabs */}
-       <div className="mb-6 flex gap-2 border-b border-border-light">
+      {/* Filter Tabs */}
+      <div className="mb-6 flex gap-2 border-b border-border-light">
         {filterTabs.map((tab) => (
-          <button
-            key={tab.value}
-            onClick={() => handleFilterChange(tab.value)}
-             className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
-               activeFilter === tab.value
-                 ? "border-accent text-accent"
-                 : "border-transparent text-text-muted hover:text-text"
-             }`}
+          <Link
+            key={tab.value ?? "all"}
+            href={tab.href}
+            className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${
+              status === tab.value
+                ? "border-accent text-accent"
+                : "border-transparent text-text-muted hover:text-text"
+            }`}
           >
             {tab.label} ({tab.count})
-          </button>
+          </Link>
         ))}
       </div>
 
-       {loading ? (
-         <div className="text-center py-8 text-text-muted">로딩 중...</div>
-      ) : (
-        <>
-           {/* Desktop Table */}
-           <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
-             <table className="min-w-full divide-y divide-border-light">
-               <thead className="bg-surface-sunken">
-                 <tr>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     장비 유형
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     사업
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     예정일
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     담당자
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     상태
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     결과
-                   </th>
-                   <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                     등록일
-                   </th>
-                 </tr>
-               </thead>
-               <tbody className="bg-surface divide-y divide-border-light">
-                 {filteredTasks.length === 0 ? (
-                   <tr>
-                     <td colSpan={7} className="px-6 py-4 text-center text-text">
-                       {error
-                         ? "점검 작업을 불러올 수 없습니다"
-                         : "등록된 점검 작업이 없습니다"}
-                     </td>
-                   </tr>
-                ) : (
-                   filteredTasks.map((task) => (
-                     <tr key={task.id} className="hover:bg-surface-sunken">
-                      <td className="px-6 py-4">
-                        <Link
-                          href={`/inspections/tasks/${task.id}`}
-                           className="text-accent hover:underline font-medium"
-                        >
-                          {task.equipment_type}
-                        </Link>
-                      </td>
-                       <td className="px-6 py-4 text-text text-sm">
-                         {task.contract_name}
-                       </td>
-                       <td className="px-6 py-4 text-text text-sm">
-                         {new Date(task.scheduled_date).toLocaleDateString(
-                           "ko-KR"
-                         )}
-                       </td>
-                       <td className="px-6 py-4 text-text text-sm">
-                         {task.assigned_to_name}
-                       </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={task.status} />
-                      </td>
-                       <td className="px-6 py-4 text-text text-sm text-center">
-                         {task.result_count}
-                       </td>
-                       <td className="px-6 py-4 text-text text-sm">
-                         {new Date(task.created_at).toLocaleDateString("ko-KR")}
-                       </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-           {/* Mobile Cards */}
-           <div className="md:hidden space-y-4">
-             {filteredTasks.length === 0 ? (
-               <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
-                 {error
-                   ? "점검 작업을 불러올 수 없습니다"
-                   : "등록된 점검 작업이 없습니다"}
-               </div>
+      {/* Desktop Table */}
+      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
+        <table className="min-w-full divide-y divide-border-light">
+          <thead className="bg-surface-sunken">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                장비 유형
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                사업
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                예정일
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                담당자
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                상태
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                결과
+              </th>
+              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
+                등록일
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-surface divide-y divide-border-light">
+            {tasks.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-4 text-center text-text">
+                  등록된 점검 작업이 없습니다
+                </td>
+              </tr>
             ) : (
-               filteredTasks.map((task) => (
-                 <div
-                   key={task.id}
-                   className="bg-surface rounded-lg shadow-card p-4 space-y-3"
-                 >
-                  <div className="flex justify-between items-start">
-                    <div className="space-y-1">
-                      <Link
-                        href={`/inspections/tasks/${task.id}`}
-                         className="font-medium text-accent block"
-                      >
-                        {task.equipment_type}
-                      </Link>
-                       <div className="text-sm text-text">
-                         {task.contract_name}
-                       </div>
-                    </div>
+              tasks.map((task) => (
+                <tr key={task.id} className="hover:bg-surface-sunken">
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/inspections/tasks/${task.id}`}
+                      className="text-accent hover:underline font-medium"
+                    >
+                      {task.equipment_type}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-text text-sm">
+                    {task.contract_name}
+                  </td>
+                  <td className="px-6 py-4 text-text text-sm">
+                    {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
+                  </td>
+                  <td className="px-6 py-4 text-text text-sm">
+                    {task.assigned_to_name}
+                  </td>
+                  <td className="px-6 py-4">
                     <StatusBadge status={task.status} />
-                  </div>
-
-                   <div className="space-y-2 text-sm border-t border-border-light pt-3">
-                     <div className="flex justify-between">
-                       <span className="font-medium text-text">예정일</span>
-                       <span className="text-text">
-                         {new Date(task.scheduled_date).toLocaleDateString(
-                           "ko-KR"
-                         )}
-                       </span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span className="font-medium text-text">담당자</span>
-                       <span className="text-text">{task.assigned_to_name}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span className="font-medium text-text">결과</span>
-                       <span className="text-text">{task.result_count}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span className="font-medium text-text">등록일</span>
-                       <span className="text-text">
-                         {new Date(task.created_at).toLocaleDateString("ko-KR")}
-                       </span>
-                     </div>
-                   </div>
-                </div>
+                  </td>
+                  <td className="px-6 py-4 text-text text-sm text-center">
+                    {task.result_count}
+                  </td>
+                  <td className="px-6 py-4 text-text text-sm">
+                    {new Date(task.created_at).toLocaleDateString("ko-KR")}
+                  </td>
+                </tr>
               ))
             )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="md:hidden space-y-4">
+        {tasks.length === 0 ? (
+          <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
+            등록된 점검 작업이 없습니다
           </div>
-        </>
-      )}
+        ) : (
+          tasks.map((task) => (
+            <div
+              key={task.id}
+              className="bg-surface rounded-lg shadow-card p-4 space-y-3"
+            >
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <Link
+                    href={`/inspections/tasks/${task.id}`}
+                    className="font-medium text-accent block"
+                  >
+                    {task.equipment_type}
+                  </Link>
+                  <div className="text-sm text-text">{task.contract_name}</div>
+                </div>
+                <StatusBadge status={task.status} />
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-border-light pt-3">
+                <div className="flex justify-between">
+                  <span className="font-medium text-text">예정일</span>
+                  <span className="text-text">
+                    {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-text">담당자</span>
+                  <span className="text-text">{task.assigned_to_name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-text">결과</span>
+                  <span className="text-text">{task.result_count}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-text">등록일</span>
+                  <span className="text-text">
+                    {new Date(task.created_at).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
-from django.db.models import Count, F, Q, Case, When, IntegerField
+from django.db.models import Count, F, Q, Case, When, IntegerField, Sum, DecimalField
 
 from common.pagination import StandardPagination
 
@@ -299,6 +299,19 @@ class SLACategoryViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(contract_id=contract_id)
 
         return queryset.prefetch_related("items")
+
+    @action(detail=False, methods=["get"], pagination_class=None)
+    def tree(self, request):
+        """Return all SLA categories with nested items and criteria, unpaginated.
+
+        The criteria-overview page renders a fixed tree per category and would
+        truncate rows under standard pagination.
+        """
+        queryset = self.get_queryset().prefetch_related(
+            "items", "items__criteria"
+        )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class SLAEvaluationItemViewSet(viewsets.ModelViewSet):
@@ -625,6 +638,36 @@ class SLAPenaltyViewSet(viewsets.ReadOnlyModelViewSet):
         if contract_id:
             queryset = queryset.filter(report__contract_id=contract_id)
         return queryset.select_related("report", "evaluation_item")
+
+    @action(detail=False, methods=["get"])
+    def summary(self, request):
+        """Aggregate penalty totals so the UI can paginate the list independently."""
+        queryset = self.get_queryset()
+        aggregates = queryset.aggregate(
+            total_penalty=Sum(
+                Case(
+                    When(is_offset=False, then=F("penalty_amount")),
+                    default=0,
+                    output_field=DecimalField(max_digits=14, decimal_places=2),
+                )
+            ),
+            offset_amount=Sum(
+                Case(
+                    When(is_offset=True, then=F("penalty_amount")),
+                    default=0,
+                    output_field=DecimalField(max_digits=14, decimal_places=2),
+                )
+            ),
+        )
+        total = aggregates["total_penalty"] or 0
+        offset = aggregates["offset_amount"] or 0
+        return Response(
+            {
+                "total_penalty": str(total),
+                "offset_amount": str(offset),
+                "net_penalty": str(total - offset),
+            }
+        )
 
 
 class UptimeRecordViewSet(viewsets.ModelViewSet):

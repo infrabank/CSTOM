@@ -1,8 +1,13 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { Suspense } from "react";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import Pagination from "@/components/ui/pagination";
+import {
+  DEFAULT_PAGE_SIZE,
+  fetchPaginated,
+  parsePageParam,
+} from "@/lib/fetch-paginated";
 
 interface Penalty {
   id: number;
@@ -18,6 +23,14 @@ interface Penalty {
   created_at: string;
 }
 
+interface PenaltySummary {
+  total_penalty: string;
+  offset_amount: string;
+  net_penalty: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
 function formatDate(dateString: string): string {
   const d = new Date(dateString);
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
@@ -28,44 +41,45 @@ function formatAmount(amount: string | null): string {
   return Number(amount).toLocaleString() + "원";
 }
 
-export default async function SLAPenaltiesPage() {
+async function fetchSummary(token?: string): Promise<PenaltySummary> {
+  try {
+    const res = await fetch(`${API_URL}/v1/sla/penalties/summary/`, {
+      next: { revalidate: 30 },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error();
+    return (await res.json()) as PenaltySummary;
+  } catch {
+    return { total_penalty: "0", offset_amount: "0", net_penalty: "0" };
+  }
+}
+
+interface PageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function SLAPenaltiesPage({ searchParams }: PageProps) {
+  const { page: pageRaw } = await searchParams;
+  const page = parsePageParam(pageRaw);
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 
-  let penalties: Penalty[] = [];
-  let error: string | null = null;
+  const [data, summary] = await Promise.all([
+    fetchPaginated<Penalty>("/v1/sla/penalties/", { token, page }),
+    fetchSummary(token),
+  ]);
 
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const response = await fetch(`${apiUrl}/v1/sla/penalties/?page_size=100`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-      },
-    });
-    if (!response.ok) throw new Error("벌점 데이터를 불러오지 못했습니다");
-    const data = await response.json();
-    penalties = data.results || [];
-  } catch (e) {
-    error = e instanceof Error ? e.message : "벌점 데이터를 불러오지 못했습니다";
-  }
+  const penalties = data.results;
+  const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
-  const totalPenalty = penalties
-    .filter((p) => !p.is_offset)
-    .reduce((sum, p) => sum + Number(p.penalty_amount || 0), 0);
-  const offsetAmount = penalties
-    .filter((p) => p.is_offset)
-    .reduce((sum, p) => sum + Number(p.penalty_amount || 0), 0);
-  const netPenalty = totalPenalty - offsetAmount;
+  const totalPenalty = Number(summary.total_penalty);
+  const offsetAmount = Number(summary.offset_amount);
+  const netPenalty = Number(summary.net_penalty);
 
   return (
     <div>
       <Breadcrumb />
       <h1 className="text-2xl font-semibold text-text mb-6">벌점 관리</h1>
-
-      {error && (
-        <div className="mb-4 p-4 bg-danger-bg text-danger rounded-md border border-danger-border">{error}</div>
-      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -158,6 +172,12 @@ export default async function SLAPenaltiesPage() {
           )}
         </div>
       </Suspense>
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        totalItems={data.count}
+      />
     </div>
   );
 }

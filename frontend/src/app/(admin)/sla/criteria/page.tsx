@@ -48,15 +48,15 @@ export default async function SLACriteriaPage() {
 
   try {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const response = await fetch(`${apiUrl}/v1/sla/categories/?page_size=100`, {
+    const response = await fetch(`${apiUrl}/v1/sla/categories/tree/`, {
+      next: { revalidate: 30 },
       headers: {
         "Content-Type": "application/json",
         ...(token && { Authorization: `Bearer ${token}` }),
       },
     });
     if (!response.ok) throw new Error("배점기준 데이터를 불러오지 못했습니다");
-    const data = await response.json();
-    categories = data.results || [];
+    categories = (await response.json()) as Category[];
   } catch (e) {
     error = e instanceof Error ? e.message : "배점기준 데이터를 불러오지 못했습니다";
   }
