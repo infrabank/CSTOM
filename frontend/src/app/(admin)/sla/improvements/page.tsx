@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import ConfirmModal from "@/components/confirm-modal";
 import { slaApi, contractsApi, type PerformanceImprovement, type ContractListItem } from "@/lib/api";
 
 function formatDate(dateString: string): string {
@@ -15,8 +16,17 @@ export default function ImprovementsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    contract: string;
+    title: string;
+    description: string;
+    proposed_by: string;
+    proposed_date: string;
+    evaluation_period_start: string;
+    evaluation_period_end: string;
+  }>({
     contract: "",
     title: "",
     description: "",
@@ -48,14 +58,14 @@ export default function ImprovementsPage() {
     e.preventDefault();
     try {
       await slaApi.createImprovement({
-        contract: Number(formData.contract) as unknown as number,
+        contract: Number(formData.contract),
         title: formData.title,
         description: formData.description,
         proposed_by: formData.proposed_by,
         proposed_date: formData.proposed_date,
         evaluation_period_start: formData.evaluation_period_start || null,
         evaluation_period_end: formData.evaluation_period_end || null,
-      } as Partial<PerformanceImprovement>);
+      });
       setShowForm(false);
       setFormData({ contract: "", title: "", description: "", proposed_by: "", proposed_date: "", evaluation_period_start: "", evaluation_period_end: "" });
       loadData();
@@ -76,13 +86,15 @@ export default function ImprovementsPage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("삭제하시겠습니까?")) return;
+  const handleDelete = async () => {
+    if (deleteTargetId === null) return;
     try {
-      await slaApi.deleteImprovement(id);
+      await slaApi.deleteImprovement(deleteTargetId);
+      setDeleteTargetId(null);
       loadData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "삭제에 실패했습니다");
+      setDeleteTargetId(null);
     }
   };
 
@@ -205,7 +217,7 @@ export default function ImprovementsPage() {
                         {!item.is_accepted && (
                           <button onClick={() => handleAccept(item.id)} className="text-accent hover:underline text-xs cursor-pointer">승인</button>
                         )}
-                        <button onClick={() => handleDelete(item.id)} className="text-danger hover:underline text-xs cursor-pointer">삭제</button>
+                        <button onClick={() => setDeleteTargetId(item.id)} className="text-danger hover:underline text-xs cursor-pointer">삭제</button>
                       </td>
                     </tr>
                   ))
@@ -239,7 +251,7 @@ export default function ImprovementsPage() {
                       {!item.is_accepted && (
                         <button onClick={() => handleAccept(item.id)} className="text-accent cursor-pointer">승인</button>
                       )}
-                      <button onClick={() => handleDelete(item.id)} className="text-danger cursor-pointer">삭제</button>
+                      <button onClick={() => setDeleteTargetId(item.id)} className="text-danger cursor-pointer">삭제</button>
                     </div>
                   </div>
                 </div>
@@ -248,6 +260,16 @@ export default function ImprovementsPage() {
           </div>
         </>
       )}
+
+      <ConfirmModal
+        isOpen={deleteTargetId !== null}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+        title="개선안 삭제"
+        message="이 성능개선 제안을 삭제하시겠습니까?"
+        confirmText="삭제"
+        isDestructive
+      />
     </div>
   );
 }

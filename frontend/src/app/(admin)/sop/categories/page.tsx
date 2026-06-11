@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getAccessToken } from "@/lib/auth";
+import ConfirmModal from "@/components/confirm-modal";
 
 interface SOPCategory {
   id: number;
@@ -25,6 +26,7 @@ export default function SOPCategoriesPage() {
   const [formDescription, setFormDescription] = useState("");
   const [formParent, setFormParent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: number; name: string } | null>(null);
 
   const getHeaders = useCallback((): HeadersInit => {
     const token = getAccessToken();
@@ -105,8 +107,10 @@ export default function SOPCategoriesPage() {
     }
   };
 
-  const handleDelete = async (id: number, name: string) => {
-    if (!confirm(`"${name}" 카테고리를 삭제하시겠습니까?`)) return;
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    const { id } = deleteTarget;
+    setDeleteTarget(null);
 
     try {
       const token = getAccessToken();
@@ -284,7 +288,7 @@ export default function SOPCategoriesPage() {
                   </td>
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => handleDelete(cat.id, cat.name)}
+                      onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
                       className="text-danger hover:underline text-sm"
                     >
                       삭제
@@ -309,7 +313,7 @@ export default function SOPCategoriesPage() {
               <div className="flex justify-between items-start">
                 <span className="font-medium text-text text-sm">{cat.name}</span>
                 <button
-                  onClick={() => handleDelete(cat.id, cat.name)}
+                  onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
                   className="text-danger hover:underline text-xs"
                 >
                   삭제
@@ -327,6 +331,16 @@ export default function SOPCategoriesPage() {
           ))
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="카테고리 삭제"
+        message={deleteTarget ? `"${deleteTarget.name}" 카테고리를 삭제하시겠습니까?` : ""}
+        confirmText="삭제"
+        isDestructive
+      />
     </div>
   );
 }

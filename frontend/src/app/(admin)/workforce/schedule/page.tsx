@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getAccessToken } from "@/lib/auth";
+import ConfirmModal from "@/components/confirm-modal";
 
 interface Engineer {
   id: number;
@@ -57,6 +58,7 @@ export default function WorkforceSchedulePage() {
   const [formType, setFormType] = useState("work");
   const [formNotes, setFormNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const getHeaders = useCallback((): HeadersInit => {
     const token = getAccessToken();
@@ -164,8 +166,10 @@ export default function WorkforceSchedulePage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("이 일정을 삭제하시겠습니까?")) return;
+  const handleDelete = async () => {
+    if (deleteTargetId === null) return;
+    const id = deleteTargetId;
+    setDeleteTargetId(null);
 
     try {
       const token = getAccessToken();
@@ -403,7 +407,7 @@ export default function WorkforceSchedulePage() {
                   </td>
                   <td className="px-6 py-4">
                     <button
-                      onClick={() => handleDelete(schedule.id)}
+                      onClick={() => setDeleteTargetId(schedule.id)}
                       className="text-danger hover:underline text-sm"
                     >
                       삭제
@@ -441,7 +445,7 @@ export default function WorkforceSchedulePage() {
               )}
               <div className="flex justify-end">
                 <button
-                  onClick={() => handleDelete(schedule.id)}
+                  onClick={() => setDeleteTargetId(schedule.id)}
                   className="text-danger hover:underline text-xs"
                 >
                   삭제
@@ -451,6 +455,16 @@ export default function WorkforceSchedulePage() {
           ))
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={deleteTargetId !== null}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+        title="일정 삭제"
+        message="이 일정을 삭제하시겠습니까?"
+        confirmText="삭제"
+        isDestructive
+      />
     </div>
   );
 }

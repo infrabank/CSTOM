@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import EventLinkButton from "./event-link-button";
-import EventDeleteButton from "./event-delete-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface Event {
@@ -203,7 +202,6 @@ export default async function EventDetailPage({ params }: PageProps) {
           contractId={event.contract}
           currentRelatedEventId={event.related_event}
         />
-        <EventDeleteButton eventId={event.id} />
       </div>
     </div>
   );

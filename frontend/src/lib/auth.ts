@@ -40,29 +40,6 @@ export function getAccessToken(): string | null {
 }
 
 /**
- * Get refresh token - no longer available client-side (HttpOnly cookie).
- * Refresh is handled via /api/auth/refresh server-side route.
- */
-export function getRefreshToken(): string | null {
-  // Refresh token is now HttpOnly - not accessible from JS
-  // Token refresh is handled by the /api/auth/refresh API route
-  return null;
-}
-
-/**
- * Store access token in cookie. Refresh token is set as HttpOnly by the API route.
- */
-export function setTokens(tokens: TokenPair): void {
-  if (!isClient()) return;
-
-  const isProduction = window.location.protocol === "https:";
-  const secureFlag = isProduction ? "; Secure" : "";
-
-  // Access token: regular cookie for middleware + client-side role reading
-  document.cookie = `${ACCESS_TOKEN_KEY}=${encodeURIComponent(tokens.access)}; path=/; max-age=3600; SameSite=Lax${secureFlag}`;
-}
-
-/**
  * Clear access token cookie. Refresh token is cleared by the API route.
  */
 export function clearTokens(): void {

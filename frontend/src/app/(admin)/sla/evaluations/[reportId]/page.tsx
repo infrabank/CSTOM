@@ -5,6 +5,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getAccessToken } from "@/lib/auth";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import ConfirmModal from "@/components/confirm-modal";
 
 interface SLAEvaluationReport {
   id: number;
@@ -111,6 +112,8 @@ export default function SLAEvaluationReportDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [actionError, setActionError] = useState('');
   const [uptimeSummary, setUptimeSummary] = useState<UptimeSummary[]>([]);
+  const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const getHeaders = useCallback((): HeadersInit => {
     const token = getAccessToken();
@@ -179,10 +182,6 @@ export default function SLAEvaluationReportDetailPage() {
   };
 
   const handleFinalize = async () => {
-    if (!window.confirm('평가 보고서를 확정하시겠습니까? 확정 후에는 수정할 수 없습니다.')) {
-      return;
-    }
-
     setIsFinalizing(true);
     setActionError('');
 
@@ -216,10 +215,6 @@ export default function SLAEvaluationReportDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('이 평가 보고서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      return;
-    }
-
     setIsDeleting(true);
     setActionError('');
 
@@ -539,6 +534,27 @@ export default function SLAEvaluationReportDetailPage() {
       )}
 
       {/* Action Buttons */}
+      <ConfirmModal
+        isOpen={showFinalizeConfirm}
+        onClose={() => setShowFinalizeConfirm(false)}
+        onConfirm={() => { setShowFinalizeConfirm(false); handleFinalize(); }}
+        title="보고서 확정"
+        message="평가 보고서를 확정하시겠습니까? 확정 후에는 수정할 수 없습니다."
+        confirmText="확정"
+        isLoading={isFinalizing}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={() => { setShowDeleteConfirm(false); handleDelete(); }}
+        title="보고서 삭제"
+        message="이 평가 보고서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        isDestructive
+        isLoading={isDeleting}
+      />
+
       <div className="flex gap-3">
         {!report.is_finalized && (
           <>
@@ -556,14 +572,14 @@ export default function SLAEvaluationReportDetailPage() {
               {isCalculating ? '산출 중...' : '점수 산출'}
             </button>
             <button
-              onClick={handleFinalize}
+              onClick={() => setShowFinalizeConfirm(true)}
               disabled={isFinalizing}
               className="px-4 py-2 bg-accent text-text-on-accent rounded-md hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isFinalizing ? '확정 중...' : '확정'}
             </button>
             <button
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               disabled={isDeleting}
               className="px-4 py-2 bg-danger-bg text-danger border border-danger-border rounded-md hover:bg-danger-bg/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >

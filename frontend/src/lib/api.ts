@@ -2,7 +2,11 @@
  * API client for CSTOM backend.
  */
 
-import { getAccessToken, setTokens, clearTokens, TokenPair } from "./auth";
+import { getAccessToken, clearTokens, TokenPair } from "./auth";
+
+// Single in-flight refresh promise — prevents concurrent 401s from each
+// triggering their own refresh (which can invalidate rotation tokens).
+let refreshPromise: Promise<TokenPair | null> | null = null;
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -87,9 +91,15 @@ async function fetchAPI<T>(
     },
   });
 
-  // Handle 401 Unauthorized - attempt token refresh once
+  // Handle 401 Unauthorized - attempt token refresh once.
+  // Use a shared in-flight promise so concurrent 401s share one refresh call.
   if (res.status === 401 && !_isRetry && !providedToken) {
-    const refreshed = await authApi.refresh();
+    if (!refreshPromise) {
+      refreshPromise = authApi.refresh().finally(() => {
+        refreshPromise = null;
+      });
+    }
+    const refreshed = await refreshPromise;
     if (refreshed) {
       // Retry with new token
       return fetchAPI<T>(endpoint, options, true);

@@ -4,7 +4,6 @@ import { cookies } from "next/headers";
 import { tasksApi, Task, DecisionLog } from "@/lib/api";
 import TaskDecisionSection from "./task-decision-section";
 import TaskApprovalSection from "./task-approval-section";
-import TaskDeleteButton from "./task-delete-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
 const TYPE_LABELS: Record<string, string> = {
@@ -69,15 +68,12 @@ export default async function TaskDetailPage({ params }: PageProps) {
         >
           {task.contract_name}으로 돌아가기
         </Link>
-        <div className="flex gap-2">
-          <Link
-            href={`/tasks/${taskId}/edit`}
-            className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover text-sm"
-          >
-            수정
-          </Link>
-          <TaskDeleteButton taskId={id} />
-        </div>
+        <Link
+          href={`/tasks/${taskId}/edit`}
+          className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-hover text-sm"
+        >
+          수정
+        </Link>
       </div>
 
       <div className="bg-surface shadow-card rounded-lg p-6 mb-6">

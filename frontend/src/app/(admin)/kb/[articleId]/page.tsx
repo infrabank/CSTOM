@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Breadcrumb from "@/components/ui/breadcrumb";
+import ConfirmModal from "@/components/confirm-modal";
 
 const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
@@ -34,6 +35,7 @@ export default function KBArticleDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     const fetchArticle = async () => {
@@ -104,7 +106,6 @@ export default function KBArticleDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('이 아티클을 삭제하시겠습니까?')) return;
     setIsDeleting(true);
     try {
       const token = getAccessToken();
@@ -250,7 +251,7 @@ export default function KBArticleDetailPage() {
              수정
            </Link>
            <button
-             onClick={handleDelete}
+             onClick={() => setShowDeleteConfirm(true)}
              disabled={isDeleting}
              className="px-4 py-2 bg-danger text-text-on-accent rounded-md hover:bg-danger/90 transition-colors disabled:opacity-50"
            >
@@ -264,6 +265,16 @@ export default function KBArticleDetailPage() {
            </Link>
          </div>
       </div>
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="아티클 삭제"
+        message="이 아티클을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+        confirmText="삭제"
+        isDestructive
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

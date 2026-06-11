@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import ConfirmModal from "@/components/confirm-modal";
 import { slaApi, equipmentsApi, contractsApi, type UptimeRecord, type EquipmentListItem, type ContractListItem } from "@/lib/api";
 
 function formatPercent(value: string | null): string {
@@ -24,6 +25,7 @@ export default function UptimePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -61,15 +63,15 @@ export default function UptimePage() {
     e.preventDefault();
     try {
       await slaApi.createUptimeRecord({
-        equipment: Number(formData.equipment) as unknown as number,
-        contract: Number(formData.contract) as unknown as number,
+        equipment: Number(formData.equipment),
+        contract: Number(formData.contract),
         period_start: formData.period_start,
         period_end: formData.period_end,
         total_operating_hours: formData.total_operating_hours,
         unplanned_downtime_hours: formData.unplanned_downtime_hours || "0",
         downtime_reason: formData.downtime_reason,
         notes: formData.notes,
-      } as Partial<UptimeRecord>);
+      });
       setShowForm(false);
       setFormData({
         equipment: "", contract: "", period_start: "", period_end: "",
@@ -82,13 +84,15 @@ export default function UptimePage() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("삭제하시겠습니까?")) return;
+  const handleDelete = async () => {
+    if (deleteTargetId === null) return;
     try {
-      await slaApi.deleteUptimeRecord(id);
+      await slaApi.deleteUptimeRecord(deleteTargetId);
+      setDeleteTargetId(null);
       loadData();
     } catch (e) {
       setError(e instanceof Error ? e.message : "삭제에 실패했습니다");
+      setDeleteTargetId(null);
     }
   };
 
@@ -230,7 +234,7 @@ export default function UptimePage() {
                       </td>
                       <td className="px-4 py-3 text-sm text-text-secondary">{r.downtime_reason || "-"}</td>
                       <td className="px-4 py-3 text-center">
-                        <button onClick={() => handleDelete(r.id)} className="text-danger hover:underline text-xs cursor-pointer">삭제</button>
+                        <button onClick={() => setDeleteTargetId(r.id)} className="text-danger hover:underline text-xs cursor-pointer">삭제</button>
                       </td>
                     </tr>
                   ))
@@ -260,7 +264,7 @@ export default function UptimePage() {
                   <div className="text-xs text-text-muted">{r.period_start} ~ {r.period_end}</div>
                   <div className="flex justify-between text-xs">
                     <span>운영 {r.total_operating_hours}h / 중단 {r.unplanned_downtime_hours}h</span>
-                    <button onClick={() => handleDelete(r.id)} className="text-danger cursor-pointer">삭제</button>
+                    <button onClick={() => setDeleteTargetId(r.id)} className="text-danger cursor-pointer">삭제</button>
                   </div>
                 </div>
               ))
@@ -268,6 +272,16 @@ export default function UptimePage() {
           </div>
         </>
       )}
+
+      <ConfirmModal
+        isOpen={deleteTargetId !== null}
+        onClose={() => setDeleteTargetId(null)}
+        onConfirm={handleDelete}
+        title="가동율 기록 삭제"
+        message="이 가동율 기록을 삭제하시겠습니까?"
+        confirmText="삭제"
+        isDestructive
+      />
     </div>
   );
 }
