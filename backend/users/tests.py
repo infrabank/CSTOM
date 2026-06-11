@@ -155,3 +155,58 @@ class RoleTestCase(TestCase):
         # Verify role was assigned
         user.refresh_from_db()
         self.assertTrue(user.has_role("pm"))
+
+
+class UserManagementPermissionTestCase(TestCase):
+    """Only admins may manage users (assign_role / update). PM cannot."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.pm_role = Role.objects.create(name="pm", description="Project Manager")
+        self.admin_role = Role.objects.create(name="admin", description="Administrator")
+
+        self.pm = User.objects.create_user(
+            username="pm", email="pm@example.com", password="pmpass123"
+        )
+        self.pm.roles.add(self.pm_role)
+
+        self.admin = User.objects.create_user(
+            username="admin", email="admin@example.com", password="adminpass123"
+        )
+        self.admin.roles.add(self.admin_role)
+
+        self.target = User.objects.create_user(
+            username="target", email="target@example.com", password="targetpass123"
+        )
+
+    def _auth(self, email, password):
+        response = self.client.post(
+            "/api/token/", {"email": email, "password": password}
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {response.data['access']}")
+
+    def test_pm_assign_role_forbidden(self):
+        self._auth("pm@example.com", "pmpass123")
+        response = self.client.patch(
+            f"/api/v1/users/{self.target.id}/roles/",
+            {"role_ids": [self.pm_role.id]},
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_pm_update_user_forbidden(self):
+        self._auth("pm@example.com", "pmpass123")
+        response = self.client.patch(
+            f"/api/v1/users/{self.target.id}/",
+            {"display_name": "Renamed"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_assign_role_succeeds(self):
+        self._auth("admin@example.com", "adminpass123")
+        response = self.client.patch(
+            f"/api/v1/users/{self.target.id}/roles/",
+            {"role_ids": [self.pm_role.id]},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.target.refresh_from_db()
+        self.assertTrue(self.target.has_role("pm"))
