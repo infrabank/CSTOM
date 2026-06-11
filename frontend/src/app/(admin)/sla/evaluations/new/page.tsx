@@ -3,28 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi } from "@/lib/api";
+import {
+  slaCategoriesApi,
+  slaReportsApi,
+  type SLAEvaluationCategory as SLACategory,
+  type SLAEvaluationCategoryItem as SLAEvaluationItem,
+} from "../../api-local";
+import { getGradeInfo, SERVICE_LEVEL_OPTIONS } from "../grade";
 
 interface Contract {
   id: number;
   name: string;
-}
-
-interface SLAEvaluationItem {
-  id: number;
-  item_number: number;
-  name: string;
-  weight: number;
-  category_name: string;
-  criteria: { service_level: string; criteria_text: string }[];
-}
-
-interface SLACategory {
-  id: number;
-  name: string;
-  code: string;
-  weight_percent: number;
-  items: SLAEvaluationItem[];
 }
 
 interface ScoreInput {
@@ -33,23 +23,9 @@ interface ScoreInput {
   notes: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const SERVICE_LEVEL_OPTIONS = [
-  { value: "1.0", label: "1.0 (목표이상)" },
-  { value: "0.8", label: "0.8 (최소이상)" },
-  { value: "0.6", label: "0.6 (최소미만)" },
-  { value: "0.4", label: "0.4 (미흡)" },
-  { value: "0.2", label: "0.2 (매우미흡)" },
-];
-
-const getGradeInfo = (score: number): { grade: string; label: string } => {
-  if (score >= 96) return { grade: "S", label: "탁월" };
-  if (score >= 90) return { grade: "A", label: "우수" };
-  if (score >= 85) return { grade: "B", label: "보통" };
-  if (score >= 80) return { grade: "C", label: "최저" };
-  return { grade: "D", label: "불가" };
-};
+interface CreatedReport {
+  id: number;
+}
 
 export default function NewSLAEvaluationReportPage() {
   const router = useRouter();
@@ -72,17 +48,8 @@ export default function NewSLAEvaluationReportPage() {
   useEffect(() => {
     const fetchContracts = async () => {
       try {
-        const token = getAccessToken();
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
+        const contractsData = await contractsApi.list();
+        setContracts(contractsData.results || []);
       } catch (err) {
         console.error("Failed to fetch contracts:", err);
       } finally {
@@ -103,23 +70,8 @@ export default function NewSLAEvaluationReportPage() {
     setIsLoadingItems(true);
 
     try {
-      const token = getAccessToken();
-
-      const headers: HeadersInit = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-
-      const res = await fetch(
-        `${API_URL}/v1/sla/categories/?contract=${contractId}`,
-        { headers }
-      );
-
-      if (!res.ok) {
-        throw new Error("평가항목을 불러오는데 실패했습니다");
-      }
-
-      const data = await res.json();
-      const categoriesData = data.results || data || [];
+      const data = await slaCategoriesApi.listByContract(contractId);
+      const categoriesData = Array.isArray(data) ? data : data.results || [];
       setCategories(categoriesData);
 
       // Initialize scores
@@ -156,22 +108,11 @@ export default function NewSLAEvaluationReportPage() {
     setIsAutoEvaluating(true);
 
     try {
-      const token = getAccessToken();
-      const headers: HeadersInit = token
-        ? { Authorization: `Bearer ${token}` }
-        : {};
-
-      const res = await fetch(
-        `${API_URL}/v1/sla/evaluation-reports/auto_evaluate/?contract=${contractId}&period_start=${periodStart}&period_end=${periodEnd}`,
-        { headers }
+      const data = await slaReportsApi.autoEvaluate(
+        contractId,
+        periodStart,
+        periodEnd,
       );
-
-      if (!res.ok) {
-        const errMsg = await parseApiError(res, "자동 채점에 실패했습니다");
-        throw new Error(errMsg);
-      }
-
-      const data: Record<string, { service_level: string; notes: string; metric_value: string }> = await res.json();
 
       // Map item_number from API response to item IDs in the categories
       const newAutoSet = new Set<number>();
@@ -231,147 +172,30 @@ export default function NewSLAEvaluationReportPage() {
     return Math.round(total * 100) / 100;
   };
 
-  const parseApiError = async (res: Response, fallbackMsg: string): Promise<string> => {
-    try {
-      const ct = res.headers.get("content-type") || "";
-      if (ct.includes("application/json")) {
-        const data = await res.json();
-        if (data.detail) return `${data.detail} (HTTP ${res.status})`;
-        if (data.error) return `${data.error} (HTTP ${res.status})`;
-        if (data.non_field_errors) {
-          const errs = Array.isArray(data.non_field_errors) ? data.non_field_errors.join(", ") : data.non_field_errors;
-          return `${errs} (HTTP ${res.status})`;
-        }
-        // DRF field-level errors: { "field": ["error1", "error2"] }
-        const fieldErrors = Object.entries(data)
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : String(v)}`)
-          .join("; ");
-        if (fieldErrors) return `${fieldErrors} (HTTP ${res.status})`;
-      }
-      const text = await res.text().catch(() => "");
-      if (text) return `${fallbackMsg} (HTTP ${res.status}): ${text.slice(0, 200)}`;
-    } catch {
-      // ignore parse errors
-    }
-    return `${fallbackMsg} (HTTP ${res.status})`;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
 
     try {
-      const token = getAccessToken();
-
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-      }
-
       // Step 1: Create evaluation report
-      const reportPayload = {
+      const reportData = await slaReportsApi.create<CreatedReport>({
         contract: parseInt(contractId),
         evaluation_period_start: periodStart,
         evaluation_period_end: periodEnd,
-      };
-
-      console.log("[SLA] Step 1: Creating report", reportPayload);
-
-      let reportRes: Response;
-      try {
-        reportRes = await fetch(`${API_URL}/v1/sla/evaluation-reports/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(reportPayload),
-        });
-      } catch (fetchErr) {
-        console.error("[SLA] Network error creating report:", fetchErr);
-        throw new Error(`서버 연결에 실패했습니다. 백엔드 서버가 실행 중인지 확인하세요. (${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)})`);
-      }
-
-      console.log("[SLA] Step 1 response:", reportRes.status, reportRes.statusText);
-
-      if (!reportRes.ok) {
-        const errMsg = await parseApiError(reportRes, "평가 리포트 생성에 실패했습니다");
-        console.error("[SLA] Step 1 failed:", errMsg);
-        throw new Error(errMsg);
-      }
-
-      const reportData = await reportRes.json();
+      });
       const reportId = reportData.id;
-      console.log("[SLA] Step 1 success: report id =", reportId);
 
       // Step 2: Bulk create scores
-      const scoresPayload = {
-        scores: Object.values(scores),
-      };
-
-      console.log("[SLA] Step 2: Saving", scoresPayload.scores.length, "scores");
-
-      let scoresRes: Response;
-      try {
-        scoresRes = await fetch(
-          `${API_URL}/v1/sla/evaluation-reports/${reportId}/bulk_scores/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(scoresPayload),
-          }
-        );
-      } catch (fetchErr) {
-        console.error("[SLA] Network error saving scores:", fetchErr);
-        throw new Error(`점수 저장 중 서버 연결에 실패했습니다. (${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)})`);
-      }
-
-      console.log("[SLA] Step 2 response:", scoresRes.status, scoresRes.statusText);
-
-      if (!scoresRes.ok) {
-        const errMsg = await parseApiError(scoresRes, "평가 점수 저장에 실패했습니다");
-        console.error("[SLA] Step 2 failed:", errMsg);
-        throw new Error(errMsg);
-      }
-
-      console.log("[SLA] Step 2 success");
+      await slaReportsApi.bulkScores(reportId, { scores: Object.values(scores) });
 
       // Step 3: Calculate final score
-      console.log("[SLA] Step 3: Calculating score");
+      await slaReportsApi.calculateScore(reportId);
 
-      let calcRes: Response;
-      try {
-        calcRes = await fetch(
-          `${API_URL}/v1/sla/evaluation-reports/${reportId}/calculate_score/`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-      } catch (fetchErr) {
-        console.error("[SLA] Network error calculating score:", fetchErr);
-        throw new Error(`점수 계산 중 서버 연결에 실패했습니다. (${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)})`);
-      }
-
-      console.log("[SLA] Step 3 response:", calcRes.status, calcRes.statusText);
-
-      if (!calcRes.ok) {
-        const errMsg = await parseApiError(calcRes, "평가 점수 계산에 실패했습니다");
-        console.error("[SLA] Step 3 failed:", errMsg);
-        throw new Error(errMsg);
-      }
-
-      console.log("[SLA] All steps complete, redirecting to report", reportId);
       router.push(`/sla/evaluations/${reportId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "평가 리포트 생성에 실패했습니다";
       setError(message);
-      console.error("[SLA] Submit error:", message, err);
     } finally {
       setIsSubmitting(false);
     }

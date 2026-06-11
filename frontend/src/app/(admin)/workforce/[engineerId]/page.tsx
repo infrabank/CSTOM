@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import { fetchPaginated } from "@/lib/fetch-paginated";
 
 interface EngineerProfile {
   id: number;
@@ -25,8 +26,6 @@ interface Schedule {
   schedule_type_display: string;
   notes: string | null;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const STATUS_COLORS: Record<string, string> = {
   available: "bg-success-bg text-success",
@@ -52,18 +51,21 @@ export default async function EngineerDetailPage({
   const cookieStore = await cookies();
   const token = cookieStore.get("cstom_access_token")?.value;
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(token && { Authorization: `Bearer ${token}` }),
-  };
-
-  // Fetch engineer profile
+  // Fetch engineer profile (single resource — not a paginated list).
   let engineer: EngineerProfile | null = null;
   try {
-    const res = await fetch(`${API_URL}/v1/workforce/engineers/${engineerId}/`, {
-      headers,
-      cache: "no-store",
-    });
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const res = await fetch(
+      `${apiUrl}/v1/workforce/engineers/${engineerId}/`,
+      {
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      },
+    );
     if (!res.ok) {
       notFound();
     }
@@ -77,19 +79,17 @@ export default async function EngineerDetailPage({
   }
 
   // Fetch recent schedules for this engineer
-  let schedules: Schedule[] = [];
-  try {
-    const res = await fetch(
-      `${API_URL}/v1/workforce/schedules/?engineer=${engineer.user}`,
-      { headers, cache: "no-store" }
-    );
-    if (res.ok) {
-      const data = await res.json();
-      schedules = (data.results || data || []).slice(0, 20);
-    }
-  } catch {
-    // silently fail
-  }
+  const schedulesPage = await fetchPaginated<Schedule>(
+    "/v1/workforce/schedules/",
+    {
+      token,
+      page: 1,
+      pageSize: 100,
+      query: { engineer: engineer.user },
+      revalidate: false,
+    },
+  );
+  const schedules = schedulesPage.results.slice(0, 20);
 
   return (
     <div>

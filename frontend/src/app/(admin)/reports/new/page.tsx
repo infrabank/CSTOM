@@ -3,21 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, type ContractListItem as Contract } from "@/lib/api";
 import { generateReport } from "../actions";
+import { REPORT_TYPE_LABELS, optionsFromLabels } from "@/lib/labels";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
-
-const REPORT_TYPES = [
-  { value: "monthly", label: "월간 보고서" },
-  { value: "incident", label: "장애 보고서" },
-  { value: "audit", label: "감사 보고서" },
-];
+const REPORT_TYPES = optionsFromLabels(REPORT_TYPE_LABELS);
 
 export default function NewReportPage() {
   const router = useRouter();
@@ -28,16 +18,8 @@ export default function NewReportPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const res = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setContracts(data.results || []);
-        }
+        const data = await contractsApi.list();
+        setContracts(data.results || []);
       } catch {
       }
     }

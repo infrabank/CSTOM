@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, Contract } from "@/lib/api";
 import { updateContract } from "../../actions";
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 const SCOPES = [
   { value: "ops", label: "운영" },
@@ -14,22 +13,6 @@ const SCOPES = [
   { value: "transition", label: "전환" },
   { value: "pm", label: "PM" },
 ];
-
-interface Contract {
-  id: number;
-  name: string;
-  client_org: string;
-  start_date: string;
-  end_date: string;
-  contract_amount: string | null;
-  status: string;
-  scopes: string[];
-  risk_flags: {
-    pre_env: boolean;
-    prior_vendor_coordination: boolean;
-    docs_incomplete: boolean;
-  };
-}
 
 interface PageProps {
   params: Promise<{ contractId: string }>;
@@ -46,15 +29,7 @@ export default function EditContractPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchContract() {
       try {
-        const token = getAccessToken();
-        const res = await fetch(`${API_URL}/v1/contracts/${contractId}/`, {
-          cache: "no-store",
-          headers: {
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        });
-        if (!res.ok) throw new Error("사업 정보를 불러오지 못했습니다");
-        const data = await res.json();
+        const data = await contractsApi.get(parseInt(contractId, 10));
         setContract(data);
       } catch (e) {
         setError(e instanceof Error ? e.message : "사업 정보를 불러오지 못했습니다");

@@ -2,11 +2,19 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Pagination from "@/components/ui/pagination";
+import ResponsiveTable, { type Column } from "@/components/responsive-table";
+import StatusBadge from "@/components/status-badge";
 import {
   DEFAULT_PAGE_SIZE,
   fetchPaginated,
   parsePageParam,
 } from "@/lib/fetch-paginated";
+import {
+  INSPECTION_CYCLE_LABELS,
+  INSPECTION_CYCLE_COLORS,
+  labelOf,
+  colorOf,
+} from "@/lib/labels";
 
 interface InspectionSchedule {
   id: number;
@@ -21,41 +29,25 @@ interface InspectionSchedule {
   created_at: string;
 }
 
-const CYCLE_LABELS: Record<string, string> = {
-  monthly: "월간",
-  quarterly: "분기",
-  biannual: "반기",
-  annual: "연간",
-};
-
-const CYCLE_COLORS: Record<string, string> = {
-  monthly: "bg-info-bg text-accent",
-  quarterly: "bg-accent-light text-accent",
-  biannual: "bg-success-bg text-success",
-  annual: "bg-warning-bg text-warning",
-};
-
 function ActiveBadge({ isActive }: { isActive: boolean }) {
   return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs font-medium ${
+    <StatusBadge
+      label={isActive ? "활성" : "비활성"}
+      colorClass={
         isActive
           ? "bg-success-bg text-success"
           : "bg-surface-sunken text-text-muted"
-      }`}
-    >
-      {isActive ? "활성" : "비활성"}
-    </span>
+      }
+    />
   );
 }
 
 function CycleBadge({ cycle }: { cycle: string }) {
-  const colorClass = CYCLE_COLORS[cycle] || "bg-surface-sunken text-text-muted";
-  const label = CYCLE_LABELS[cycle] || cycle;
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
-      {label}
-    </span>
+    <StatusBadge
+      label={labelOf(INSPECTION_CYCLE_LABELS, cycle)}
+      colorClass={colorOf(INSPECTION_CYCLE_COLORS, cycle)}
+    />
   );
 }
 
@@ -76,6 +68,104 @@ export default async function InspectionsPage({ searchParams }: PageProps) {
   const inspections = data.results;
   const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
+  const columns: Column<InspectionSchedule>[] = [
+    {
+      key: "equipment_type",
+      header: "장비 유형",
+      render: (item) => (
+        <Link
+          href={`/inspections/${item.id}`}
+          className="text-accent hover:underline font-medium text-sm"
+        >
+          {item.equipment_type}
+        </Link>
+      ),
+    },
+    {
+      key: "contract_name",
+      header: "사업",
+      className: "text-text-secondary text-sm",
+      render: (item) => (
+        <Link href={`/contracts/${item.contract}`} className="hover:underline">
+          {item.contract_name}
+        </Link>
+      ),
+    },
+    {
+      key: "cycle",
+      header: "주기",
+      render: (item) => <CycleBadge cycle={item.cycle} />,
+    },
+    {
+      key: "assigned_to_name",
+      header: "담당자",
+      className: "text-text-secondary text-sm",
+      render: (item) => item.assigned_to_name,
+    },
+    {
+      key: "is_active",
+      header: "활성 상태",
+      render: (item) => <ActiveBadge isActive={item.is_active} />,
+    },
+    {
+      key: "task_count",
+      header: "작업 수",
+      className: "text-text-secondary text-sm text-center",
+      render: (item) => item.task_count,
+    },
+    {
+      key: "created_at",
+      header: "등록일",
+      className: "text-text-secondary text-sm",
+      render: (item) => new Date(item.created_at).toLocaleDateString("ko-KR"),
+    },
+  ];
+
+  const renderMobileCard = (item: InspectionSchedule) => (
+    <div className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <Link
+            href={`/inspections/${item.id}`}
+            className="font-medium text-accent block text-sm"
+          >
+            {item.equipment_type}
+          </Link>
+          <div className="text-sm text-text-muted">
+            <Link
+              href={`/contracts/${item.contract}`}
+              className="hover:underline"
+            >
+              {item.contract_name}
+            </Link>
+          </div>
+        </div>
+        <ActiveBadge isActive={item.is_active} />
+      </div>
+
+      <div className="space-y-2 text-sm border-t border-border-light pt-3">
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">주기</span>
+          <CycleBadge cycle={item.cycle} />
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">담당자</span>
+          <span className="text-text-muted">{item.assigned_to_name}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">작업 수</span>
+          <span className="text-text-muted">{item.task_count}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">등록일</span>
+          <span className="text-text-muted">
+            {new Date(item.created_at).toLocaleDateString("ko-KR")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <Breadcrumb />
@@ -90,138 +180,13 @@ export default async function InspectionsPage({ searchParams }: PageProps) {
         </Link>
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
-        <table className="min-w-full divide-y divide-border-light">
-          <thead className="bg-surface-sunken">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                장비 유형
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                사업
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                주기
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                담당자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                활성 상태
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                작업 수
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                등록일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-surface divide-y divide-border-light">
-            {inspections.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-text-muted">
-                  등록된 점검 스케줄이 없습니다
-                </td>
-              </tr>
-            ) : (
-              inspections.map((inspection) => (
-                <tr key={inspection.id} className="hover:bg-surface-sunken transition-colors">
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/inspections/${inspection.id}`}
-                      className="text-accent hover:underline font-medium text-sm"
-                    >
-                      {inspection.equipment_type}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary text-sm">
-                    <Link
-                      href={`/contracts/${inspection.contract}`}
-                      className="hover:underline"
-                    >
-                      {inspection.contract_name}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4">
-                    <CycleBadge cycle={inspection.cycle} />
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary text-sm">
-                    {inspection.assigned_to_name}
-                  </td>
-                  <td className="px-6 py-4">
-                    <ActiveBadge isActive={inspection.is_active} />
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary text-sm text-center">
-                    {inspection.task_count}
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary text-sm">
-                    {new Date(inspection.created_at).toLocaleDateString("ko-KR")}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4">
-        {inspections.length === 0 ? (
-          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
-            등록된 점검 스케줄이 없습니다
-          </div>
-        ) : (
-          inspections.map((inspection) => (
-            <div
-              key={inspection.id}
-              className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3"
-            >
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <Link
-                    href={`/inspections/${inspection.id}`}
-                    className="font-medium text-accent block text-sm"
-                  >
-                    {inspection.equipment_type}
-                  </Link>
-                  <div className="text-sm text-text-muted">
-                    <Link
-                      href={`/contracts/${inspection.contract}`}
-                      className="hover:underline"
-                    >
-                      {inspection.contract_name}
-                    </Link>
-                  </div>
-                </div>
-                <ActiveBadge isActive={inspection.is_active} />
-              </div>
-
-              <div className="space-y-2 text-sm border-t border-border-light pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">주기</span>
-                  <CycleBadge cycle={inspection.cycle} />
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">담당자</span>
-                  <span className="text-text-muted">{inspection.assigned_to_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">작업 수</span>
-                  <span className="text-text-muted">{inspection.task_count}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">등록일</span>
-                  <span className="text-text-muted">
-                    {new Date(inspection.created_at).toLocaleDateString("ko-KR")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <ResponsiveTable
+        columns={columns}
+        rows={inspections}
+        rowKey={(item) => item.id}
+        emptyMessage="등록된 점검 스케줄이 없습니다"
+        renderMobileCard={renderMobileCard}
+      />
 
       <Pagination
         currentPage={page}

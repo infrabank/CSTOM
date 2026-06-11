@@ -4,37 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { getAccessToken } from '@/lib/auth';
+import { sopClient, type SOPCategory as Category, type SOPDocumentDetail as SOPDocument } from "../../api";
 
 const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface CurrentVersion {
-  id: number;
-  version_number: number;
-  content: string;
-  created_by_name: string;
-  created_at: string;
-}
-
-interface SOPDocument {
-  id: number;
-  title: string;
-  category: number;
-  category_name: string;
-  author_name: string;
-  current_version: CurrentVersion;
-  created_at: string;
-  updated_at: string;
-}
 
 export default function EditSOPPage() {
   const router = useRouter();
@@ -61,39 +35,16 @@ export default function EditSOPPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch document
-        const token = getAccessToken();
-        const authHeaders: HeadersInit = {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-
-        const docRes = await fetch(
-          `${API_URL}/v1/sop/documents/${sopId}/`,
-          { headers: authHeaders }
-        );
-
-        if (!docRes.ok) {
-          throw new Error('SOP 문서를 불러오지 못했습니다');
-        }
-
-        const docData: SOPDocument = await docRes.json();
+        const docData = await sopClient.getDocument(sopId);
         setDocument(docData);
         setFormData({
           title: docData.title,
           category: docData.category.toString(),
-          content: docData.current_version.content,
+          content: docData.current_version?.content ?? '',
         });
 
-        // Fetch categories
-        const catRes = await fetch(`${API_URL}/v1/sop/categories/`, {
-          headers: authHeaders,
-        });
-
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategories(catData.results || catData || []);
-        }
+        const catData = await sopClient.listCategories();
+        setCategories(Array.isArray(catData) ? catData : catData.results || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -127,43 +78,18 @@ export default function EditSOPPage() {
       }
 
       // Step 1: Update document title and category
-      const token = getAccessToken();
-      const submitHeaders: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      };
-
-      const updateRes = await fetch(
-        `${API_URL}/v1/sop/documents/${sopId}/`,
-        {
-          method: 'PUT',
-          headers: submitHeaders,
-          body: JSON.stringify({
-            title: formData.title,
-            category: parseInt(formData.category, 10),
-          }),
-        }
-      );
-
-      if (!updateRes.ok) {
-        throw new Error('문서 정보 업데이트에 실패했습니다');
-      }
-
-      // Step 2: Create new version
-      const versionRes = await fetch(`${API_URL}/v1/sop/versions/`, {
-        method: 'POST',
-        headers: submitHeaders,
-        body: JSON.stringify({
-          document: parseInt(sopId, 10),
-          version_number: document.current_version.version_number + 1,
-          content: formData.content,
-          created_by: document.author_name,
-        }),
+      await sopClient.updateDocument(sopId, {
+        title: formData.title,
+        category: parseInt(formData.category, 10),
       });
 
-      if (!versionRes.ok) {
-        throw new Error('새 버전 생성에 실패했습니다');
-      }
+      // Step 2: Create new version
+      await sopClient.createVersionRecord({
+        document: parseInt(sopId, 10),
+        version_number: (document.current_version?.version_number ?? 0) + 1,
+        content: formData.content,
+        created_by: document.author_name,
+      });
 
       // Redirect to detail page
       router.push(`/sop/${sopId}`);
@@ -293,10 +219,10 @@ export default function EditSOPPage() {
            {/* Version Info */}
            <div className="bg-surface-sunken rounded-lg p-4">
              <p className="text-sm text-text-secondary">
-               <span className="font-medium">현재 버전:</span> v{document.current_version.version_number}
+               <span className="font-medium">현재 버전:</span> v{document.current_version?.version_number ?? 0}
              </p>
              <p className="text-sm text-text-secondary mt-1">
-               <span className="font-medium">새 버전:</span> v{document.current_version.version_number + 1}
+               <span className="font-medium">새 버전:</span> v{(document.current_version?.version_number ?? 0) + 1}
              </p>
            </div>
 

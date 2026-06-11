@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
 import { updateReport } from "../../actions";
-import { getAccessToken } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
+import {
+  reportsApi,
+  contractsApi,
+  type ContractListItem as Contract,
+} from "@/lib/api";
+import { REPORT_TYPE_LABELS, optionsFromLabels } from "@/lib/labels";
 
 interface Report {
   id: number;
@@ -25,11 +23,7 @@ interface Report {
   summary: string;
 }
 
-const REPORT_TYPES = [
-  { value: "monthly", label: "월간 보고서" },
-  { value: "incident", label: "장애 보고서" },
-  { value: "audit", label: "감사 보고서" },
-];
+const REPORT_TYPES = optionsFromLabels(REPORT_TYPE_LABELS);
 
 interface PageProps {
   params: Promise<{ reportId: string }>;
@@ -47,24 +41,12 @@ export default function EditReportPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const [reportRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/reports/${reportId}/`, { cache: "no-store", headers }),
-          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
+        const [reportData, contractsData] = await Promise.all([
+          reportsApi.get(parseInt(reportId, 10)),
+          contractsApi.list(),
         ]);
-
-        if (!reportRes.ok) throw new Error("보고서 정보를 불러오지 못했습니다");
-        const reportData = await reportRes.json();
         setReport(reportData);
-
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || []);
-        }
+        setContracts(contractsData.results || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "보고서 정보를 불러오지 못했습니다");
       } finally {

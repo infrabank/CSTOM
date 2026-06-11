@@ -3,21 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
-
-interface User {
-  id: number;
-  username: string;
-  display_name: string;
-  email: string;
-}
-
-interface ExistingEngineer {
-  id: number;
-  user: number;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import {
+  workforceClient,
+  type WorkforceUser as User,
+  type WorkforceEngineerRef as ExistingEngineer,
+} from "../api";
 
 export default function NewEngineerPage() {
   const router = useRouter();
@@ -33,26 +23,18 @@ export default function NewEngineerPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        // Fetch all users
-        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
-        let allUsers: User[] = [];
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          allUsers = usersData.results || usersData || [];
-        }
-
-        // Fetch existing engineer profiles to exclude already-registered users
-        const engineersRes = await fetch(`${API_URL}/v1/workforce/engineers/`, { headers });
-        let existingEngineers: ExistingEngineer[] = [];
-        if (engineersRes.ok) {
-          const engineersData = await engineersRes.json();
-          existingEngineers = engineersData.results || engineersData || [];
-        }
+        // Fetch all users + existing engineer profiles (to exclude
+        // already-registered users) in parallel.
+        const [usersData, engineersData] = await Promise.all([
+          workforceClient.listUsers(),
+          workforceClient.listEngineers(),
+        ]);
+        const allUsers: User[] = Array.isArray(usersData)
+          ? usersData
+          : usersData.results || [];
+        const existingEngineers: ExistingEngineer[] = Array.isArray(engineersData)
+          ? engineersData
+          : engineersData.results || [];
 
         const registeredUserIds = new Set(existingEngineers.map((e) => e.user));
         setAvailableUsers(allUsers.filter((u) => !registeredUserIds.has(u.id)));
@@ -85,41 +67,14 @@ export default function NewEngineerPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        setIsSubmitting(false);
-        return;
-      }
-
       const skills = parseCommaSeparated(skillsInput);
       const specializations = parseCommaSeparated(specializationsInput);
 
-      const res = await fetch(`${API_URL}/v1/workforce/engineers/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          user: parseInt(userId),
-          skills,
-          specializations,
-        }),
+      await workforceClient.createEngineer({
+        user: parseInt(userId),
+        skills,
+        specializations,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "등록에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`등록에 실패했습니다 (HTTP ${res.status})`);
-      }
 
       router.push("/workforce");
     } catch (err) {

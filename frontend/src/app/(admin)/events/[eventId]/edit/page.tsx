@@ -4,15 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, eventsApi, ContractListItem } from "@/lib/api";
 import { updateEvent } from "../../actions";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
 
 interface Event {
   id: number;
@@ -55,7 +48,7 @@ export default function EditEventPage({ params }: PageProps) {
   const { eventId } = use(params);
   const router = useRouter();
   const [event, setEvent] = useState<Event | null>(null);
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contracts, setContracts] = useState<ContractListItem[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,23 +56,12 @@ export default function EditEventPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-        const [eventRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/events/${eventId}/`, { cache: "no-store", headers }),
-          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
+        const [eventData, contractsData] = await Promise.all([
+          eventsApi.get(parseInt(eventId, 10)),
+          contractsApi.list(),
         ]);
-
-        if (!eventRes.ok) throw new Error("이벤트 정보를 불러오지 못했습니다");
-        const eventData = await eventRes.json();
-        setEvent(eventData);
-
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || []);
-        }
+        setEvent(eventData as unknown as Event);
+        setContracts(contractsData.results || []);
       } catch (e) {
         setError(e instanceof Error ? e.message : "이벤트 정보를 불러오지 못했습니다");
       } finally {

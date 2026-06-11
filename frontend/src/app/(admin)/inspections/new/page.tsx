@@ -3,28 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import {
+  inspectionsClient,
+  type InspectionContract as Contract,
+  type InspectionUser as User,
+} from "../api";
+import { INSPECTION_CYCLE_LABELS, optionsFromLabels } from "@/lib/labels";
 
-interface Contract {
-  id: number;
-  name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const CYCLE_OPTIONS = [
-  { value: "monthly", label: "월간" },
-  { value: "quarterly", label: "분기" },
-  { value: "biannual", label: "반기" },
-  { value: "annual", label: "연간" },
-];
+const CYCLE_OPTIONS = optionsFromLabels(INSPECTION_CYCLE_LABELS);
 
 export default function NewInspectionSchedulePage() {
   const router = useRouter();
@@ -45,29 +31,14 @@ export default function NewInspectionSchedulePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        // Fetch contracts
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, {
-          headers,
-        });
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
-
-        // Fetch users
-        const usersRes = await fetch(`${API_URL}/v1/users/`, {
-          headers,
-        });
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        const [contractsData, usersData] = await Promise.all([
+          inspectionsClient.listContracts(),
+          inspectionsClient.listUsers(),
+        ]);
+        setContracts(
+          Array.isArray(contractsData) ? contractsData : contractsData.results || [],
+        );
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("데이터를 불러올 수 없습니다");
@@ -85,46 +56,14 @@ export default function NewInspectionSchedulePage() {
     setError("");
 
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("cstom_access_token="))
-        ?.split("=")[1];
-
-      if (!token) {
-        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/schedules/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          contract: parseInt(contractId),
-          equipment_type: equipmentType,
-          cycle,
-          assigned_to: assignedTo ? parseInt(assignedTo) : null,
-          description,
-          is_active: isActive,
-        }),
+      await inspectionsClient.createSchedule({
+        contract: parseInt(contractId),
+        equipment_type: equipmentType,
+        cycle,
+        assigned_to: assignedTo ? parseInt(assignedTo) : null,
+        description,
+        is_active: isActive,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "등록에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`등록에 실패했습니다 (HTTP ${res.status})`);
-      }
-
       router.push("/inspections");
     } catch (err) {
       setError(err instanceof Error ? err.message : "등록에 실패했습니다");

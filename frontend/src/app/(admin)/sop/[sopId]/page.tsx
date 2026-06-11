@@ -9,29 +9,7 @@ import Breadcrumb from "@/components/ui/breadcrumb";
 const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-import { getAccessToken } from "@/lib/auth";
-
-interface Version {
-  id: number;
-  version_number: number;
-  created_by_name: string;
-  created_at: string;
-}
-
-interface CurrentVersion extends Version {
-  content: string;
-}
-
-interface SOPDocument {
-  id: number;
-  title: string;
-  category_name: string;
-  author_name: string;
-  current_version: CurrentVersion | null;
-  versions: Version[];
-  created_at: string;
-  updated_at: string;
-}
+import { sopClient, type SOPDocumentDetail as SOPDocument } from "../api";
 
 export default function SOPDetailPage() {
   const params = useParams();
@@ -45,22 +23,7 @@ export default function SOPDetailPage() {
     const fetchDocument = async () => {
       try {
         setLoading(true);
-        const token = getAccessToken();
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/sop/documents/${sopId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('SOP 문서를 불러오지 못했습니다');
-        }
-
-        const data = await response.json();
+        const data = await sopClient.getDocument(sopId);
         setDocument(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -213,7 +176,7 @@ export default function SOPDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {document.versions.map((version) => (
+                  {(document.versions ?? []).map((version) => (
                     <tr key={version.id} className="border-b hover:bg-surface-sunken">
                       <td className="px-4 py-3">
                         <span className="font-semibold text-text">

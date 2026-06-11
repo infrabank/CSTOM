@@ -3,22 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/modal";
-import { getAccessToken } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: "관리자",
-  pm: "PM",
-  engineer: "엔지니어",
-  customer: "고객",
-};
-
-interface Role {
-  id: number;
-  name: string;
-  description: string;
-}
+import { usersClient, type UserRole as Role } from "./api";
+import { USER_ROLE_LABELS, labelOf } from "@/lib/labels";
 
 interface UserActionsProps {
   userId: number;
@@ -48,16 +34,8 @@ export default function UserActions({
 
   async function fetchRoles() {
     try {
-      const token = getAccessToken();
-      const res = await fetch(`${API_URL}/v1/roles/`, {
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAllRoles(data.results || data);
-      }
+      const data = await usersClient.listRoles();
+      setAllRoles(Array.isArray(data) ? data : data.results || []);
     } catch (e) {
       console.error("Failed to fetch roles:", e);
     }
@@ -74,21 +52,7 @@ export default function UserActions({
     setError(null);
 
     try {
-      const token = getAccessToken();
-      const res = await fetch(`${API_URL}/v1/users/${userId}/roles/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({ role_ids: selectedRoleIds }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.detail || data.error || "역할 변경에 실패했습니다");
-      }
-
+      await usersClient.updateRoles(userId, selectedRoleIds);
       setShowRoleModal(false);
       router.refresh();
     } catch (e) {
@@ -103,19 +67,7 @@ export default function UserActions({
     setError(null);
 
     try {
-      const token = getAccessToken();
-      const res = await fetch(`${API_URL}/v1/users/${userId}/`, {
-        method: "DELETE",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.detail || data.error || "삭제에 실패했습니다");
-      }
-
+      await usersClient.remove(userId);
       router.push("/users");
       router.refresh();
     } catch (e) {
@@ -182,7 +134,7 @@ export default function UserActions({
                   />
                    <div>
                      <span className="text-text font-medium">
-                       {ROLE_LABELS[role.name] || role.name}
+                       {labelOf(USER_ROLE_LABELS, role.name)}
                      </span>
                      {role.description && (
                        <p className="text-sm text-text-muted">{role.description}</p>

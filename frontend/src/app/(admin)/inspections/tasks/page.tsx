@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import Pagination from "@/components/ui/pagination";
+import ResponsiveTable, { type Column } from "@/components/responsive-table";
+import StatusBadge from "@/components/status-badge";
 import {
   DEFAULT_PAGE_SIZE,
   fetchPaginated,
   parsePageParam,
 } from "@/lib/fetch-paginated";
+import {
+  INSPECTION_STATUS_LABELS,
+  INSPECTION_STATUS_COLORS,
+  labelOf,
+  colorOf,
+} from "@/lib/labels";
 
 interface InspectionTask {
   id: number;
@@ -19,27 +27,14 @@ interface InspectionTask {
   created_at: string;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "대기",
-  in_progress: "진행중",
-  completed: "완료",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-warning-bg text-warning",
-  in_progress: "bg-info-bg text-info",
-  completed: "bg-success-bg text-success",
-};
-
 const STATUS_VALUES = new Set(["pending", "in_progress", "completed"]);
 
-function StatusBadge({ status }: { status: string }) {
-   const colorClass = STATUS_COLORS[status] || "bg-surface-sunken text-text-muted";
-  const label = STATUS_LABELS[status] || status;
+function TaskStatusBadge({ status }: { status: string }) {
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-medium ${colorClass}`}>
-      {label}
-    </span>
+    <StatusBadge
+      label={labelOf(INSPECTION_STATUS_LABELS, status)}
+      colorClass={colorOf(INSPECTION_STATUS_COLORS, status)}
+    />
   );
 }
 
@@ -99,6 +94,97 @@ export default async function InspectionTasksPage({ searchParams }: PageProps) {
     { label: "완료", value: "completed", count: completedHead.count, href: "/inspections/tasks?status=completed" },
   ];
 
+  const columns: Column<InspectionTask>[] = [
+    {
+      key: "equipment_type",
+      header: "장비 유형",
+      render: (task) => (
+        <Link
+          href={`/inspections/tasks/${task.id}`}
+          className="text-accent hover:underline font-medium"
+        >
+          {task.equipment_type}
+        </Link>
+      ),
+    },
+    {
+      key: "contract_name",
+      header: "사업",
+      className: "text-text text-sm",
+      render: (task) => task.contract_name,
+    },
+    {
+      key: "scheduled_date",
+      header: "예정일",
+      className: "text-text text-sm",
+      render: (task) =>
+        new Date(task.scheduled_date).toLocaleDateString("ko-KR"),
+    },
+    {
+      key: "assigned_to_name",
+      header: "담당자",
+      className: "text-text text-sm",
+      render: (task) => task.assigned_to_name,
+    },
+    {
+      key: "status",
+      header: "상태",
+      render: (task) => <TaskStatusBadge status={task.status} />,
+    },
+    {
+      key: "result_count",
+      header: "결과",
+      className: "text-text text-sm text-center",
+      render: (task) => task.result_count,
+    },
+    {
+      key: "created_at",
+      header: "등록일",
+      className: "text-text text-sm",
+      render: (task) => new Date(task.created_at).toLocaleDateString("ko-KR"),
+    },
+  ];
+
+  const renderMobileCard = (task: InspectionTask) => (
+    <div className="bg-surface rounded-lg shadow-card p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <Link
+            href={`/inspections/tasks/${task.id}`}
+            className="font-medium text-accent block"
+          >
+            {task.equipment_type}
+          </Link>
+          <div className="text-sm text-text">{task.contract_name}</div>
+        </div>
+        <TaskStatusBadge status={task.status} />
+      </div>
+
+      <div className="space-y-2 text-sm border-t border-border-light pt-3">
+        <div className="flex justify-between">
+          <span className="font-medium text-text">예정일</span>
+          <span className="text-text">
+            {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text">담당자</span>
+          <span className="text-text">{task.assigned_to_name}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text">결과</span>
+          <span className="text-text">{task.result_count}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text">등록일</span>
+          <span className="text-text">
+            {new Date(task.created_at).toLocaleDateString("ko-KR")}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -128,128 +214,13 @@ export default async function InspectionTasksPage({ searchParams }: PageProps) {
         ))}
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-border-light">
-          <thead className="bg-surface-sunken">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                장비 유형
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                사업
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                예정일
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                담당자
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                결과
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-text uppercase">
-                등록일
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-surface divide-y divide-border-light">
-            {tasks.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-4 text-center text-text">
-                  등록된 점검 작업이 없습니다
-                </td>
-              </tr>
-            ) : (
-              tasks.map((task) => (
-                <tr key={task.id} className="hover:bg-surface-sunken">
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/inspections/tasks/${task.id}`}
-                      className="text-accent hover:underline font-medium"
-                    >
-                      {task.equipment_type}
-                    </Link>
-                  </td>
-                  <td className="px-6 py-4 text-text text-sm">
-                    {task.contract_name}
-                  </td>
-                  <td className="px-6 py-4 text-text text-sm">
-                    {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
-                  </td>
-                  <td className="px-6 py-4 text-text text-sm">
-                    {task.assigned_to_name}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={task.status} />
-                  </td>
-                  <td className="px-6 py-4 text-text text-sm text-center">
-                    {task.result_count}
-                  </td>
-                  <td className="px-6 py-4 text-text text-sm">
-                    {new Date(task.created_at).toLocaleDateString("ko-KR")}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-4">
-        {tasks.length === 0 ? (
-          <div className="bg-surface p-4 rounded-lg shadow-card text-center text-text">
-            등록된 점검 작업이 없습니다
-          </div>
-        ) : (
-          tasks.map((task) => (
-            <div
-              key={task.id}
-              className="bg-surface rounded-lg shadow-card p-4 space-y-3"
-            >
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <Link
-                    href={`/inspections/tasks/${task.id}`}
-                    className="font-medium text-accent block"
-                  >
-                    {task.equipment_type}
-                  </Link>
-                  <div className="text-sm text-text">{task.contract_name}</div>
-                </div>
-                <StatusBadge status={task.status} />
-              </div>
-
-              <div className="space-y-2 text-sm border-t border-border-light pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-text">예정일</span>
-                  <span className="text-text">
-                    {new Date(task.scheduled_date).toLocaleDateString("ko-KR")}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text">담당자</span>
-                  <span className="text-text">{task.assigned_to_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text">결과</span>
-                  <span className="text-text">{task.result_count}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text">등록일</span>
-                  <span className="text-text">
-                    {new Date(task.created_at).toLocaleDateString("ko-KR")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <ResponsiveTable
+        columns={columns}
+        rows={tasks}
+        rowKey={(task) => task.id}
+        emptyMessage="등록된 점검 작업이 없습니다"
+        renderMobileCard={renderMobileCard}
+      />
 
       <Pagination
         currentPage={page}

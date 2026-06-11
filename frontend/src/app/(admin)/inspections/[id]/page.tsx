@@ -3,72 +3,25 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
 import ConfirmModal from "@/components/confirm-modal";
+import {
+  inspectionsClient,
+  type InspectionContract as Contract,
+  type InspectionUser as User,
+  type InspectionScheduleDetail as InspectionSchedule,
+  type InspectionTaskRow as InspectionTask,
+} from "../api";
+import {
+  INSPECTION_CYCLE_LABELS,
+  INSPECTION_CYCLE_COLORS,
+  INSPECTION_STATUS_LABELS,
+  INSPECTION_STATUS_COLORS,
+  optionsFromLabels,
+  labelOf,
+  colorOf,
+} from "@/lib/labels";
 
-interface Contract {
-  id: number;
-  name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-}
-
-interface InspectionSchedule {
-  id: number;
-  equipment_type: string;
-  contract: number;
-  contract_name: string;
-  cycle: string;
-  assigned_to: number | null;
-  assigned_to_name: string;
-  description: string;
-  is_active: boolean;
-  task_count: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface InspectionTask {
-  id: number;
-  schedule: number;
-  scheduled_date: string;
-  status: string;
-  notes: string;
-  completed_at: string | null;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const CYCLE_OPTIONS = [
-  { value: "monthly", label: "월간" },
-  { value: "quarterly", label: "분기" },
-  { value: "biannual", label: "반기" },
-  { value: "annual", label: "연간" },
-];
-
-const CYCLE_LABELS: Record<string, string> = {
-  monthly: "월간",
-  quarterly: "분기",
-  biannual: "반기",
-  annual: "연간",
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "대기",
-  in_progress: "진행중",
-  completed: "완료",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-warning-bg text-warning",
-  in_progress: "bg-info-bg text-info",
-  completed: "bg-success-bg text-success",
-};
+const CYCLE_OPTIONS = optionsFromLabels(INSPECTION_CYCLE_LABELS);
 
 export default function InspectionScheduleDetailPage() {
   const router = useRouter();
@@ -95,36 +48,19 @@ export default function InspectionScheduleDetailPage() {
   const [description, setDescription] = useState("");
   const [isActive, setIsActive] = useState(true);
 
-  const getToken = () => {
-    return getAccessToken();
-  };
-
   // Fetch schedule and related data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
         // Fetch schedule details
-        const scheduleRes = await fetch(
-          `${API_URL}/v1/inspections/schedules/${id}/`,
-          { headers }
-        );
-
-        if (!scheduleRes.ok) {
-          if (scheduleRes.status === 404) {
-            setError("점검 스케줄을 찾을 수 없습니다");
-          } else {
-            setError("데이터를 불러올 수 없습니다");
-          }
+        let scheduleData: InspectionSchedule;
+        try {
+          scheduleData = await inspectionsClient.getSchedule(id);
+        } catch {
+          setError("점검 스케줄을 찾을 수 없습니다");
           setIsLoading(false);
           return;
         }
-
-        const scheduleData = await scheduleRes.json();
         setSchedule(scheduleData);
 
         // Set form values
@@ -135,29 +71,17 @@ export default function InspectionScheduleDetailPage() {
         setDescription(scheduleData.description || "");
         setIsActive(scheduleData.is_active);
 
-        // Fetch related tasks
-        const tasksRes = await fetch(
-          `${API_URL}/v1/inspections/tasks/?schedule=${id}`,
-          { headers }
+        // Fetch related tasks, contracts, and users for edit mode
+        const [tasksData, contractsData, usersData] = await Promise.all([
+          inspectionsClient.listTasksBySchedule(id),
+          inspectionsClient.listContracts(),
+          inspectionsClient.listUsers(),
+        ]);
+        setTasks(Array.isArray(tasksData) ? tasksData : tasksData.results || []);
+        setContracts(
+          Array.isArray(contractsData) ? contractsData : contractsData.results || [],
         );
-        if (tasksRes.ok) {
-          const tasksData = await tasksRes.json();
-          setTasks(tasksData.results || tasksData || []);
-        }
-
-        // Fetch contracts for edit mode
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
-
-        // Fetch users for edit mode
-        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("데이터를 불러올 수 없습니다");
@@ -174,43 +98,14 @@ export default function InspectionScheduleDetailPage() {
     setError("");
 
     try {
-      const token = getToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        setIsSaving(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/schedules/${id}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          contract: parseInt(contractId),
-          equipment_type: equipmentType,
-          cycle,
-          assigned_to: assignedTo ? parseInt(assignedTo) : null,
-          description,
-          is_active: isActive,
-        }),
+      const updatedData = await inspectionsClient.updateSchedule(id, {
+        contract: parseInt(contractId),
+        equipment_type: equipmentType,
+        cycle,
+        assigned_to: assignedTo ? parseInt(assignedTo) : null,
+        description,
+        is_active: isActive,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "저장에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`저장에 실패했습니다 (HTTP ${res.status})`);
-      }
-
-      const updatedData = await res.json();
       setSchedule(updatedData);
       setIsEditing(false);
     } catch (err) {
@@ -223,25 +118,7 @@ export default function InspectionScheduleDetailPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const token = getToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다");
-        setIsDeleting(false);
-        setShowDeleteConfirm(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/schedules/${id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("삭제에 실패했습니다");
-      }
-
+      await inspectionsClient.deleteSchedule(id);
       router.push("/inspections");
     } catch (err) {
       setError(err instanceof Error ? err.message : "삭제에 실패했습니다");
@@ -459,8 +336,8 @@ export default function InspectionScheduleDetailPage() {
 
                <div>
                  <div className="text-sm font-medium text-text-muted mb-1">점검 주기</div>
-                 <span className="px-2 py-1 bg-info-bg text-info rounded-full text-sm">
-                   {CYCLE_LABELS[schedule.cycle] || schedule.cycle}
+                 <span className={`px-2 py-1 rounded-full text-sm ${colorOf(INSPECTION_CYCLE_COLORS, schedule.cycle)}`}>
+                   {labelOf(INSPECTION_CYCLE_LABELS, schedule.cycle)}
                  </span>
                </div>
 
@@ -558,11 +435,12 @@ export default function InspectionScheduleDetailPage() {
                      </td>
                      <td className="px-4 py-2">
                        <span
-                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                           STATUS_COLORS[task.status] || "bg-surface-sunken"
-                         }`}
+                         className={`px-2 py-1 rounded-full text-xs font-medium ${colorOf(
+                           INSPECTION_STATUS_COLORS,
+                           task.status,
+                         )}`}
                        >
-                         {STATUS_LABELS[task.status] || task.status}
+                         {labelOf(INSPECTION_STATUS_LABELS, task.status)}
                        </span>
                      </td>
                      <td className="px-4 py-2 text-sm text-text-muted">

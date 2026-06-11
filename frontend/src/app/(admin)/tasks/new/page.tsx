@@ -3,15 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, eventsApi, ContractListItem } from "@/lib/api";
 import { createTask } from "../actions";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
 
 interface IncidentOption {
   id: number;
@@ -34,7 +27,7 @@ const IMPACT_LEVELS = [
 
 export default function NewTaskPage() {
   const router = useRouter();
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contracts, setContracts] = useState<ContractListItem[]>([]);
   const [incidents, setIncidents] = useState<IncidentOption[]>([]);
   const [selectedContract, setSelectedContract] = useState("");
   const [error, setError] = useState("");
@@ -43,16 +36,8 @@ export default function NewTaskPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const res = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setContracts(data.results || []);
-        }
+        const data = await contractsApi.list();
+        setContracts(data.results || []);
       } catch {
       }
     }
@@ -67,18 +52,8 @@ export default function NewTaskPage() {
     }
     async function fetchIncidents() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-        const res = await fetch(
-          `${API_URL}/v1/events/?contract=${selectedContract}`,
-          { headers }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setIncidents(data.results || []);
-        }
+        const data = await eventsApi.listByContract(Number(selectedContract));
+        setIncidents(data.results || []);
       } catch {}
     }
     fetchIncidents();

@@ -3,8 +3,14 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import UserActions from "../user-actions";
 import Breadcrumb from "@/components/ui/breadcrumb";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import {
+  USER_STATUS_LABELS,
+  USER_STATUS_COLORS,
+  USER_ROLE_LABELS,
+  USER_ROLE_COLORS,
+  labelOf,
+  colorOf,
+} from "@/lib/labels";
 
 interface Role {
   id: number;
@@ -26,7 +32,9 @@ interface User {
 
 async function getUser(id: number, token?: string): Promise<User | null> {
   try {
-    const res = await fetch(`${API_URL}/v1/users/${id}/`, {
+    const apiUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    const res = await fetch(`${apiUrl}/v1/users/${id}/`, {
       cache: "no-store",
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -38,30 +46,6 @@ async function getUser(id: number, token?: string): Promise<User | null> {
     return null;
   }
 }
-
-const STATUS_LABELS: Record<string, string> = {
-  active: "활성",
-  inactive: "비활성",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  active: "bg-success-bg text-success",
-  inactive: "bg-surface-sunken text-text",
-};
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: "관리자",
-  pm: "PM",
-  engineer: "엔지니어",
-  customer: "고객",
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  admin: "bg-danger-bg text-danger",
-  pm: "bg-info-bg text-info",
-  engineer: "bg-info-bg text-info",
-  customer: "bg-warning-bg text-warning",
-};
 
 interface PageProps {
   params: Promise<{ userId: string }>;
@@ -99,11 +83,13 @@ export default async function UserDetailPage({ params }: PageProps) {
             <p className="text-text">@{user.username}</p>
           </div>
           <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              STATUS_COLORS[user.status] || "bg-surface-sunken text-text"
-            }`}
+            className={`px-3 py-1 rounded-full text-sm font-medium ${colorOf(
+              USER_STATUS_COLORS,
+              user.status,
+              "bg-surface-sunken text-text",
+            )}`}
           >
-            {STATUS_LABELS[user.status] || user.status}
+            {labelOf(USER_STATUS_LABELS, user.status)}
           </span>
         </div>
 
@@ -135,11 +121,15 @@ export default async function UserDetailPage({ params }: PageProps) {
               {user.roles.map((role) => (
                 <span
                   key={role.id}
-                  className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    ROLE_COLORS[role.name] || "bg-surface-sunken text-text"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium ${colorOf(
+                    USER_ROLE_COLORS,
+                    role.name,
+                    "bg-surface-sunken text-text",
+                  )}`}
                 >
-                  {ROLE_LABELS[role.name] || role.name.toUpperCase()}
+                  {labelOf(USER_ROLE_LABELS, role.name) === role.name
+                    ? role.name.toUpperCase()
+                    : labelOf(USER_ROLE_LABELS, role.name)}
                 </span>
               ))}
             </div>

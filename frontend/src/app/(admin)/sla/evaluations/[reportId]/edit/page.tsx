@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { slaReportsApi } from "../../../api-local";
+import { getGradeInfo, SERVICE_LEVEL_OPTIONS } from "../../grade";
 
 interface SLAEvaluationReport {
   id: number;
@@ -37,24 +38,6 @@ interface ScoreInput {
   notes: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const SERVICE_LEVEL_OPTIONS = [
-  { value: "1.0", label: "1.0 (목표이상)" },
-  { value: "0.8", label: "0.8 (최소이상)" },
-  { value: "0.6", label: "0.6 (최소미만)" },
-  { value: "0.4", label: "0.4 (미흡)" },
-  { value: "0.2", label: "0.2 (매우미흡)" },
-];
-
-const getGradeInfo = (score: number): { grade: string; label: string } => {
-  if (score >= 96) return { grade: "S", label: "탁월" };
-  if (score >= 90) return { grade: "A", label: "우수" };
-  if (score >= 85) return { grade: "B", label: "보통" };
-  if (score >= 80) return { grade: "C", label: "최저" };
-  return { grade: "D", label: "불가" };
-};
-
 interface ScoresByCategory {
   [category: string]: {
     scores: SLAEvaluationScore[];
@@ -77,24 +60,10 @@ export default function EditSLAEvaluationReportPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const getHeaders = useCallback((): HeadersInit => {
-    const token = getAccessToken();
-    return {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }, []);
-
   useEffect(() => {
     const fetchReport = async () => {
       try {
-        const res = await fetch(
-          `${API_URL}/v1/sla/evaluation-reports/${reportId}/`,
-          { headers: getHeaders() }
-        );
-        if (!res.ok) throw new Error("평가 보고서를 불러오지 못했습니다");
-
-        const data: SLAEvaluationReport = await res.json();
+        const data = await slaReportsApi.get<SLAEvaluationReport>(reportId);
 
         if (data.is_finalized) {
           setError("확정된 평가 보고서는 수정할 수 없습니다.");
@@ -128,7 +97,7 @@ export default function EditSLAEvaluationReportPage() {
     };
 
     if (reportId) fetchReport();
-  }, [reportId, getHeaders]);
+  }, [reportId]);
 
   const updateScore = (
     itemId: number,
@@ -163,95 +132,20 @@ export default function EditSLAEvaluationReportPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-      }
-
       // Step 1: Update report metadata
-      const reportPayload = {
+      await slaReportsApi.update(reportId, {
         contract: report!.contract,
         evaluation_period_start: periodStart,
         evaluation_period_end: periodEnd,
         evaluator_notes: evaluatorNotes,
         deduction_notes: deductionNotes,
-      };
-
-      const reportRes = await fetch(
-        `${API_URL}/v1/sla/evaluation-reports/${reportId}/`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(reportPayload),
-        }
-      );
-
-      if (!reportRes.ok) {
-        const ct = reportRes.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          const errorData = await reportRes.json();
-          const msg =
-            errorData.detail ||
-            errorData.error ||
-            Object.entries(errorData)
-              .map(
-                ([k, v]) =>
-                  `${k}: ${Array.isArray(v) ? v.join(", ") : String(v)}`
-              )
-              .join("; ");
-          throw new Error(msg || `보고서 수정에 실패했습니다 (HTTP ${reportRes.status})`);
-        }
-        throw new Error(`보고서 수정에 실패했습니다 (HTTP ${reportRes.status})`);
-      }
+      });
 
       // Step 2: Update scores via bulk_scores
-      const scoresPayload = {
-        scores: Object.values(scores),
-      };
-
-      const scoresRes = await fetch(
-        `${API_URL}/v1/sla/evaluation-reports/${reportId}/bulk_scores/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(scoresPayload),
-        }
-      );
-
-      if (!scoresRes.ok) {
-        const errBody = await scoresRes.json().catch(() => ({}));
-        throw new Error(
-          errBody.detail ||
-            errBody.error ||
-            `평가 점수 저장에 실패했습니다 (HTTP ${scoresRes.status})`
-        );
-      }
+      await slaReportsApi.bulkScores(reportId, { scores: Object.values(scores) });
 
       // Step 3: Recalculate score
-      const calcRes = await fetch(
-        `${API_URL}/v1/sla/evaluation-reports/${reportId}/calculate_score/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!calcRes.ok) {
-        const errBody = await calcRes.json().catch(() => ({}));
-        throw new Error(
-          errBody.detail ||
-            errBody.error ||
-            `점수 재산출에 실패했습니다 (HTTP ${calcRes.status})`
-        );
-      }
+      await slaReportsApi.calculateScore(reportId);
 
       router.push(`/sla/evaluations/${reportId}`);
     } catch (err) {

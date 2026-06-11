@@ -2,12 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { reportsApi, Report } from "@/lib/api";
+import { REPORT_TYPE_LABELS as TYPE_LABELS } from "@/lib/labels";
 import PdfDownloadButton from "../pdf-download-button";
-const TYPE_LABELS: Record<string, string> = {
-  monthly: "월간 보고서",
-  incident: "장애 보고서",
-  audit: "감사 보고서",
-};
 
 interface PageProps {
   params: Promise<{ reportId: string }>;

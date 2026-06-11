@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { getAccessToken } from "@/lib/auth";
+import { slaReportsApi } from "../../api-local";
+import { SLA_GRADE_COLORS, EQUIPMENT_CATEGORY_LABELS, labelOf, colorOf } from "@/lib/labels";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import ConfirmModal from "@/components/confirm-modal";
 
@@ -67,23 +68,8 @@ interface ScoresByCategory {
   };
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-const GRADE_COLORS: Record<string, string> = {
-  S: 'bg-success-bg text-success',
-  A: 'bg-info-bg text-accent',
-  B: 'bg-warning-bg text-warning',
-  C: 'bg-danger-bg text-danger',
-  D: 'bg-danger-bg text-danger',
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-  server: "서버", network: "네트워크", storage: "스토리지",
-  security: "보안장비", pc: "PC", other: "기타",
-};
-
 function GradeBadge({ grade, gradeDisplay }: { grade: string; gradeDisplay: string }) {
-  const colorClass = GRADE_COLORS[grade] || 'bg-surface-sunken text-text';
+  const colorClass = colorOf(SLA_GRADE_COLORS, grade, 'bg-surface-sunken text-text');
   return (
     <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
       {gradeDisplay}
@@ -115,26 +101,14 @@ export default function SLAEvaluationReportDetailPage() {
   const [showFinalizeConfirm, setShowFinalizeConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const getHeaders = useCallback((): HeadersInit => {
-    const token = getAccessToken();
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }, []);
-
   const fetchReport = useCallback(async () => {
     try {
-      const headers = getHeaders();
-      const [res, uptimeRes] = await Promise.all([
-        fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/`, { headers }),
-        fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/uptime_summary/`, { headers }).catch(() => null),
+      const [data, uptimeData] = await Promise.all([
+        slaReportsApi.get<SLAEvaluationReport>(reportId),
+        slaReportsApi.uptimeSummary<UptimeSummary[]>(reportId).catch(() => null),
       ]);
-      if (!res.ok) throw new Error('평가 보고서를 불러오지 못했습니다');
-      const data = await res.json();
       setReport(data);
-      if (uptimeRes && uptimeRes.ok) {
-        const uptimeData = await uptimeRes.json();
+      if (uptimeData) {
         setUptimeSummary(uptimeData);
       }
     } catch (e) {
@@ -142,7 +116,7 @@ export default function SLAEvaluationReportDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [reportId, getHeaders]);
+  }, [reportId]);
 
   useEffect(() => {
     if (reportId) fetchReport();
@@ -153,26 +127,7 @@ export default function SLAEvaluationReportDetailPage() {
     setActionError('');
 
     try {
-      const token = getAccessToken();
-      if (!token) throw new Error('인증 토큰이 없습니다');
-
-      const res = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/calculate_score/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
-        }
-        throw new Error(`서버 오류가 발생했습니다 (HTTP ${res.status})`);
-      }
-
+      await slaReportsApi.calculateScore(reportId);
       await fetchReport();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : '점수 산출에 실패했습니다');
@@ -186,26 +141,7 @@ export default function SLAEvaluationReportDetailPage() {
     setActionError('');
 
     try {
-      const token = getAccessToken();
-      if (!token) throw new Error('인증 토큰이 없습니다');
-
-      const res = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/finalize/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
-        }
-        throw new Error(`서버 오류가 발생했습니다 (HTTP ${res.status})`);
-      }
-
+      await slaReportsApi.finalize(reportId);
       await fetchReport();
     } catch (err) {
       setActionError(err instanceof Error ? err.message : '확정에 실패했습니다');
@@ -219,25 +155,7 @@ export default function SLAEvaluationReportDetailPage() {
     setActionError('');
 
     try {
-      const token = getAccessToken();
-      if (!token) throw new Error('인증 토큰이 없습니다');
-
-      const res = await fetch(`${API_URL}/v1/sla/evaluation-reports/${reportId}/`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
-        }
-        throw new Error(`삭제에 실패했습니다 (HTTP ${res.status})`);
-      }
-
+      await slaReportsApi.remove(reportId);
       router.push('/sla/evaluations');
     } catch (err) {
       setActionError(err instanceof Error ? err.message : '삭제에 실패했습니다');
@@ -502,7 +420,7 @@ export default function SLAEvaluationReportDetailPage() {
               const color = item.avg_uptime >= 99.5 ? 'text-success' : item.avg_uptime >= 99.0 ? 'text-warning' : 'text-danger';
               return (
                 <div key={item.equipment_category} className="p-3 rounded-lg border border-border-light text-center">
-                  <div className="text-xs text-text-muted">{CATEGORY_LABELS[item.equipment_category] || item.equipment_category}</div>
+                  <div className="text-xs text-text-muted">{labelOf(EQUIPMENT_CATEGORY_LABELS, item.equipment_category)}</div>
                   <div className={`text-lg font-semibold mt-1 ${color}`}>
                     {item.avg_uptime.toFixed(2)}%
                   </div>

@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
-import { getAccessToken } from "@/lib/auth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import { contractsApi } from "@/lib/api";
+import { slaDefinitionsApi } from "../../api-local";
 
 interface Contract {
   id: number;
@@ -41,23 +40,13 @@ export default function EditSLADefinitionPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const [slaRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, { headers }),
-          fetch(`${API_URL}/v1/contracts/`, { headers }),
+        const [slaData, contractsData] = await Promise.all([
+          slaDefinitionsApi.get(slaId),
+          contractsApi.list().catch(() => null),
         ]);
-
-        if (!slaRes.ok) throw new Error("SLA 정의를 불러오지 못했습니다");
-        const slaData = await slaRes.json();
         setSla(slaData);
-
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
+        if (contractsData) {
+          setContracts(contractsData.results || []);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "데이터를 불러오지 못했습니다");
@@ -74,12 +63,9 @@ export default function EditSLADefinitionPage({ params }: PageProps) {
     setError("");
 
     try {
-      const token = getAccessToken();
-      if (!token) throw new Error("인증 토큰이 없습니다");
-
       const formData = new FormData(e.currentTarget);
 
-      const payload = {
+      await slaDefinitionsApi.update(slaId, {
         contract: parseInt(formData.get("contract") as string),
         service_type: formData.get("service_type") as string,
         priority: formData.get("priority") as string,
@@ -87,25 +73,7 @@ export default function EditSLADefinitionPage({ params }: PageProps) {
         target_resolution_time_minutes: parseInt(formData.get("target_resolution_time_minutes") as string),
         description: formData.get("description") as string,
         is_active: formData.get("is_active") === "on",
-      };
-
-      const res = await fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "SLA 정의 수정에 실패했습니다");
-        }
-        throw new Error(`SLA 정의 수정에 실패했습니다 (HTTP ${res.status})`);
-      }
 
       router.push(`/sla/${slaId}`);
     } catch (err) {

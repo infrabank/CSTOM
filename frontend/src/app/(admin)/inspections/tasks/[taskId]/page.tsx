@@ -3,62 +3,24 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
 import ConfirmModal from "@/components/confirm-modal";
+import {
+  inspectionsClient,
+  type InspectionTaskDetail as InspectionTask,
+  type InspectionScheduleOption as InspectionSchedule,
+  type InspectionUser as User,
+} from "../../api";
+import {
+  INSPECTION_STATUS_LABELS,
+  INSPECTION_STATUS_COLORS,
+  optionsFromLabels,
+  labelOf,
+  colorOf,
+} from "@/lib/labels";
 
-interface InspectionTask {
-  id: number;
-  schedule: number;
-  schedule_equipment: string;
-  scheduled_date: string;
-  assigned_to: number | null;
-  assigned_to_name: string;
-  status: string;
-  notes: string;
-  results: Array<{
-    id: number;
-    result: string;
-    notes: string;
-    completed_by_name: string;
-    completed_at: string;
-  }>;
-  created_at: string;
-  updated_at: string;
-}
+const STATUS_OPTIONS = optionsFromLabels(INSPECTION_STATUS_LABELS);
 
-interface InspectionSchedule {
-  id: number;
-  equipment_type: string;
-  contract_name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const STATUS_OPTIONS = [
-  { value: "pending", label: "대기" },
-  { value: "in_progress", label: "진행중" },
-  { value: "completed", label: "완료" },
-];
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: "대기",
-  in_progress: "진행중",
-  completed: "완료",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending: "bg-warning-bg text-warning",
-  in_progress: "bg-info-bg text-info",
-  completed: "bg-success-bg text-success",
-};
-
+// Inspection result labels are local to this page (not part of @/lib/labels).
 const RESULT_LABELS: Record<string, string> = {
   normal: "정상",
   abnormal: "이상",
@@ -95,10 +57,6 @@ export default function InspectionTaskDetailPage() {
     notes: "",
   });
 
-  const getToken = () => {
-    return getAccessToken();
-  };
-
   const getUserDisplayName = (user: User) => {
     if (user.first_name || user.last_name) {
       return `${user.last_name}${user.first_name} (${user.username})`;
@@ -110,28 +68,15 @@ export default function InspectionTaskDetailPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
         // Fetch task details
-        const taskRes = await fetch(
-          `${API_URL}/v1/inspections/tasks/${taskId}/`,
-          { headers }
-        );
-
-        if (!taskRes.ok) {
-          if (taskRes.status === 404) {
-            setError("점검 작업을 찾을 수 없습니다");
-          } else {
-            setError("데이터를 불러올 수 없습니다");
-          }
+        let taskData: InspectionTask;
+        try {
+          taskData = await inspectionsClient.getTask(taskId);
+        } catch {
+          setError("점검 작업을 찾을 수 없습니다");
           setIsLoading(false);
           return;
         }
-
-        const taskData = await taskRes.json();
         setTask(taskData);
 
         // Set form values
@@ -141,22 +86,15 @@ export default function InspectionTaskDetailPage() {
         setStatus(taskData.status);
         setNotes(taskData.notes || "");
 
-        // Fetch schedules for edit mode
-        const schedulesRes = await fetch(
-          `${API_URL}/v1/inspections/schedules/?is_active=true`,
-          { headers }
+        // Fetch active schedules and users for edit mode
+        const [schedulesData, usersData] = await Promise.all([
+          inspectionsClient.listActiveSchedules(),
+          inspectionsClient.listUsers(),
+        ]);
+        setSchedules(
+          Array.isArray(schedulesData) ? schedulesData : schedulesData.results || [],
         );
-        if (schedulesRes.ok) {
-          const schedulesData = await schedulesRes.json();
-          setSchedules(schedulesData.results || schedulesData || []);
-        }
-
-        // Fetch users for edit mode
-        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("데이터를 불러올 수 없습니다");
@@ -173,42 +111,13 @@ export default function InspectionTaskDetailPage() {
     setError("");
 
     try {
-      const token = getToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        setIsSaving(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/tasks/${taskId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          schedule: parseInt(scheduleId),
-          scheduled_date: scheduledDate,
-          assigned_to: assignedTo ? parseInt(assignedTo) : null,
-          status,
-          notes,
-        }),
+      const updatedData = await inspectionsClient.updateTask(taskId, {
+        schedule: parseInt(scheduleId),
+        scheduled_date: scheduledDate,
+        assigned_to: assignedTo ? parseInt(assignedTo) : null,
+        status,
+        notes,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "저장에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`저장에 실패했습니다 (HTTP ${res.status})`);
-      }
-
-      const updatedData = await res.json();
       setTask(updatedData);
       setIsEditing(false);
     } catch (err) {
@@ -221,25 +130,7 @@ export default function InspectionTaskDetailPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const token = getToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다");
-        setIsDeleting(false);
-        setShowDeleteConfirm(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/tasks/${taskId}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        throw new Error("삭제에 실패했습니다");
-      }
-
+      await inspectionsClient.deleteTask(taskId);
       router.push("/inspections/tasks");
     } catch (err) {
       setError(err instanceof Error ? err.message : "삭제에 실패했습니다");
@@ -266,29 +157,7 @@ export default function InspectionTaskDetailPage() {
 
     try {
       setSubmitting(true);
-      const token = getToken();
-      if (!token) {
-        setError("인증 토큰이 없습니다");
-        setSubmitting(false);
-        return;
-      }
-
-      const response = await fetch(
-        `${API_URL}/v1/inspections/tasks/${task.id}/complete/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(completionFormData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("점검 결과를 저장할 수 없습니다");
-      }
-
+      await inspectionsClient.completeTask(task.id, completionFormData);
       router.push("/inspections/tasks");
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다");
@@ -496,11 +365,12 @@ export default function InspectionTaskDetailPage() {
                   상태
                 </div>
                 <span
-                  className={`px-2 py-1 rounded-full text-sm font-medium ${
-                    STATUS_COLORS[task.status] || "bg-surface-sunken"
-                  }`}
+                  className={`px-2 py-1 rounded-full text-sm font-medium ${colorOf(
+                    INSPECTION_STATUS_COLORS,
+                    task.status,
+                  )}`}
                 >
-                  {STATUS_LABELS[task.status] || task.status}
+                  {labelOf(INSPECTION_STATUS_LABELS, task.status)}
                 </span>
               </div>
 

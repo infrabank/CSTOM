@@ -1,11 +1,14 @@
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Pagination from "@/components/ui/pagination";
+import ResponsiveTable, { type Column } from "@/components/responsive-table";
+import StatusBadge from "@/components/status-badge";
 import {
   DEFAULT_PAGE_SIZE,
   fetchPaginated,
   parsePageParam,
 } from "@/lib/fetch-paginated";
+import { colorOf, labelOf } from "@/lib/labels";
 
 interface AuditEvent {
   id: number;
@@ -56,6 +59,15 @@ interface PageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
+function ActionBadge({ actionType }: { actionType: string }) {
+  return (
+    <StatusBadge
+      label={labelOf(ACTION_LABELS, actionType)}
+      colorClass={colorOf(ACTION_COLORS, actionType)}
+    />
+  );
+}
+
 export default async function AuditPage({ searchParams }: PageProps) {
   const { page: pageRaw } = await searchParams;
   const page = parsePageParam(pageRaw);
@@ -69,6 +81,65 @@ export default async function AuditPage({ searchParams }: PageProps) {
   const events = data.results;
   const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
 
+  const columns: Column<AuditEvent>[] = [
+    {
+      key: "occurred_at",
+      header: "시각",
+      className: "text-sm text-text-secondary whitespace-nowrap",
+      render: (e) => new Date(e.occurred_at).toLocaleString("ko-KR"),
+    },
+    {
+      key: "action",
+      header: "작업",
+      render: (e) => <ActionBadge actionType={e.action_type} />,
+    },
+    {
+      key: "entity",
+      header: "대상",
+      className: "text-sm",
+      render: (e) => (
+        <>
+          <span className="text-text">
+            {labelOf(ENTITY_LABELS, e.entity_type)}
+          </span>
+          <span className="text-text-muted ml-1">#{e.entity_id}</span>
+        </>
+      ),
+    },
+    {
+      key: "actor",
+      header: "사용자",
+      className: "text-sm text-text-secondary",
+      render: (e) => e.actor_email || "-",
+    },
+    {
+      key: "ip",
+      header: "IP",
+      className: "text-sm text-text-muted font-mono",
+      render: (e) => e.ip_address || "-",
+    },
+  ];
+
+  const renderMobileCard = (e: AuditEvent) => (
+    <div className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-2">
+      <div className="flex items-center justify-between">
+        <ActionBadge actionType={e.action_type} />
+        <span className="text-xs text-text-muted">
+          {new Date(e.occurred_at).toLocaleString("ko-KR")}
+        </span>
+      </div>
+      <div className="text-sm">
+        <span className="text-text font-medium">
+          {labelOf(ENTITY_LABELS, e.entity_type)}
+        </span>
+        <span className="text-text-muted ml-1">#{e.entity_id}</span>
+      </div>
+      <div className="text-xs text-text-muted">
+        {e.actor_email || "시스템"} {e.ip_address ? `(${e.ip_address})` : ""}
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <Breadcrumb />
@@ -77,106 +148,13 @@ export default async function AuditPage({ searchParams }: PageProps) {
         <h1 className="text-2xl font-semibold text-text">감사 로그</h1>
       </div>
 
-      {/* Desktop table */}
-      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
-        <table className="min-w-full divide-y divide-border-light">
-          <thead className="bg-surface-sunken">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                시각
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                작업
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                대상
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                사용자
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                IP
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-surface divide-y divide-border-light">
-            {events.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-text-muted">
-                  감사 로그가 없습니다
-                </td>
-              </tr>
-            ) : (
-              events.map((e) => (
-                <tr key={e.id} className="hover:bg-surface-sunken transition-colors">
-                  <td className="px-6 py-4 text-sm text-text-secondary whitespace-nowrap">
-                    {new Date(e.occurred_at).toLocaleString("ko-KR")}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs ${
-                        ACTION_COLORS[e.action_type] || "bg-surface-sunken text-text-muted"
-                      }`}
-                    >
-                      {ACTION_LABELS[e.action_type] || e.action_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className="text-text">
-                      {ENTITY_LABELS[e.entity_type] || e.entity_type}
-                    </span>
-                    <span className="text-text-muted ml-1">#{e.entity_id}</span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-text-secondary">
-                    {e.actor_email || "-"}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-text-muted font-mono">
-                    {e.ip_address || "-"}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="md:hidden space-y-3">
-        {events.length === 0 ? (
-          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
-            감사 로그가 없습니다
-          </div>
-        ) : (
-          events.map((e) => (
-            <div
-              key={e.id}
-              className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-2"
-            >
-              <div className="flex items-center justify-between">
-                <span
-                  className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    ACTION_COLORS[e.action_type] || "bg-surface-sunken text-text-muted"
-                  }`}
-                >
-                  {ACTION_LABELS[e.action_type] || e.action_type}
-                </span>
-                <span className="text-xs text-text-muted">
-                  {new Date(e.occurred_at).toLocaleString("ko-KR")}
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="text-text font-medium">
-                  {ENTITY_LABELS[e.entity_type] || e.entity_type}
-                </span>
-                <span className="text-text-muted ml-1">#{e.entity_id}</span>
-              </div>
-              <div className="text-xs text-text-muted">
-                {e.actor_email || "시스템"} {e.ip_address ? `(${e.ip_address})` : ""}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <ResponsiveTable
+        columns={columns}
+        rows={events}
+        rowKey={(e) => e.id}
+        emptyMessage="감사 로그가 없습니다"
+        renderMobileCard={renderMobileCard}
+      />
 
       <Pagination
         currentPage={page}

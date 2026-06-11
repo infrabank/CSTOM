@@ -3,15 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/modal";
+import { CONTRACT_STATUS_OPTIONS } from "@/lib/labels";
 import { updateContractStatus } from "./actions";
-
-const STATUS_OPTIONS = [
-  { value: "pre-handover", label: "인수 전" },
-  { value: "handover", label: "인수" },
-  { value: "stabilization", label: "안정화" },
-  { value: "steady", label: "정상 운영" },
-  { value: "closed", label: "종료" },
-];
 
 interface StatusChangeButtonProps {
   contractId: number;
@@ -78,7 +71,7 @@ export default function StatusChangeButton({
                상태 선택
              </label>
             <div className="space-y-2">
-              {STATUS_OPTIONS.map((option) => (
+              {CONTRACT_STATUS_OPTIONS.map((option) => (
                  <label
                    key={option.value}
                    className={`flex items-center p-3 border rounded-md cursor-pointer transition-colors ${

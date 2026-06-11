@@ -10,21 +10,7 @@ import ConfirmModal from "@/components/confirm-modal";
 const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-import { getAccessToken } from "@/lib/auth";
-
-interface KBArticle {
-  id: number;
-  title: string;
-  content: string;
-  category_name: string;
-  author_name: string;
-  tags: string;
-  view_count: number;
-  helpful_count: number;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { kbClient, type KBArticleDetail as KBArticle } from "../api";
 
 export default function KBArticleDetailPage() {
   const params = useParams();
@@ -41,31 +27,11 @@ export default function KBArticleDetailPage() {
     const fetchArticle = async () => {
       try {
         setLoading(true);
-        const token = getAccessToken();
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/`,
-          { headers }
-        );
-
-        if (!response.ok) {
-          throw new Error('아티클을 불러오지 못했습니다');
-        }
-
-        const data = await response.json();
+        const data = await kbClient.getArticle(articleId);
         setArticle(data);
 
         // Increment view count
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/increment_views/`,
-          {
-            method: 'POST',
-            headers,
-          }
-        );
+        await kbClient.incrementViews(articleId);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -82,23 +48,10 @@ export default function KBArticleDetailPage() {
     if (hasVoted) return;
 
     try {
-      const token = getAccessToken();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/mark_helpful/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        }
-      );
-
-      if (response.ok) {
-        setHasVoted(true);
-        if (article) {
-          setArticle({ ...article, helpful_count: article.helpful_count + 1 });
-        }
+      await kbClient.markHelpful(articleId);
+      setHasVoted(true);
+      if (article) {
+        setArticle({ ...article, helpful_count: article.helpful_count + 1 });
       }
     } catch (err) {
       console.error('Failed to mark as helpful:', err);
@@ -108,19 +61,7 @@ export default function KBArticleDetailPage() {
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      const token = getAccessToken();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/kb/articles/${articleId}/`,
-        {
-          method: 'DELETE',
-          headers: {
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        }
-      );
-      if (!response.ok) {
-        throw new Error('삭제에 실패했습니다');
-      }
+      await kbClient.deleteArticle(articleId);
       router.push('/kb');
     } catch (err) {
       setError(err instanceof Error ? err.message : '삭제에 실패했습니다');

@@ -2,11 +2,19 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import Breadcrumb from "@/components/ui/breadcrumb";
 import Pagination from "@/components/ui/pagination";
+import ResponsiveTable, { type Column } from "@/components/responsive-table";
+import StatusBadge from "@/components/status-badge";
 import {
   DEFAULT_PAGE_SIZE,
   fetchPaginated,
   parsePageParam,
 } from "@/lib/fetch-paginated";
+import {
+  EVENT_TYPE_LABELS,
+  EVENT_TYPE_COLORS,
+  colorOf,
+  labelOf,
+} from "@/lib/labels";
 
 interface Event {
   id: number;
@@ -21,18 +29,18 @@ interface Event {
   created_at: string;
 }
 
-const TYPE_LABELS: Record<string, string> = {
-  change: "변경",
-  incident: "장애",
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  change: "bg-info-bg text-accent",
-  incident: "bg-danger-bg text-danger",
-};
-
 interface PageProps {
   searchParams: Promise<{ page?: string }>;
+}
+
+function TypeBadge({ recordType }: { recordType: string }) {
+  return (
+    <StatusBadge
+      label={labelOf(EVENT_TYPE_LABELS, recordType)}
+      colorClass={colorOf(EVENT_TYPE_COLORS, recordType)}
+      size="sm"
+    />
+  );
 }
 
 export default async function EventsPage({ searchParams }: PageProps) {
@@ -44,6 +52,112 @@ export default async function EventsPage({ searchParams }: PageProps) {
   const data = await fetchPaginated<Event>("/v1/events/", { token, page });
   const events = data.results;
   const totalPages = Math.max(1, Math.ceil(data.count / DEFAULT_PAGE_SIZE));
+
+  const columns: Column<Event>[] = [
+    {
+      key: "type",
+      header: "유형",
+      render: (event) => <TypeBadge recordType={event.record_type} />,
+    },
+    {
+      key: "title",
+      header: "제목",
+      render: (event) => (
+        <>
+          <Link
+            href={`/events/${event.id}`}
+            className="text-accent hover:underline"
+          >
+            {event.title}
+          </Link>
+          {event.has_related && (
+            <span className="ml-2 text-xs text-text-muted">연결됨</span>
+          )}
+        </>
+      ),
+    },
+    {
+      key: "contract",
+      header: "사업",
+      className: "text-text-secondary",
+      render: (event) => event.contract_name,
+    },
+    {
+      key: "occurred_at",
+      header: "발생 시각",
+      className: "text-text-secondary text-sm",
+      render: (event) => new Date(event.occurred_at).toLocaleString("ko-KR"),
+    },
+    {
+      key: "status",
+      header: "상태",
+      render: (event) =>
+        event.resolved_at ? (
+          <span className="text-success text-sm">해결됨</span>
+        ) : (
+          <span className="text-warning text-sm">진행 중</span>
+        ),
+    },
+    {
+      key: "notified",
+      header: "통보",
+      render: (event) =>
+        event.customer_notified ? (
+          <span className="text-success">완료</span>
+        ) : (
+          <span className="text-text-muted">미통보</span>
+        ),
+    },
+  ];
+
+  const renderMobileCard = (event: Event) => (
+    <div className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <TypeBadge recordType={event.record_type} />
+            {event.has_related && (
+              <span className="text-xs text-text-muted border border-border-light px-1 rounded">
+                연결됨
+              </span>
+            )}
+          </div>
+          <Link
+            href={`/events/${event.id}`}
+            className="font-medium text-accent block text-sm"
+          >
+            {event.title}
+          </Link>
+        </div>
+        {event.resolved_at ? (
+          <span className="text-success text-sm font-medium">해결됨</span>
+        ) : (
+          <span className="text-warning text-sm font-medium">진행 중</span>
+        )}
+      </div>
+
+      <div className="space-y-2 text-sm border-t border-border-light pt-3">
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">사업</span>
+          <span className="text-text-muted">{event.contract_name}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">발생 시각</span>
+          <span className="text-text-muted">
+            {new Date(event.occurred_at).toLocaleString("ko-KR")}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span className="font-medium text-text-secondary">통보</span>
+          {event.customer_notified ? (
+            <span className="text-success">완료</span>
+          ) : (
+            <span className="text-text-muted">미통보</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div>
@@ -59,153 +173,13 @@ export default async function EventsPage({ searchParams }: PageProps) {
         </Link>
       </div>
 
-      <div className="hidden md:block bg-surface shadow-card rounded-lg overflow-hidden border border-border-light">
-        <table className="min-w-full divide-y divide-border-light">
-          <thead className="bg-surface-sunken">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                유형
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                제목
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                사업
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                발생 시각
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                상태
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-text-muted uppercase tracking-wider">
-                통보
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-surface divide-y divide-border-light">
-            {events.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-8 text-center text-text-muted">
-                  등록된 이벤트가 없습니다
-                </td>
-              </tr>
-            ) : (
-              events.map((event) => (
-                <tr key={event.id} className="hover:bg-surface-sunken transition-colors">
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        TYPE_COLORS[event.record_type]
-                      }`}
-                    >
-                      {TYPE_LABELS[event.record_type] || event.record_type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/events/${event.id}`}
-                      className="text-accent hover:underline"
-                    >
-                      {event.title}
-                    </Link>
-                    {event.has_related && (
-                      <span className="ml-2 text-xs text-text-muted">연결됨</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary">
-                    {event.contract_name}
-                  </td>
-                  <td className="px-6 py-4 text-text-secondary text-sm">
-                    {new Date(event.occurred_at).toLocaleString("ko-KR")}
-                  </td>
-                  <td className="px-6 py-4">
-                    {event.resolved_at ? (
-                      <span className="text-success text-sm">해결됨</span>
-                    ) : (
-                      <span className="text-warning text-sm">진행 중</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {event.customer_notified ? (
-                      <span className="text-success">완료</span>
-                    ) : (
-                      <span className="text-text-muted">미통보</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="md:hidden space-y-4">
-        {events.length === 0 ? (
-          <div className="bg-surface p-6 rounded-lg shadow-card border border-border-light text-center text-text-muted">
-            등록된 이벤트가 없습니다
-          </div>
-        ) : (
-          events.map((event) => (
-            <div key={event.id} className="bg-surface rounded-lg shadow-card border border-border-light p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-0.5 rounded text-xs font-medium ${
-                        TYPE_COLORS[event.record_type]
-                      }`}
-                    >
-                      {TYPE_LABELS[event.record_type] || event.record_type}
-                    </span>
-                    {event.has_related && (
-                      <span className="text-xs text-text-muted border border-border-light px-1 rounded">
-                        연결됨
-                      </span>
-                    )}
-                  </div>
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="font-medium text-accent block text-sm"
-                  >
-                    {event.title}
-                  </Link>
-                </div>
-                {event.resolved_at ? (
-                  <span className="text-success text-sm font-medium">
-                    해결됨
-                  </span>
-                ) : (
-                  <span className="text-warning text-sm font-medium">
-                    진행 중
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-2 text-sm border-t border-border-light pt-3">
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">사업</span>
-                  <span className="text-text-muted">{event.contract_name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">발생 시각</span>
-                  <span className="text-text-muted">
-                    {new Date(event.occurred_at).toLocaleString("ko-KR")}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-medium text-text-secondary">통보</span>
-                  {event.customer_notified ? (
-                    <span className="text-success">완료</span>
-                  ) : (
-                    <span className="text-text-muted">미통보</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <ResponsiveTable
+        columns={columns}
+        rows={events}
+        rowKey={(event) => event.id}
+        emptyMessage="등록된 이벤트가 없습니다"
+        renderMobileCard={renderMobileCard}
+      />
 
       <Pagination
         currentPage={page}

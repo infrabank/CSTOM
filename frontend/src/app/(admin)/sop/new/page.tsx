@@ -4,18 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { getAccessToken } from "@/lib/auth";
+import { sopClient, type SOPCategory as Category } from "../api";
 
 const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function NewSOPPage() {
   const router = useRouter();
@@ -32,15 +25,8 @@ export default function NewSOPPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const token = getAccessToken();
-
-        const res = await fetch(`${API_URL}/v1/sop/categories/`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-
-        if (!res.ok) throw new Error("Failed to fetch categories");
-        const data = await res.json();
-        setCategories(data.results || []);
+        const data = await sopClient.listCategories();
+        setCategories(Array.isArray(data) ? data : data.results || []);
       } catch (err) {
         setError("카테고리를 불러올 수 없습니다");
         console.error(err);
@@ -58,49 +44,15 @@ export default function NewSOPPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-
-      if (!token) {
-        setError("인증 토큰이 없습니다");
-        setIsSubmitting(false);
-        return;
-      }
-
       // Step 1: Create document
-      const docRes = await fetch(`${API_URL}/v1/sop/documents/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          category: categoryId ? parseInt(categoryId) : null,
-        }),
+      const docData = await sopClient.createDocument({
+        title,
+        category: categoryId ? parseInt(categoryId) : null,
       });
-
-      if (!docRes.ok) {
-        const errData = await docRes.json();
-        throw new Error(errData.detail || "문서 생성에 실패했습니다");
-      }
-
-      const docData = await docRes.json();
       const documentId = docData.id;
 
       // Step 2: Create version via document's custom action
-      const versionRes = await fetch(`${API_URL}/v1/sop/documents/${documentId}/create_version/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content }),
-      });
-
-      if (!versionRes.ok) {
-        const errData = await versionRes.json();
-        throw new Error(errData.detail || "버전 생성에 실패했습니다");
-      }
+      await sopClient.createVersion(documentId, content);
 
       // Redirect to document view
       router.push(`/sop/${documentId}`);

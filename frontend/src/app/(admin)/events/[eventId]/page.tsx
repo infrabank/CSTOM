@@ -1,8 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
+import { eventsApi } from "@/lib/api";
 import EventLinkButton from "./event-link-button";
 import Breadcrumb from "@/components/ui/breadcrumb";
+import {
+  EVENT_TYPE_LABELS,
+  EVENT_TYPE_COLORS,
+  EVENT_SEVERITY_LABELS,
+  EVENT_SEVERITY_COLORS,
+  colorOf,
+  labelOf,
+} from "@/lib/labels";
 
 interface Event {
   id: number;
@@ -24,37 +33,13 @@ interface Event {
   created_at: string;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
 async function getEvent(id: number, token?: string): Promise<Event | null> {
   try {
-    const headers: HeadersInit = token
-      ? { Authorization: `Bearer ${token}` }
-      : {};
-    const res = await fetch(`${API_URL}/v1/events/${id}/`, { cache: "no-store", headers });
-    if (!res.ok) return null;
-    return res.json();
+    return (await eventsApi.get(id, token)) as unknown as Event;
   } catch {
     return null;
   }
 }
-
-const TYPE_LABELS: Record<string, string> = {
-  change: "변경",
-  incident: "장애",
-};
-
-const SEVERITY_LABELS: Record<number, string> = {
-  1: "심각도 1 (서비스 전면중단)",
-  2: "심각도 2 (주요기능 장애)",
-  3: "심각도 3 (경미한 장애)",
-};
-
-const SEVERITY_COLORS: Record<number, string> = {
-  1: "bg-danger-bg text-danger",
-  2: "bg-warning-bg text-warning",
-  3: "bg-surface-sunken text-text-secondary",
-};
 
 interface PageProps {
   params: Promise<{ eventId: string }>;
@@ -76,10 +61,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const typeColor =
-    event.record_type === "incident"
-      ? "bg-danger-bg text-danger"
-      : "bg-info-bg text-info";
+  const typeColor = colorOf(EVENT_TYPE_COLORS, event.record_type);
 
   return (
     <div>
@@ -95,11 +77,11 @@ export default async function EventDetailPage({ params }: PageProps) {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-3 py-1 rounded text-sm font-medium ${typeColor}`}>
-                {TYPE_LABELS[event.record_type] || event.record_type}
+                {labelOf(EVENT_TYPE_LABELS, event.record_type)}
               </span>
               {event.record_type === "incident" && event.severity && (
-                <span className={`px-3 py-1 rounded text-sm font-medium ${SEVERITY_COLORS[event.severity] || ""}`}>
-                  {SEVERITY_LABELS[event.severity] || `심각도 ${event.severity}`}
+                <span className={`px-3 py-1 rounded text-sm font-medium ${EVENT_SEVERITY_COLORS[event.severity] || ""}`}>
+                  {EVENT_SEVERITY_LABELS[event.severity] || `심각도 ${event.severity}`}
                 </span>
               )}
               <h1 className="text-2xl font-semibold text-text">{event.title}</h1>

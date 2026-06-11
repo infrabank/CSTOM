@@ -3,14 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi } from "@/lib/api";
+import { slaDefinitionsApi } from "../api-local";
 
 interface Contract {
   id: number;
   name: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function NewSLADefinitionPage() {
   const router = useRouter();
@@ -31,17 +30,8 @@ export default function NewSLADefinitionPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
+        const contractsData = await contractsApi.list();
+        setContracts(contractsData.results || []);
       } catch (err) {
         console.error("Failed to fetch contracts:", err);
       } finally {
@@ -58,13 +48,7 @@ export default function NewSLADefinitionPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다");
-      }
-
-      const payload = {
+      const data = await slaDefinitionsApi.create({
         contract: parseInt(contractId),
         service_type: serviceType,
         priority,
@@ -72,27 +56,7 @@ export default function NewSLADefinitionPage() {
         target_resolution_time_minutes: parseInt(targetResolutionTimeMinutes),
         description,
         is_active: isActive,
-      };
-
-      const res = await fetch(`${API_URL}/v1/sla/definitions/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "SLA 정의 생성에 실패했습니다");
-        }
-        throw new Error(`SLA 정의 생성에 실패했습니다 (HTTP ${res.status})`);
-      }
-
-      const data = await res.json();
       router.push(`/sla/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "SLA 정의 생성에 실패했습니다");

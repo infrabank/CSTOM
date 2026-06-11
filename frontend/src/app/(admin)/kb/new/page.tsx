@@ -4,26 +4,11 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { getAccessToken } from "@/lib/auth";
+import { kbClient, type KBCategory as Category, type KBTemplate as Template } from "../api";
 
 const MarkdownRenderer = dynamic(() => import("@/components/markdown-renderer"), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface Template {
-  id: number;
-  name: string;
-  incident_type: string;
-  incident_type_display: string;
-  template_content: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export default function NewKBArticlePage() {
   const router = useRouter();
@@ -44,26 +29,12 @@ export default function NewKBArticlePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-
-        const [catRes, tempRes] = await Promise.all([
-          fetch(`${API_URL}/v1/kb/categories/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
-          fetch(`${API_URL}/v1/kb/templates/`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          }),
+        const [catData, tempData] = await Promise.all([
+          kbClient.listCategories(),
+          kbClient.listTemplates(),
         ]);
-
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategories(catData.results || []);
-        }
-
-        if (tempRes.ok) {
-          const tempData = await tempRes.json();
-          setTemplates(tempData.results || []);
-        }
+        setCategories(catData.results || []);
+        setTemplates(tempData.results || []);
       } catch (err) {
         setError("데이터를 불러올 수 없습니다");
         console.error(err);
@@ -93,42 +64,13 @@ export default function NewKBArticlePage() {
     setError("");
 
     try {
-      const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("cstom_access_token="))
-        ?.split("=")[1];
-
-      if (!token) {
-        setError("인증 토큰이 없습니다");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/kb/articles/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          content,
-          category: categoryId ? parseInt(categoryId) : null,
-          tags,
-          is_published: isPublished,
-        }),
+      const data = await kbClient.createArticle({
+        title,
+        content,
+        category: categoryId ? parseInt(categoryId) : null,
+        tags,
+        is_published: isPublished,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errData = await res.json();
-          throw new Error(errData.detail || "아티클 생성에 실패했습니다");
-        }
-        throw new Error(`아티클 생성에 실패했습니다 (HTTP ${res.status})`);
-      }
-
-      const data = await res.json();
       router.push(`/kb/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "저장에 실패했습니다");

@@ -3,13 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { eventsApi, EventListItem } from "@/lib/api";
-import { getAccessToken } from "@/lib/auth";
 import Modal from "@/components/modal";
-
-const TYPE_LABELS: Record<string, string> = {
-  change: "변경",
-  incident: "장애",
-};
+import { EVENT_TYPE_LABELS, labelOf } from "@/lib/labels";
 
 interface EventLinkButtonProps {
   eventId: number;
@@ -42,8 +37,7 @@ export default function EventLinkButton({
     setError(null);
 
     try {
-      const token = getAccessToken();
-      const response = await eventsApi.listByContract(contractId, token || undefined);
+      const response = await eventsApi.listByContract(contractId);
       // Filter out current event
       const filteredEvents = response.results.filter((e) => e.id !== eventId);
       setEvents(filteredEvents);
@@ -61,8 +55,7 @@ export default function EventLinkButton({
     setError(null);
 
     try {
-      const token = getAccessToken();
-      await eventsApi.link(eventId, selectedEventId, token || undefined);
+      await eventsApi.link(eventId, selectedEventId);
       setIsModalOpen(false);
       router.refresh();
     } catch (err) {
@@ -77,8 +70,7 @@ export default function EventLinkButton({
     setError(null);
 
     try {
-      const token = getAccessToken();
-      await eventsApi.unlink(eventId, token || undefined);
+      await eventsApi.unlink(eventId);
       setIsModalOpen(false);
       router.refresh();
     } catch (err) {
@@ -173,7 +165,7 @@ export default function EventLinkButton({
                            : "bg-info-bg text-info"
                        }`}
                      >
-                      {TYPE_LABELS[event.record_type] || event.record_type}
+                      {labelOf(EVENT_TYPE_LABELS, event.record_type)}
                     </span>
                     <span className="font-medium">{event.title}</span>
                      {currentRelatedEventId === event.id && (

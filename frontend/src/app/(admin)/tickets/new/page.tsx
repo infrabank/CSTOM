@@ -3,21 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
-
-interface Contract {
-  id: number;
-  name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import {
+  ticketsClient,
+  type TicketContract as Contract,
+  type TicketUser as User,
+} from "../api";
 
 export default function NewTicketPage() {
   const router = useRouter();
@@ -37,25 +27,14 @@ export default function NewTicketPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        // Fetch contracts
-        const contractsRes = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
-
-        // Fetch users
-        const usersRes = await fetch(`${API_URL}/v1/users/`, { headers });
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        const [contractsData, usersData] = await Promise.all([
+          ticketsClient.listContracts(),
+          ticketsClient.listUsers(),
+        ]);
+        setContracts(
+          Array.isArray(contractsData) ? contractsData : contractsData.results || [],
+        );
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
       } finally {
@@ -72,53 +51,14 @@ export default function NewTicketPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다");
-      }
-
-      const payload: {
-        title: string;
-        description: string;
-        priority: string;
-        status: string;
-        contract?: number;
-        assigned_to?: number;
-      } = {
+      const data = await ticketsClient.create({
         title,
         description,
         priority,
         status: "new",
-      };
-
-      if (contractId) {
-        payload.contract = parseInt(contractId);
-      }
-
-      if (assignedToId) {
-        payload.assigned_to = parseInt(assignedToId);
-      }
-
-      const res = await fetch(`${API_URL}/v1/tickets/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        ...(contractId ? { contract: parseInt(contractId) } : {}),
+        ...(assignedToId ? { assigned_to: parseInt(assignedToId) } : {}),
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "티켓 생성에 실패했습니다");
-        }
-        throw new Error(`티켓 생성에 실패했습니다 (HTTP ${res.status})`);
-      }
-
-      const data = await res.json();
       router.push(`/tickets/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "티켓 생성에 실패했습니다");

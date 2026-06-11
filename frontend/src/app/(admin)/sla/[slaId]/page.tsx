@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
-import { getAccessToken } from "@/lib/auth";
+import { tasksApi, eventsApi } from "@/lib/api";
+import { slaDefinitionsApi, type SLAMetric } from "../api-local";
 import Breadcrumb from "@/components/ui/breadcrumb";
 
 interface SLADefinition {
@@ -19,17 +20,6 @@ interface SLADefinition {
   created_at: string;
 }
 
-interface SLAMetric {
-  id: number;
-  content_type_name: string;
-  object_display: string;
-  actual_response_time_minutes: number;
-  actual_resolution_time_minutes: number;
-  response_sla_met: boolean;
-  resolution_sla_met: boolean;
-  created_at: string;
-}
-
 interface TaskItem {
   id: number;
   title: string;
@@ -40,8 +30,6 @@ interface EventItem {
   title: string;
   record_type: string;
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 const PRIORITY_LABELS: Record<string, string> = {
   critical: '긴급',
@@ -134,61 +122,42 @@ export default function SLADetailPage() {
   const [isMetricSubmitting, setIsMetricSubmitting] = useState(false);
   const [metricError, setMetricError] = useState('');
 
-  const getHeaders = useCallback((): HeadersInit => {
-    const token = getAccessToken();
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` }),
-    };
-  }, []);
-
   const fetchSla = useCallback(async () => {
-    const res = await fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, { headers: getHeaders() });
-    if (res.ok) {
-      setSla(await res.json());
-    }
-  }, [slaId, getHeaders]);
+    const data = await slaDefinitionsApi.get(slaId);
+    setSla(data);
+  }, [slaId]);
 
   const fetchMetrics = useCallback(async () => {
     try {
-      const res = await fetch(`${API_URL}/v1/sla/definitions/${slaId}/metrics/`, { headers: getHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        setMetrics(data.results || data || []);
-      }
+      const data = await slaDefinitionsApi.metrics(slaId);
+      setMetrics(Array.isArray(data) ? data : data.results || []);
     } catch {
       // silent
     }
-  }, [slaId, getHeaders]);
+  }, [slaId]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const headers = getHeaders();
 
-        const [slaResponse, metricsSettled, tasksRes, eventsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/sla/definitions/${slaId}/`, { headers }),
-          fetch(`${API_URL}/v1/sla/definitions/${slaId}/metrics/`, { headers }).catch(() => null),
-          fetch(`${API_URL}/v1/tasks/`, { headers }),
-          fetch(`${API_URL}/v1/events/`, { headers }),
+        const [slaData, metricsData, tasksData, eventsData] = await Promise.all([
+          slaDefinitionsApi.get(slaId),
+          slaDefinitionsApi.metrics(slaId).catch(() => null),
+          tasksApi.list().catch(() => null),
+          eventsApi.list().catch(() => null),
         ]);
 
-        if (!slaResponse.ok) throw new Error('SLA 정의를 불러오지 못했습니다');
-        setSla(await slaResponse.json());
+        setSla(slaData);
 
-        if (metricsSettled && metricsSettled.ok) {
-          const metricsData = await metricsSettled.json();
-          setMetrics(metricsData.results || metricsData || []);
+        if (metricsData) {
+          setMetrics(Array.isArray(metricsData) ? metricsData : metricsData.results || []);
         }
-
-        if (tasksRes.ok) {
-          const d = await tasksRes.json();
-          setTasks(d.results || d || []);
+        if (tasksData) {
+          setTasks(tasksData.results || []);
         }
-        if (eventsRes.ok) {
-          const d = await eventsRes.json();
-          setEvents(d.results || d || []);
+        if (eventsData) {
+          setEvents(eventsData.results || []);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'SLA 정보를 불러오지 못했습니다');
@@ -198,7 +167,7 @@ export default function SLADetailPage() {
     };
 
     if (slaId) fetchData();
-  }, [slaId, getHeaders, fetchMetrics]);
+  }, [slaId, fetchMetrics]);
 
   const handleMetricSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,33 +175,12 @@ export default function SLADetailPage() {
     setMetricError('');
 
     try {
-      const token = getAccessToken();
-      if (!token) throw new Error('인증 토큰이 없습니다');
-
-      const payload = {
+      await slaDefinitionsApi.addMetric(slaId, {
         target_type: metricTargetType,
         target_id: parseInt(metricObjectId),
         actual_response_time_minutes: parseInt(metricResponseTime),
         actual_resolution_time_minutes: parseInt(metricResolutionTime),
-      };
-
-      const res = await fetch(`${API_URL}/v1/sla/definitions/${slaId}/add_metric/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        const contentType = res.headers.get('content-type') || '';
-        if (contentType.includes('application/json')) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || errorData.error || JSON.stringify(errorData));
-        }
-        throw new Error(`서버 오류가 발생했습니다 (HTTP ${res.status})`);
-      }
 
       setMetricObjectId('');
       setMetricResponseTime('');

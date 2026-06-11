@@ -4,44 +4,12 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Breadcrumb from "@/components/ui/breadcrumb";
-import { getAccessToken } from "@/lib/auth";
-
-interface Comment {
-  id: number;
-  content: string;
-  is_internal: boolean;
-  created_by_name: string;
-  created_at: string;
-}
-
-interface Ticket {
-  id: number;
-  title: string;
-  description: string;
-  priority: string;
-  priority_display: string;
-  status: string;
-  status_display: string;
-  requester_name: string;
-  assigned_to_name: string | null;
-  comments: Comment[];
-  created_at: string;
-  updated_at: string;
-}
-
-const PRIORITY_COLORS: Record<string, string> = {
-  critical: "bg-danger-bg text-danger",
-  high: "bg-warning-bg text-warning",
-  medium: "bg-warning-bg text-warning",
-  low: "bg-success-bg text-success",
-};
-
-const STATUS_COLORS: Record<string, string> = {
-   open: "bg-info-bg text-info",
-   in_progress: "bg-info-bg text-info",
-   resolved: "bg-success-bg text-success",
-   closed: "bg-surface-sunken text-text-muted",
- };
+import { ticketsClient, type TicketDetail as Ticket } from "../api";
+import {
+  TICKET_PRIORITY_COLORS,
+  TICKET_STATUS_COLORS,
+  colorOf,
+} from "@/lib/labels";
 
 export default function TicketDetailPage() {
   const params = useParams();
@@ -57,22 +25,7 @@ export default function TicketDetailPage() {
     const fetchTicket = async () => {
       try {
         setLoading(true);
-        const token = getAccessToken();
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error('티켓을 불러오지 못했습니다');
-        }
-
-        const data = await response.json();
+        const data = await ticketsClient.get(ticketId);
         setTicket(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -92,41 +45,16 @@ export default function TicketDetailPage() {
 
     setIsSubmitting(true);
     try {
-      const token = getAccessToken();
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/add_comment/`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            content: commentContent,
-            is_internal: isInternal,
-          }),
-        }
-      );
+      await ticketsClient.addComment(ticketId, {
+        content: commentContent,
+        is_internal: isInternal,
+      });
 
-      if (response.ok) {
-        // Re-fetch the full ticket to get updated comments list
-        const ticketToken = getAccessToken();
-        const ticketRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/v1/tickets/${ticketId}/`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              ...(ticketToken ? { 'Authorization': `Bearer ${ticketToken}` } : {}),
-            },
-          }
-        );
-        if (ticketRes.ok) {
-          const updatedTicket = await ticketRes.json();
-          setTicket(updatedTicket);
-        }
-        setCommentContent("");
-        setIsInternal(false);
-      }
+      // Re-fetch the full ticket to get updated comments list
+      const updatedTicket = await ticketsClient.get(ticketId);
+      setTicket(updatedTicket);
+      setCommentContent("");
+      setIsInternal(false);
     } catch (err) {
       console.error('Failed to add comment:', err);
     } finally {
@@ -182,10 +110,10 @@ export default function TicketDetailPage() {
 
            {/* Badges */}
            <div className="flex gap-2 mb-4">
-             <span className={`px-3 py-1 rounded-full text-sm ${PRIORITY_COLORS[ticket.priority] || "bg-surface-sunken text-text-muted"}`}>
+             <span className={`px-3 py-1 rounded-full text-sm ${colorOf(TICKET_PRIORITY_COLORS, ticket.priority)}`}>
                {ticket.priority_display}
              </span>
-             <span className={`px-3 py-1 rounded-full text-sm ${STATUS_COLORS[ticket.status] || "bg-surface-sunken text-text-muted"}`}>
+             <span className={`px-3 py-1 rounded-full text-sm ${colorOf(TICKET_STATUS_COLORS, ticket.status)}`}>
                {ticket.status_display}
              </span>
            </div>

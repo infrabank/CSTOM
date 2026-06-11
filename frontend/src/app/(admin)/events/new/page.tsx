@@ -3,15 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, ContractListItem } from "@/lib/api";
 import { createEvent } from "../actions";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
 
 const RECORD_TYPES = [
   { value: "change", label: "변경" },
@@ -27,7 +20,7 @@ const SEVERITY_OPTIONS = [
 
 export default function NewEventPage() {
   const router = useRouter();
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contracts, setContracts] = useState<ContractListItem[]>([]);
   const [recordType, setRecordType] = useState("change");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,16 +28,8 @@ export default function NewEventPage() {
   useEffect(() => {
     async function fetchContracts() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        const res = await fetch(`${API_URL}/v1/contracts/`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          setContracts(data.results || []);
-        }
+        const data = await contractsApi.list();
+        setContracts(data.results || []);
       } catch {
       }
     }

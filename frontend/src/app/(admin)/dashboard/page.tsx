@@ -1,78 +1,17 @@
-'use client';
-
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState } from "react";
-import { getAccessToken } from "@/lib/auth";
+import { cookies } from "next/headers";
+import {
+  ContractListItem,
+  EquipmentListItem,
+  EventListItem,
+  TaskListItem,
+} from "@/lib/api";
 import Breadcrumb from "@/components/ui/breadcrumb";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const DashboardCharts = dynamic(() => import("@/components/dashboard-charts"), {
-  ssr: false,
-  loading: () => (
-    <div className="grid lg:grid-cols-2 gap-4 mb-6">
-      <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
-        <Skeleton className="h-5 w-24 mb-4" />
-        <Skeleton className="h-[280px] w-full" />
-      </div>
-      <div className="bg-surface rounded-lg shadow-card border border-border-light p-5">
-        <Skeleton className="h-5 w-24 mb-4" />
-        <Skeleton className="h-[280px] w-full" />
-      </div>
-    </div>
-  ),
-});
+import { fetchPaginated } from "@/lib/fetch-paginated";
+import DashboardPeriodSection from "./dashboard-period-section";
+import type { DashboardSummary } from "./dashboard-api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface DashboardSummary {
-  sla_compliance_rate: number;
-  mttr_hours: number;
-  inspection_completion_rate: number;
-  task_summary: {
-    total: number;
-    pending: number;
-    in_progress: number;
-    completed: number;
-  };
-}
-
-interface ContractListItem {
-  id: number;
-  name: string;
-  client_org: string;
-  status: string;
-  risk_flags: {
-    pre_env: boolean;
-    prior_vendor_coordination: boolean;
-    docs_incomplete: boolean;
-  };
-}
-
-interface EquipmentListItem {
-  id: number;
-  name: string;
-  status: string;
-  contract_name: string;
-}
-
-interface EventListItem {
-  id: number;
-  title: string;
-  record_type: string;
-  contract_name: string;
-  occurred_at: string;
-}
-
-interface TaskListItem {
-  id: number;
-  title: string;
-  task_type: string;
-  impact_level: string;
-  approval_required: boolean;
-  approval_status: string;
-  contract_name: string;
-}
 
 const STATUS_LABELS: Record<string, string> = {
   "pre-handover": "인수 전",
@@ -97,161 +36,80 @@ const EQUIPMENT_STATUS_COLORS: Record<string, string> = {
   retired: "bg-surface-sunken text-text-muted",
 };
 
-export default function DashboardPage() {
-  const [kpiData, setKpiData] = useState<DashboardSummary | null>(null);
-  const [contracts, setContracts] = useState<ContractListItem[]>([]);
-  const [equipments, setEquipments] = useState<EquipmentListItem[]>([]);
-  const [events, setEvents] = useState<EventListItem[]>([]);
-  const [tasks, setTasks] = useState<TaskListItem[]>([]);
-  const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'quarter'>('week');
-  const [loading, setLoading] = useState(true);
+type Period = "today" | "week" | "month" | "quarter";
 
-  // Fetch period-independent data once on mount
-  useEffect(() => {
-    const loadBaseData = async () => {
-      setLoading(true);
-      try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+async function fetchSummary(
+  period: Period,
+  token?: string,
+): Promise<DashboardSummary | null> {
+  try {
+    const res = await fetch(
+      `${API_URL}/v1/dashboard/summary/?period=${period}`,
+      {
+        next: { revalidate: 30 },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as DashboardSummary;
+  } catch {
+    return null;
+  }
+}
 
-        const [contractsRes, equipmentsRes, eventsRes, tasksRes] = await Promise.all([
-          fetch(`${API_URL}/v1/contracts/`, { headers }),
-          fetch(`${API_URL}/v1/equipments/`, { headers }),
-          fetch(`${API_URL}/v1/events/`, { headers }),
-          fetch(`${API_URL}/v1/tasks/`, { headers }),
-        ]);
+interface PageProps {
+  searchParams: Promise<{ period?: string }>;
+}
 
-        if (contractsRes.ok) setContracts((await contractsRes.json()).results || []);
-        if (equipmentsRes.ok) setEquipments((await equipmentsRes.json()).results || []);
-        if (eventsRes.ok) setEvents((await eventsRes.json()).results || []);
-        if (tasksRes.ok) setTasks((await tasksRes.json()).results || []);
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+export default async function DashboardPage({ searchParams }: PageProps) {
+  const { period: periodRaw } = await searchParams;
+  const period: Period = (["today", "week", "month", "quarter"] as const).includes(
+    periodRaw as Period,
+  )
+    ? (periodRaw as Period)
+    : "week";
 
-    loadBaseData();
-  }, []);
+  const cookieStore = await cookies();
+  const token = cookieStore.get("cstom_access_token")?.value;
 
-  // Fetch KPI data when period changes
-  useEffect(() => {
-    const loadKpi = async () => {
-      try {
-        const token = getAccessToken();
-        const res = await fetch(`${API_URL}/v1/dashboard/summary/?period=${period}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        if (res.ok) setKpiData(await res.json());
-      } catch (error) {
-        console.error('Failed to load KPI data:', error);
-      }
-    };
+  const [contractsPage, equipmentsPage, eventsPage, tasksPage, kpiData] =
+    await Promise.all([
+      fetchPaginated<ContractListItem>("/v1/contracts/", { token }),
+      fetchPaginated<EquipmentListItem>("/v1/equipments/", { token }),
+      fetchPaginated<EventListItem>("/v1/events/", { token }),
+      fetchPaginated<TaskListItem>("/v1/tasks/", { token }),
+      fetchSummary(period, token),
+    ]);
 
-    loadKpi();
-  }, [period]);
+  const contracts = contractsPage.results;
+  const equipments = equipmentsPage.results;
+  const events = eventsPage.results;
+  const tasks = tasksPage.results;
 
-  const activeContracts = useMemo(() => contracts.filter((c) => c.status !== "closed").length, [contracts]);
-  const contractsWithRisks = useMemo(() => contracts.filter(
+  const activeContracts = contracts.filter((c) => c.status !== "closed").length;
+  const contractsWithRisks = contracts.filter(
     (c) =>
       c.risk_flags?.pre_env ||
       c.risk_flags?.prior_vendor_coordination ||
-      c.risk_flags?.docs_incomplete
-  ).length, [contracts]);
-  const availableEquipments = useMemo(() => equipments.filter((e) => e.status === "available").length, [equipments]);
-  const checkedOutEquipments = useMemo(() => equipments.filter((e) => e.status === "checked_out").length, [equipments]);
-  const recentIncidents = useMemo(() => events.filter((e) => e.record_type === "incident").slice(0, 5), [events]);
-  const highImpactTasks = useMemo(() => tasks.filter((t) => t.impact_level === "full").length, [tasks]);
-  const pendingApprovals = useMemo(() => tasks.filter((t) => t.approval_status === "pending"), [tasks]);
-
-  const taskChartData = kpiData ? [
-    { name: '대기', value: kpiData.task_summary.pending },
-    { name: '진행중', value: kpiData.task_summary.in_progress },
-    { name: '완료', value: kpiData.task_summary.completed },
-  ] : [];
-
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-surface-sunken rounded w-32" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="h-28 bg-surface rounded-lg shadow-card" />)}
-        </div>
-      </div>
-    );
-  }
+      c.risk_flags?.docs_incomplete,
+  ).length;
+  const availableEquipments = equipments.filter(
+    (e) => e.status === "available",
+  ).length;
+  const checkedOutEquipments = equipments.filter(
+    (e) => e.status === "checked_out",
+  ).length;
+  const recentIncidents = events
+    .filter((e) => e.record_type === "incident")
+    .slice(0, 5);
+  const highImpactTasks = tasks.filter((t) => t.impact_level === "full").length;
+  const pendingApprovals = tasks.filter((t) => t.approval_status === "pending");
 
   return (
     <div>
       <Breadcrumb />
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl font-semibold text-text">대시보드</h1>
-        <div className="flex gap-1.5 bg-surface-sunken rounded-lg p-1">
-          {(['today', 'week', 'month', 'quarter'] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors cursor-pointer ${
-                period === p
-                  ? 'bg-accent text-text-on-accent shadow-card'
-                  : 'text-text-secondary hover:text-text hover:bg-surface-hover'
-              }`}
-            >
-              {p === 'today' ? '오늘' : p === 'week' ? '주간' : p === 'month' ? '월간' : '분기'}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      {kpiData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-success">
-            <div className="text-sm font-medium text-text-muted mb-1">SLA 준수율</div>
-            <div className={`text-3xl font-bold ${kpiData.sla_compliance_rate >= 90 ? 'text-success' : kpiData.sla_compliance_rate >= 70 ? 'text-warning' : 'text-danger'}`}>
-              {kpiData.sla_compliance_rate.toFixed(1)}%
-            </div>
-            <div className="text-xs text-text-muted mt-1">목표: 90% 이상</div>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-info">
-            <div className="text-sm font-medium text-text-muted mb-1">평균 복구 시간 (MTTR)</div>
-            <div className="text-3xl font-bold text-info">
-              {kpiData.mttr_hours.toFixed(1)}h
-            </div>
-            <div className="text-xs text-text-muted mt-1">시간 단위</div>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-accent">
-            <div className="text-sm font-medium text-text-muted mb-1">예방점검 완료율</div>
-            <div className={`text-3xl font-bold ${kpiData.inspection_completion_rate >= 80 ? 'text-success' : 'text-warning'}`}>
-              {kpiData.inspection_completion_rate.toFixed(1)}%
-            </div>
-            <div className="text-xs text-text-muted mt-1">목표: 80% 이상</div>
-          </div>
-
-          <div className="bg-surface rounded-lg shadow-card border border-border-light p-5 border-l-4 border-l-secondary">
-            <div className="text-sm font-medium text-text-muted mb-1">총 작업</div>
-            <div className="text-3xl font-bold text-secondary">
-              {kpiData.task_summary.total}
-            </div>
-            <div className="text-xs text-text-muted mt-1">
-              완료 {kpiData.task_summary.completed} / 진행 {kpiData.task_summary.in_progress}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Charts */}
-      {kpiData && (
-        <DashboardCharts
-          taskChartData={taskChartData}
-          slaComplianceRate={kpiData.sla_compliance_rate}
-          inspectionCompletionRate={kpiData.inspection_completion_rate}
-        />
-      )}
+      <DashboardPeriodSection initialPeriod={period} initialKpi={kpiData} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { tasksApi, Task } from "@/lib/api";
-import { getAccessToken, getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import Modal from "@/components/modal";
 
 const APPROVAL_STATUS_LABELS: Record<string, string> = {
@@ -51,8 +51,7 @@ export default function TaskApprovalSection({ task }: TaskApprovalSectionProps) 
     setError(null);
 
     try {
-      const token = getAccessToken();
-      await tasksApi.approve(task.id, actionType, undefined, token || undefined);
+      await tasksApi.approve(task.id, actionType);
       setIsModalOpen(false);
       router.refresh();
     } catch (err) {

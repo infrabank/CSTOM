@@ -3,28 +3,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import {
+  inspectionsClient,
+  type InspectionScheduleOption as InspectionSchedule,
+  type InspectionUser as User,
+} from "../../api";
+import { INSPECTION_STATUS_LABELS, optionsFromLabels } from "@/lib/labels";
 
-interface InspectionSchedule {
-  id: number;
-  equipment_type: string;
-  contract_name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const STATUS_OPTIONS = [
-  { value: "pending", label: "대기" },
-  { value: "in_progress", label: "진행중" },
-  { value: "completed", label: "완료" },
-];
+const STATUS_OPTIONS = optionsFromLabels(INSPECTION_STATUS_LABELS);
 
 export default function NewInspectionTaskPage() {
   const router = useRouter();
@@ -44,29 +30,14 @@ export default function NewInspectionTaskPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}` }
-          : {};
-
-        // Fetch active schedules
-        const schedulesRes = await fetch(`${API_URL}/v1/inspections/schedules/?is_active=true`, {
-          headers,
-        });
-        if (schedulesRes.ok) {
-          const schedulesData = await schedulesRes.json();
-          setSchedules(schedulesData.results || schedulesData || []);
-        }
-
-        // Fetch users
-        const usersRes = await fetch(`${API_URL}/v1/users/`, {
-          headers,
-        });
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        const [schedulesData, usersData] = await Promise.all([
+          inspectionsClient.listActiveSchedules(),
+          inspectionsClient.listUsers(),
+        ]);
+        setSchedules(
+          Array.isArray(schedulesData) ? schedulesData : schedulesData.results || [],
+        );
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("데이터를 불러올 수 없습니다");
@@ -84,42 +55,13 @@ export default function NewInspectionTaskPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-
-      if (!token) {
-        setError("인증 토큰이 없습니다. 다시 로그인해주세요.");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const res = await fetch(`${API_URL}/v1/inspections/tasks/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          schedule: parseInt(scheduleId),
-          scheduled_date: scheduledDate,
-          assigned_to: parseInt(assignedTo),
-          status,
-          notes,
-        }),
+      await inspectionsClient.createTask({
+        schedule: parseInt(scheduleId),
+        scheduled_date: scheduledDate,
+        assigned_to: parseInt(assignedTo),
+        status,
+        notes,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get('content-type') || '';
-        if (ct.includes('application/json')) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "등록에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`등록에 실패했습니다 (HTTP ${res.status})`);
-      }
-
       router.push("/inspections/tasks");
     } catch (err) {
       setError(err instanceof Error ? err.message : "등록에 실패했습니다");

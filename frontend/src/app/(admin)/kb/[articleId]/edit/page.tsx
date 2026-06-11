@@ -4,31 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
-import { getAccessToken } from '@/lib/auth';
+import { kbClient, type KBCategory as Category, type KBArticleDetail as KBArticle } from "../../api";
 
 const MarkdownRenderer = dynamic(() => import('@/components/markdown-renderer'), {
   loading: () => <div className="animate-pulse h-20 bg-surface-sunken rounded" />,
 });
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-interface Category {
-  id: number;
-  name: string;
-}
-
-interface KBArticle {
-  id: number;
-  title: string;
-  content: string;
-  category: number | null;
-  category_name: string;
-  author_name: string;
-  tags: string;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-}
 
 export default function EditKBArticlePage() {
   const router = useRouter();
@@ -57,23 +37,7 @@ export default function EditKBArticlePage() {
         setLoading(true);
         setError(null);
 
-        // Fetch article
-        const token = getAccessToken();
-        const authHeaders: HeadersInit = {
-          'Content-Type': 'application/json',
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-
-        const articleRes = await fetch(
-          `${API_URL}/v1/kb/articles/${articleId}/`,
-          { headers: authHeaders }
-        );
-
-        if (!articleRes.ok) {
-          throw new Error('아티클을 불러오지 못했습니다');
-        }
-
-        const articleData: KBArticle = await articleRes.json();
+        const articleData = await kbClient.getArticle(articleId);
         setArticle(articleData);
         setFormData({
           title: articleData.title,
@@ -83,15 +47,8 @@ export default function EditKBArticlePage() {
           is_published: articleData.is_published,
         });
 
-        // Fetch categories
-        const catRes = await fetch(`${API_URL}/v1/kb/categories/`, {
-          headers: authHeaders,
-        });
-
-        if (catRes.ok) {
-          const catData = await catRes.json();
-          setCategories(catData.results || catData || []);
-        }
+        const catData = await kbClient.listCategories();
+        setCategories(catData.results || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
       } finally {
@@ -132,28 +89,13 @@ export default function EditKBArticlePage() {
         throw new Error('아티클 정보를 찾을 수 없습니다');
       }
 
-      const token = getAccessToken();
-      const updateRes = await fetch(
-        `${API_URL}/v1/kb/articles/${articleId}/`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-          body: JSON.stringify({
-            title: formData.title,
-            content: formData.content,
-            category: formData.category ? parseInt(formData.category, 10) : null,
-            tags: formData.tags,
-            is_published: formData.is_published,
-          }),
-        }
-      );
-
-      if (!updateRes.ok) {
-        throw new Error('아티클 업데이트에 실패했습니다');
-      }
+      await kbClient.updateArticle(articleId, {
+        title: formData.title,
+        content: formData.content,
+        category: formData.category ? parseInt(formData.category, 10) : null,
+        tags: formData.tags,
+        is_published: formData.is_published,
+      });
 
       // Redirect to detail page
       router.push(`/kb/${articleId}`);

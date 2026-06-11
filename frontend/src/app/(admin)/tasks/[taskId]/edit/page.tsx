@@ -4,15 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
-import { getAccessToken } from "@/lib/auth";
+import { contractsApi, eventsApi, tasksApi, ContractListItem } from "@/lib/api";
 import { updateTask } from "../../actions";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface Contract {
-  id: number;
-  name: string;
-}
 
 interface IncidentOption {
   id: number;
@@ -53,7 +46,7 @@ export default function EditTaskPage({ params }: PageProps) {
   const { taskId } = use(params);
   const router = useRouter();
   const [task, setTask] = useState<Task | null>(null);
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contracts, setContracts] = useState<ContractListItem[]>([]);
   const [incidents, setIncidents] = useState<IncidentOption[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -62,34 +55,17 @@ export default function EditTaskPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        };
-        const [taskRes, contractsRes] = await Promise.all([
-          fetch(`${API_URL}/v1/tasks/${taskId}/`, { cache: "no-store", headers }),
-          fetch(`${API_URL}/v1/contracts/`, { cache: "no-store", headers }),
+        const [taskData, contractsData] = await Promise.all([
+          tasksApi.get(parseInt(taskId, 10)),
+          contractsApi.list(),
         ]);
-
-        if (!taskRes.ok) throw new Error("작업 정보를 불러오지 못했습니다");
-        const taskData = await taskRes.json();
-        setTask(taskData);
-
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || []);
-        }
+        setTask(taskData as unknown as Task);
+        setContracts(contractsData.results || []);
 
         // Load incidents for task's contract
         if (taskData.contract) {
-          const incRes = await fetch(
-            `${API_URL}/v1/events/?contract=${taskData.contract}`,
-            { cache: "no-store", headers }
-          );
-          if (incRes.ok) {
-            const incData = await incRes.json();
-            setIncidents(incData.results || []);
-          }
+          const incData = await eventsApi.listByContract(taskData.contract);
+          setIncidents(incData.results || []);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : "작업 정보를 불러오지 못했습니다");

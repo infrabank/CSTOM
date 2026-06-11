@@ -3,46 +3,15 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getAccessToken } from "@/lib/auth";
+import {
+  ticketsClient,
+  type TicketContract as Contract,
+  type TicketUser as User,
+} from "../../api";
+import { TICKET_PRIORITY_OPTIONS, TICKET_STATUS_OPTIONS } from "@/lib/labels";
 
-interface Contract {
-  id: number;
-  name: string;
-}
-
-interface User {
-  id: number;
-  username: string;
-  display_name: string;
-}
-
-interface TicketDetail {
-  id: number;
-  title: string;
-  description: string;
-  priority: string;
-  status: string;
-  assigned_to: number | null;
-  contract: number | null;
-}
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-const PRIORITY_OPTIONS = [
-  { value: "low", label: "낮음" },
-  { value: "medium", label: "보통" },
-  { value: "high", label: "높음" },
-  { value: "critical", label: "긴급" },
-];
-
-const STATUS_OPTIONS = [
-  { value: "new", label: "신규" },
-  { value: "open", label: "접수" },
-  { value: "in_progress", label: "처리중" },
-  { value: "waiting", label: "대기" },
-  { value: "resolved", label: "해결" },
-  { value: "closed", label: "종료" },
-];
+const PRIORITY_OPTIONS = TICKET_PRIORITY_OPTIONS;
+const STATUS_OPTIONS = TICKET_STATUS_OPTIONS;
 
 export default function EditTicketPage() {
   const router = useRouter();
@@ -65,23 +34,12 @@ export default function EditTicketPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = getAccessToken();
-        const headers: HeadersInit = token
-          ? { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-          : { "Content-Type": "application/json" };
-
-        // Fetch ticket, contracts, users in parallel
-        const [ticketRes, contractsRes, usersRes] = await Promise.all([
-          fetch(`${API_URL}/v1/tickets/${ticketId}/`, { headers }),
-          fetch(`${API_URL}/v1/contracts/`, { headers }),
-          fetch(`${API_URL}/v1/users/`, { headers }),
+        const [ticket, contractsData, usersData] = await Promise.all([
+          ticketsClient.get(ticketId),
+          ticketsClient.listContracts(),
+          ticketsClient.listUsers(),
         ]);
 
-        if (!ticketRes.ok) {
-          throw new Error("티켓을 불러올 수 없습니다");
-        }
-
-        const ticket: TicketDetail = await ticketRes.json();
         setTitle(ticket.title);
         setDescription(ticket.description);
         setPriority(ticket.priority);
@@ -89,15 +47,10 @@ export default function EditTicketPage() {
         setContractId(ticket.contract ? String(ticket.contract) : "");
         setAssignedToId(ticket.assigned_to ? String(ticket.assigned_to) : "");
 
-        if (contractsRes.ok) {
-          const contractsData = await contractsRes.json();
-          setContracts(contractsData.results || contractsData || []);
-        }
-
-        if (usersRes.ok) {
-          const usersData = await usersRes.json();
-          setUsers(usersData.results || usersData || []);
-        }
+        setContracts(
+          Array.isArray(contractsData) ? contractsData : contractsData.results || [],
+        );
+        setUsers(Array.isArray(usersData) ? usersData : usersData.results || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "데이터를 불러올 수 없습니다");
         console.error("Failed to fetch data:", err);
@@ -115,43 +68,14 @@ export default function EditTicketPage() {
     setError("");
 
     try {
-      const token = getAccessToken();
-      if (!token) {
-        throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-      }
-
-      const payload: Record<string, unknown> = {
+      await ticketsClient.update(ticketId, {
         title,
         description,
         priority,
         status,
-      };
-
-      payload.contract = contractId ? parseInt(contractId) : null;
-      payload.assigned_to = assignedToId ? parseInt(assignedToId) : null;
-
-      const res = await fetch(`${API_URL}/v1/tickets/${ticketId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
+        contract: contractId ? parseInt(contractId) : null,
+        assigned_to: assignedToId ? parseInt(assignedToId) : null,
       });
-
-      if (!res.ok) {
-        const ct = res.headers.get("content-type") || "";
-        if (ct.includes("application/json")) {
-          const errData = await res.json();
-          const errMsg =
-            errData.detail ||
-            Object.values(errData).flat().join(", ") ||
-            "수정에 실패했습니다";
-          throw new Error(errMsg);
-        }
-        throw new Error(`수정에 실패했습니다 (HTTP ${res.status})`);
-      }
-
       router.push(`/tickets/${ticketId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "수정에 실패했습니다");

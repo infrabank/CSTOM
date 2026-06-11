@@ -5,23 +5,10 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { use } from "react";
 import { updateUser } from "../../actions";
-import { getAccessToken } from "@/lib/auth";
+import { usersClient, type UserEditData as User } from "../../api";
+import { USER_STATUS_LABELS, optionsFromLabels } from "@/lib/labels";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  display_name: string;
-  status: string;
-  is_active: boolean;
-}
-
-const STATUS_OPTIONS = [
-  { value: "active", label: "활성" },
-  { value: "inactive", label: "비활성" },
-];
+const STATUS_OPTIONS = optionsFromLabels(USER_STATUS_LABELS);
 
 interface PageProps {
   params: Promise<{ userId: string }>;
@@ -38,15 +25,7 @@ export default function EditUserPage({ params }: PageProps) {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const token = getAccessToken();
-        const res = await fetch(`${API_URL}/v1/users/${userId}/`, {
-          cache: "no-store",
-          headers: {
-            ...(token && { Authorization: `Bearer ${token}` }),
-          },
-        });
-        if (!res.ok) throw new Error("사용자 정보를 불러오지 못했습니다");
-        const data = await res.json();
+        const data = await usersClient.get(userId);
         setUser(data);
       } catch (e) {
         setError(e instanceof Error ? e.message : "사용자 정보를 불러오지 못했습니다");
