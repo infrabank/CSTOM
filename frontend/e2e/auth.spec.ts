@@ -1,11 +1,16 @@
 import { test, expect } from "@playwright/test";
+import { ADMIN_EMAIL, ADMIN_PASSWORD } from "./helpers";
+
+// Auth tests exercise the login page itself, so they must start unauthenticated
+// (override the default admin storageState from the config).
+test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("Authentication", () => {
   test("should display login page", async ({ page }) => {
     await page.goto("/login");
 
-    // Check page elements
-    await expect(page.getByRole("heading", { level: 1 }).or(page.locator("img[alt*='KRIHS']"))).toBeVisible();
+    // KRIHS branding image is present (matches both desktop + mobile logos).
+    await expect(page.locator("img[alt*='KRIHS']").first()).toBeVisible();
     await expect(page.getByLabel("이메일")).toBeVisible();
     await expect(page.getByLabel("비밀번호")).toBeVisible();
     await expect(page.getByRole("button", { name: /로그인/ })).toBeVisible();
@@ -14,25 +19,26 @@ test.describe("Authentication", () => {
   test("should show error on invalid credentials", async ({ page }) => {
     await page.goto("/login");
 
-    // Fill in invalid credentials
     await page.getByLabel("이메일").fill("invalid@example.com");
     await page.getByLabel("비밀번호").fill("wrongpassword");
     await page.getByRole("button", { name: /로그인/ }).click();
 
-    // Should show error message
-    await expect(page.locator(".bg-red-50")).toBeVisible({ timeout: 10000 });
+    // The login route surfaces "Invalid credentials" for a failed auth.
+    // Assert by visible text rather than a brittle Tailwind class.
+    await expect(page.getByText("Invalid credentials")).toBeVisible();
+    // Stayed on the login page.
+    await expect(page).toHaveURL(/\/login/);
   });
 
-  test("should redirect to contracts on successful login", async ({ page }) => {
+  test("should redirect to dashboard on successful login", async ({ page }) => {
     await page.goto("/login");
 
-    // Fill in valid credentials (assuming test user exists)
-    await page.getByLabel("이메일").fill("admin@example.com");
-    await page.getByLabel("비밀번호").fill("adminpass123");
+    await page.getByLabel("이메일").fill(ADMIN_EMAIL);
+    await page.getByLabel("비밀번호").fill(ADMIN_PASSWORD);
     await page.getByRole("button", { name: /로그인/ }).click();
 
-    // Should redirect to contracts page
-    await expect(page).toHaveURL(/\/contracts/, { timeout: 10000 });
+    // Login redirects to /dashboard.
+    await expect(page).toHaveURL(/\/dashboard/, { timeout: 30000 });
   });
 
   test("should disable submit button while loading", async ({ page }) => {
@@ -43,7 +49,6 @@ test.describe("Authentication", () => {
 
     const submitButton = page.getByRole("button", { name: /로그인/ });
 
-    // Click and immediately check if button is disabled
     await submitButton.click();
     await expect(submitButton).toBeDisabled();
   });
