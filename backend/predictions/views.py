@@ -7,6 +7,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import EquipmentMetric, PredictionModel
 from .serializers import (
@@ -25,7 +26,7 @@ class AtRiskEquipmentView(APIView):
         min_score: minimum risk score threshold (default: 0)
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
 
     def get(self, request):
         min_score = float(request.query_params.get("min_score", 0))
@@ -39,7 +40,7 @@ class PredictionModelViewSet(ModelViewSet):
 
     queryset = PredictionModel.objects.all()
     serializer_class = PredictionModelSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
 
 
@@ -50,7 +51,7 @@ class EquipmentMetricViewSet(ModelViewSet):
         "equipment", "prediction_model"
     ).all()
     serializer_class = EquipmentMetricSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
 
     def get_queryset(self):

@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.auth import CustomJWTAuthentication
+from common.permissions import ReadOnlyForCustomer
 
 from .models import Task
 from .serializers import (
@@ -24,8 +25,8 @@ class TaskViewSet(ModelViewSet):
 
     queryset = Task.objects.select_related("contract", "related_incident").all()
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""
@@ -90,17 +91,15 @@ class TaskViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Get user info from JWT token
+        # Get user info from request
         user = getattr(request, "user", None)
-        user_role = None
         user_name = "Unknown"
 
         if hasattr(request, "jwt_token") and request.jwt_token:
-            user_role = request.jwt_token.get("role")
             user_name = request.jwt_token.get("display_name", "Unknown")
 
-        # Check permission (only PM or Admin can approve)
-        if user_role not in ["pm", "admin"]:
+        # Check permission (only PM or Admin can approve) via DB-backed role
+        if not (user and user.is_authenticated and (user.is_pm() or user.is_admin_role())):
             return Response(
                 {
                     "error": {

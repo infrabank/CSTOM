@@ -1,5 +1,7 @@
 """User and Role models for RBAC."""
 
+from functools import cached_property
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -46,13 +48,14 @@ class User(AbstractUser):
     def __str__(self):
         return self.display_name or self.username
 
+    @cached_property
     def _role_names(self) -> set[str]:
         """Get role names using prefetch cache if available."""
         return {r.name for r in self.roles.all()}
 
     def has_role(self, role_name: str) -> bool:
         """Check if user has the specified role (prefetch-compatible)."""
-        return role_name in self._role_names()
+        return role_name in self._role_names
 
     def is_pm(self) -> bool:
         return self.has_role("pm")
@@ -69,7 +72,7 @@ class User(AbstractUser):
     @property
     def primary_role(self) -> str | None:
         """Return the highest-priority role for the user."""
-        role_names = self._role_names()
+        role_names = self._role_names
         for role_name in ["admin", "pm", "engineer", "customer"]:
             if role_name in role_names:
                 return role_name

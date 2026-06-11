@@ -1,5 +1,6 @@
 """Ticket system API views."""
 
+from django.db import transaction
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import Ticket, TicketComment, TicketStatusHistory
 from .serializers import (
@@ -36,6 +38,13 @@ class TicketViewSet(ModelViewSet):
         "updated_at",
     ]
     ordering = ["-created_at"]
+
+    def get_permissions(self):
+        """Customers may create and read tickets (service desk), but cannot
+        update or delete them. Non-customers retain full access."""
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [IsAuthenticated(), ReadOnlyForCustomer()]
+        return [IsAuthenticated()]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""
@@ -83,14 +92,15 @@ class TicketViewSet(ModelViewSet):
     def perform_update(self, serializer):
         """Create status history on ticket update."""
         old_status = self.get_object().status
-        instance = serializer.save()
-        if instance.status != old_status:
-            TicketStatusHistory.objects.create(
-                ticket=instance,
-                old_status=old_status,
-                new_status=instance.status,
-                changed_by=self.request.user,
-            )
+        with transaction.atomic():
+            instance = serializer.save()
+            if instance.status != old_status:
+                TicketStatusHistory.objects.create(
+                    ticket=instance,
+                    old_status=old_status,
+                    new_status=instance.status,
+                    changed_by=self.request.user,
+                )
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def add_comment(self, request, pk=None):

@@ -3,6 +3,8 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
+from common.permissions import ReadOnlyForCustomer
+
 from .models import EngineerProfile, Schedule
 from .serializers import (
     EngineerProfileSerializer,
@@ -16,7 +18,7 @@ class EngineerProfileViewSet(ModelViewSet):
 
     queryset = EngineerProfile.objects.select_related("user").all()
     serializer_class = EngineerProfileSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
 
 
 class ScheduleViewSet(ModelViewSet):
@@ -24,7 +26,7 @@ class ScheduleViewSet(ModelViewSet):
 
     queryset = Schedule.objects.select_related("engineer").all()
     serializer_class = ScheduleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
 
     def get_serializer_class(self):
         if self.action == "list":

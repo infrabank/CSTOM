@@ -3,8 +3,8 @@
 import threading
 import uuid
 
+from django.apps import apps
 from django.db.models.signals import post_save, pre_delete, pre_save
-from django.dispatch import receiver
 
 from .models import AuditEvent
 
@@ -122,12 +122,9 @@ def model_to_dict(instance):
     return data
 
 
-@receiver(pre_save)
 def capture_pre_save(sender, instance, **kwargs):
     """Capture the before state of an object."""
     model_name = f"{sender._meta.app_label}.{sender._meta.model_name}"
-    if model_name.lower() not in [m.lower() for m in AUDITED_MODELS]:
-        return
 
     if instance.pk:
         try:
@@ -138,12 +135,9 @@ def capture_pre_save(sender, instance, **kwargs):
         instance._audit_before = None
 
 
-@receiver(post_save)
 def audit_post_save(sender, instance, created, **kwargs):
     """Log create/update events after save."""
     model_name = f"{sender._meta.app_label}.{sender._meta.model_name}"
-    if model_name.lower() not in [m.lower() for m in AUDITED_MODELS]:
-        return
 
     action = "create" if created else "update"
     before = getattr(instance, "_audit_before", None)
@@ -158,12 +152,9 @@ def audit_post_save(sender, instance, created, **kwargs):
     )
 
 
-@receiver(pre_delete)
 def audit_pre_delete(sender, instance, **kwargs):
     """Log delete events before deletion."""
     model_name = f"{sender._meta.app_label}.{sender._meta.model_name}"
-    if model_name.lower() not in [m.lower() for m in AUDITED_MODELS]:
-        return
 
     before = model_to_dict(instance)
 
@@ -174,3 +165,20 @@ def audit_pre_delete(sender, instance, **kwargs):
         before_snapshot=before,
         after_snapshot=None,
     )
+
+
+def connect_audit_signals():
+    """Connect audit receivers explicitly per audited model.
+
+    Scoping each receiver to a specific sender ensures non-audited
+    models never trigger audit logging.
+    """
+    for model_path in AUDITED_MODELS:
+        app_label, model_name = model_path.split(".")
+        model = apps.get_model(app_label, model_name)
+        pre_save.connect(capture_pre_save, sender=model)
+        post_save.connect(audit_post_save, sender=model)
+        pre_delete.connect(audit_pre_delete, sender=model)
+
+
+connect_audit_signals()

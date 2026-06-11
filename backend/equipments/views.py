@@ -3,13 +3,14 @@
 from datetime import datetime, timedelta
 
 from django.db.models import Prefetch, Q
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from common.pagination import StandardPagination
-from common.permissions import IsPMOrAdmin, IsPMOrEngineer
+from common.permissions import IsPMOrAdmin, IsPMOrEngineer, IsPMOrEngineerOrAdmin
 
 from .authorization import AuthorizationDeniedError
 
@@ -94,7 +95,7 @@ class EquipmentViewSet(ModelViewSet):
         if self.action in ["create", "update", "partial_update", "destroy"]:
             return [IsPMOrAdmin()]
         if self.action in ["check_out", "check_in"]:
-            return [IsAuthenticated()]
+            return [IsPMOrEngineerOrAdmin()]
         return [IsPMOrAdmin()]
 
     def get_serializer_class(self):
@@ -212,13 +213,22 @@ class EquipmentViewSet(ModelViewSet):
         approver_role = request.query_params.get("approver_role")
         order = request.query_params.get("order", "asc")
 
-        filters = CustodyHistoryFilters(
-            date_from=(
+        try:
+            parsed_date_from = (
                 datetime.strptime(date_from, "%Y-%m-%d").date() if date_from else None
-            ),
-            date_to=(
+            )
+            parsed_date_to = (
                 datetime.strptime(date_to, "%Y-%m-%d").date() if date_to else None
-            ),
+            )
+        except ValueError:
+            return Response(
+                {"error": "Invalid date format. Use YYYY-MM-DD."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filters = CustodyHistoryFilters(
+            date_from=parsed_date_from,
+            date_to=parsed_date_to,
             transaction_type=transaction_type,
             approver_role=approver_role,
             order=order if order in ["asc", "desc"] else "asc",
@@ -270,7 +280,7 @@ class EquipmentViewSet(ModelViewSet):
         except (ValueError, TypeError):
             days = 30
 
-        today = datetime.now().date()
+        today = timezone.localdate()
         expiry_date = today + timedelta(days=days)
 
         equipment = Equipment.objects.filter(

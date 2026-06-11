@@ -254,6 +254,10 @@ class EquipmentCorrection(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        if not is_new:
+            raise ValidationError(
+                "EquipmentCorrection records are immutable and cannot be modified."
+            )
 
         with transaction.atomic():
             super().save(*args, **kwargs)
@@ -265,6 +269,11 @@ class EquipmentCorrection(models.Model):
                 Equipment.objects.filter(pk=self.equipment.pk).update(
                     status=self.new_status
                 )
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "EquipmentCorrection records are immutable and cannot be deleted."
+        )
 
 
 class AssetRelationship(models.Model):

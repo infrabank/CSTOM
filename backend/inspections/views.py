@@ -1,5 +1,6 @@
 """Inspection views."""
 
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -9,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import OrderingFilter
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import InspectionSchedule, InspectionTask, InspectionResult
 from .serializers import (
@@ -25,7 +27,7 @@ class InspectionScheduleViewSet(viewsets.ModelViewSet):
 
     queryset = InspectionSchedule.objects.all()
     serializer_class = InspectionScheduleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["is_active", "cycle", "contract"]
@@ -38,7 +40,7 @@ class InspectionTaskViewSet(viewsets.ModelViewSet):
 
     queryset = InspectionTask.objects.all()
     serializer_class = InspectionTaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["status", "scheduled_date", "schedule"]
@@ -51,7 +53,11 @@ class InspectionTaskViewSet(viewsets.ModelViewSet):
             return InspectionTaskListSerializer
         return InspectionTaskSerializer
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated, ReadOnlyForCustomer],
+    )
     def complete(self, request, pk=None):
         """Mark inspection task as completed with result."""
         task = self.get_object()
@@ -67,17 +73,18 @@ class InspectionTaskViewSet(viewsets.ModelViewSet):
         serializer = TaskCompleteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Update task status
-        task.status = "completed"
-        task.save()
+        with transaction.atomic():
+            # Update task status
+            task.status = "completed"
+            task.save()
 
-        # Create inspection result
-        result = InspectionResult.objects.create(
-            task=task,
-            result=serializer.validated_data["result"],
-            notes=serializer.validated_data.get("notes", ""),
-            completed_by=request.user,
-        )
+            # Create inspection result
+            InspectionResult.objects.create(
+                task=task,
+                result=serializer.validated_data["result"],
+                notes=serializer.validated_data.get("notes", ""),
+                completed_by=request.user,
+            )
 
         # Return updated task with result
         task_serializer = InspectionTaskSerializer(task)
@@ -89,7 +96,7 @@ class InspectionResultViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = InspectionResult.objects.all()
     serializer_class = InspectionResultSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ["result", "task", "completed_at"]

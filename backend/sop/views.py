@@ -1,5 +1,6 @@
 """SOP document API views."""
 
+from django.db import transaction
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import SOPCategory, SOPDocument, SOPVersion
 from .serializers import (
@@ -23,7 +25,7 @@ class SOPCategoryViewSet(ModelViewSet):
 
     queryset = SOPCategory.objects.all()
     serializer_class = SOPCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "description"]
@@ -36,7 +38,7 @@ class SOPVersionViewSet(ModelViewSet):
 
     queryset = SOPVersion.objects.select_related("document", "created_by").all()
     serializer_class = SOPVersionSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ["created_at", "version_number"]
@@ -85,7 +87,7 @@ class SOPDocumentViewSet(ModelViewSet):
     queryset = SOPDocument.objects.select_related(
         "category", "author", "current_version"
     ).all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "category__name"]
@@ -118,7 +120,11 @@ class SOPDocumentViewSet(ModelViewSet):
         # Version creation is handled separately via the version endpoint
         # This just updates the document metadata
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAuthenticated, ReadOnlyForCustomer],
+    )
     def create_version(self, request, pk=None):
         """Create a new version of the document."""
         document = self.get_object()
@@ -134,17 +140,18 @@ class SOPDocumentViewSet(ModelViewSet):
         last_version = document.versions.order_by("-version_number").first()
         next_version_number = (last_version.version_number + 1) if last_version else 1
 
-        # Create new version
-        version = SOPVersion.objects.create(
-            document=document,
-            version_number=next_version_number,
-            content=content,
-            created_by=request.user,
-        )
+        with transaction.atomic():
+            # Create new version
+            version = SOPVersion.objects.create(
+                document=document,
+                version_number=next_version_number,
+                content=content,
+                created_by=request.user,
+            )
 
-        # Update current version
-        document.current_version = version
-        document.save()
+            # Update current version
+            document.current_version = version
+            document.save()
 
         serializer = SOPVersionSerializer(version)
         return Response(serializer.data, status=status.HTTP_201_CREATED)

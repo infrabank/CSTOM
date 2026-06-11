@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Count, F, Q, Case, When, IntegerField, Sum, DecimalField
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import (
     SLADefinition,
@@ -45,7 +46,7 @@ class SLADefinitionViewSet(viewsets.ModelViewSet):
     """ViewSet for SLA definitions with filtering and compliance tracking."""
 
     queryset = SLADefinition.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "priority", "is_active", "service_type"]
     search_fields = ["service_type", "description", "contract__name"]
@@ -219,7 +220,7 @@ class SLAMetricViewSet(viewsets.ModelViewSet):
 
     queryset = SLAMetric.objects.all()
     serializer_class = SLAMetricSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["sla_definition", "response_sla_met", "resolution_sla_met"]
     ordering_fields = ["created_at", "actual_response_time_minutes"]
@@ -283,7 +284,7 @@ class SLACategoryViewSet(viewsets.ModelViewSet):
 
     queryset = SLACategory.objects.all()
     serializer_class = SLACategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "is_active"]
     search_fields = ["name", "code"]
@@ -319,7 +320,7 @@ class SLAEvaluationItemViewSet(viewsets.ModelViewSet):
 
     queryset = SLAEvaluationItem.objects.all()
     serializer_class = SLAEvaluationItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["category", "is_active", "measurement_cycle"]
     search_fields = ["name"]
@@ -341,7 +342,7 @@ class SLAEvaluationReportViewSet(viewsets.ModelViewSet):
     """ViewSet for SLA evaluation reports with scoring and finalization."""
 
     queryset = SLAEvaluationReport.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "grade", "is_finalized"]
     search_fields = ["contract__name", "evaluator_notes"]
@@ -576,7 +577,7 @@ class SLAEvaluationScoreViewSet(viewsets.ModelViewSet):
 
     queryset = SLAEvaluationScore.objects.all()
     serializer_class = SLAEvaluationScoreSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["report", "evaluation_item", "service_level"]
     ordering = ["evaluation_item__item_number"]
@@ -600,7 +601,7 @@ class SLAEvaluationCriteriaViewSet(viewsets.ModelViewSet):
 
     queryset = SLAEvaluationCriteria.objects.all()
     serializer_class = SLAEvaluationCriteriaSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["evaluation_item", "service_level"]
     ordering = ["evaluation_item__item_number", "-service_level"]
@@ -624,7 +625,7 @@ class SLAPenaltyViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = SLAPenalty.objects.all()
     serializer_class = SLAPenaltySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["report", "penalty_type", "is_offset"]
     ordering = ["-created_at"]
@@ -675,7 +676,7 @@ class UptimeRecordViewSet(viewsets.ModelViewSet):
 
     queryset = UptimeRecord.objects.all()
     serializer_class = UptimeRecordSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["equipment", "contract"]
     ordering = ["-period_start"]
@@ -707,7 +708,7 @@ class PerformanceImprovementViewSet(viewsets.ModelViewSet):
 
     queryset = PerformanceImprovement.objects.all()
     serializer_class = PerformanceImprovementSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "is_accepted"]
     search_fields = ["title", "description", "proposed_by"]
@@ -732,7 +733,7 @@ class SLARevisionRequestViewSet(viewsets.ModelViewSet):
 
     queryset = SLARevisionRequest.objects.all()
     serializer_class = SLARevisionRequestSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filterset_fields = ["contract", "review_result"]
     search_fields = ["revision_reason", "requester_name", "document_name"]

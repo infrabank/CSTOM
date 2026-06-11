@@ -27,10 +27,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+# SECURITY WARNING: don't run with debug turned on in production!
+# Defaults to False for security - must explicitly enable for development
+DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+
 # SECURITY WARNING: keep the secret key used in production secret!
-# In production, SECRET_KEY must be set via environment variable
+# In production (DEBUG False), SECRET_KEY must be set via environment variable.
 _secret_key = os.getenv("SECRET_KEY")
 if not _secret_key:
+    if not DEBUG:
+        from django.core.exceptions import ImproperlyConfigured
+
+        raise ImproperlyConfigured(
+            "SECRET_KEY environment variable must be set when DEBUG is False."
+        )
     import warnings
 
     warnings.warn(
@@ -39,10 +49,6 @@ if not _secret_key:
     )
     _secret_key = "django-insecure-dev-only-key-DO-NOT-USE-IN-PRODUCTION"
 SECRET_KEY = _secret_key
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# Defaults to False for security - must explicitly enable for development
-DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
 
 ALLOWED_HOSTS = [
     h.strip()
@@ -251,6 +257,11 @@ if not DEBUG:
     )
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
     # Use SMTP backend in production
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 

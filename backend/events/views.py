@@ -6,6 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from common.permissions import ReadOnlyForCustomer
 
 from .models import ChangeIncident
 from .serializers import (
@@ -22,8 +23,8 @@ class ChangeIncidentViewSet(ModelViewSet):
 
     queryset = ChangeIncident.objects.select_related("contract", "related_event").all()
     serializer_class = ChangeIncidentSerializer
-    permission_classes = [IsAuthenticated]
-    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
+    http_method_names = ["get", "post", "put", "patch", "head", "options"]
 
     def get_serializer_class(self):
         """Use appropriate serializer based on action."""

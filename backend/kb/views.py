@@ -1,5 +1,6 @@
 """Knowledge Base API views."""
 
+from django.db.models import F
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from common.pagination import StandardPagination
+from common.permissions import ReadOnlyForCustomer
 
 from .models import KBArticle, KBCategory, KBTemplate
 from .serializers import (
@@ -23,7 +25,7 @@ class KBCategoryViewSet(ModelViewSet):
 
     queryset = KBCategory.objects.all()
     serializer_class = KBCategorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "description"]
@@ -35,7 +37,7 @@ class KBArticleViewSet(ModelViewSet):
     """ViewSet for KB Article operations."""
 
     queryset = KBArticle.objects.select_related("category", "author").all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "content", "tags"]
@@ -77,16 +79,18 @@ class KBArticleViewSet(ModelViewSet):
     def increment_views(self, request, pk=None):
         """Increment view count for an article."""
         article = self.get_object()
-        article.view_count += 1
-        article.save()
+        KBArticle.objects.filter(pk=article.pk).update(view_count=F("view_count") + 1)
+        article.refresh_from_db(fields=["view_count"])
         return Response({"view_count": article.view_count}, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def mark_helpful(self, request, pk=None):
         """Increment helpful count for an article."""
         article = self.get_object()
-        article.helpful_count += 1
-        article.save()
+        KBArticle.objects.filter(pk=article.pk).update(
+            helpful_count=F("helpful_count") + 1
+        )
+        article.refresh_from_db(fields=["helpful_count"])
         return Response(
             {"helpful_count": article.helpful_count}, status=status.HTTP_200_OK
         )
@@ -97,7 +101,7 @@ class KBTemplateViewSet(ModelViewSet):
 
     queryset = KBTemplate.objects.select_related("category").all()
     serializer_class = KBTemplateSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ReadOnlyForCustomer]
     pagination_class = StandardPagination
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["name", "template_content"]

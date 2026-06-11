@@ -34,10 +34,14 @@ class UserViewSet(ModelViewSet):
 
     def get_permissions(self):
         """Set permissions based on action."""
-        if self.action in ["create", "destroy"]:
+        if self.action in [
+            "create",
+            "destroy",
+            "assign_role",
+            "update",
+            "partial_update",
+        ]:
             return [IsAdmin()]
-        if self.action in ["assign_role", "update", "partial_update"]:
-            return [IsPMOrAdmin()]
         return [IsPMOrAdmin()]
 
     def get_serializer_class(self):
