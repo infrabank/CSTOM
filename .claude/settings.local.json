@@ -16,7 +16,12 @@
       "Task",
       "Bash(py:*)",
       "Bash(python:*)",
-      "Bash(cmd /c \"for %I in \\(\"\"G:\\\\내 드라이브\\\\오프라인용\\\\myloket의 팀 폴더\\\\IT프로젝트\\\\SI.클라우드시스템\\\\EU.국토연구원\\\\CSTOM\"\"\\) do @echo %~sI\")"
+      "Bash(cmd /c \"for %I in \\(\"\"G:\\\\내 드라이브\\\\오프라인용\\\\myloket의 팀 폴더\\\\IT프로젝트\\\\SI.클라우드시스템\\\\EU.국토연구원\\\\CSTOM\"\"\\) do @echo %~sI\")",
+      "Read(//c/Opencode/CSTOM-NET/backend/**)",
+      "Bash(venv/Scripts/python.exe manage.py seed_netinspect --count 5)",
+      "Bash(venv/Scripts/python.exe manage.py runserver 8000 --noreload)",
+      "Read(//c/tmp/**)",
+      "Read(//tmp/**)"
     ],
     "defaultMode": "bypassPermissions"
   }
